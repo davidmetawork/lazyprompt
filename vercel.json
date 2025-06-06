@@ -1,7 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm install && npm run build:marketplace",
+  "buildCommand": "cd apps/marketplace && npm install && npx prisma generate && npm run build",
   "outputDirectory": "apps/marketplace/.next",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "functions": {
+    "apps/marketplace/src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
 } 
