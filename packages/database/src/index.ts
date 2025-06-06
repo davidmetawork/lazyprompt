@@ -1,6 +1,6 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-// Export all from Prisma client but don't re-export from schema
+// Export all from Prisma client
 export * from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
@@ -16,7 +16,8 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 export * from './prisma';
-// Export specific named exports from schema instead of '*'
+
+// Export schemas and types
 export {
   userSchema,
   categorySchema,
@@ -30,7 +31,6 @@ export {
   updateUserProfileSchema,
 } from './schema';
 
-// Export types from schema
 export type {
   UserSchema,
   CategorySchema,
@@ -44,14 +44,7 @@ export type {
   UpdateUserProfileInput
 } from './schema';
 
-// Types with relations from schema
-export type {
-  PromptWithRelations as SchemaPromptWithRelations,
-  PurchaseWithRelations as SchemaPurchaseWithRelations,
-  UserProfile as SchemaUserProfile
-} from './schema';
-
-// Extended types for use in the application
+// Basic user profile type
 export type UserProfile = {
   id: string;
   name: string | null;
@@ -60,45 +53,4 @@ export type UserProfile = {
   createdAt: Date;
   purchasedPrompts: number;
   createdPrompts: number;
-};
-
-// Types with relations included
-export type PromptWithRelations = Prisma.PromptGetPayload<{
-  include: {
-    category: true;
-    user: {
-      select: {
-        id: true;
-        name: true;
-        image: true;
-      };
-    };
-  };
-}>;
-
-export type PurchaseWithRelations = Prisma.PurchaseGetPayload<{
-  include: {
-    prompt: {
-      include: {
-        category: true;
-        user: {
-          select: {
-            id: true;
-            name: true;
-            image: true;
-          };
-        };
-      };
-    };
-  };
-}>;
-
-export type CategoryWithPromptCount = Prisma.CategoryGetPayload<{
-  include: {
-    _count: {
-      select: {
-        prompts: true;
-      };
-    };
-  };
-}>; 
+}; 
