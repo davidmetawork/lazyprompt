@@ -1,0 +1,12 @@
+{
+  "extends": "@lazyprompt/config/tsconfig.base.json",
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "target": "ES2019",
+    "lib": ["ES2019", "DOM"],
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "baseUrl": "."
+  }
+} 

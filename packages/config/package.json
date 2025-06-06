@@ -1,0 +1,21 @@
+{
+  "name": "@lazyprompt/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "eslint-preset.js",
+    "tsconfig/*.json"
+  ],
+  "scripts": {
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "eslint-config-next": "14.0.3",
+    "eslint-config-prettier": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+} 

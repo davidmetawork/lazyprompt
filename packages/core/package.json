@@ -1,0 +1,23 @@
+{
+  "name": "@lazyprompt/core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint \"**/*.ts*\"",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "openai": "^4.20.0",
+    "@anthropic-ai/sdk": "^0.9.0",
+    "@upstash/redis": "^1.25.0",
+    "@upstash/ratelimit": "^0.4.4"
+  },
+  "devDependencies": {
+    "@lazyprompt/config": "*",
+    "@types/node": "^20.9.2",
+    "eslint": "^8.54.0",
+    "typescript": "^5.2.2"
+  }
+}

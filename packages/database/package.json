@@ -1,0 +1,27 @@
+{
+  "name": "@lazyprompt/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf node_modules .turbo dist",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push --skip-generate",
+    "db:seed": "ts-node prisma/seed.ts",
+    "dev": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@prisma/client": "^5.4.2",
+    "zod": "^3.22.4",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.7",
+    "eslint": "^8.51.0",
+    "prisma": "^5.4.2",
+    "typescript": "^5.2.2"
+  }
+} 
