@@ -1,28 +1,28 @@
-import { ReactNode } from 'react';
+import React from 'react';
 
-export interface CardProps {
-  children: ReactNode;
+interface CardProps {
+  children: React.ReactNode;
   className?: string;
 }
 
-export interface CardHeaderProps {
-  children: ReactNode;
+interface CardHeaderProps {
+  children: React.ReactNode;
   className?: string;
 }
 
-export interface CardContentProps {
-  children: ReactNode;
+interface CardContentProps {
+  children: React.ReactNode;
   className?: string;
 }
 
-export interface CardFooterProps {
-  children: ReactNode;
+interface CardFooterProps {
+  children: React.ReactNode;
   className?: string;
 }
 
 export function Card({ children, className = '' }: CardProps) {
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden ${className}`}>
+    <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -30,7 +30,7 @@ export function Card({ children, className = '' }: CardProps) {
 
 export function CardHeader({ children, className = '' }: CardHeaderProps) {
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>
+    <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>
       {children}
     </div>
   );
@@ -38,7 +38,7 @@ export function CardHeader({ children, className = '' }: CardHeaderProps) {
 
 export function CardContent({ children, className = '' }: CardContentProps) {
   return (
-    <div className={`px-6 py-4 ${className}`}>
+    <div className={`p-6 pt-0 ${className}`}>
       {children}
     </div>
   );
@@ -46,7 +46,7 @@ export function CardContent({ children, className = '' }: CardContentProps) {
 
 export function CardFooter({ children, className = '' }: CardFooterProps) {
   return (
-    <div className={`px-6 py-4 bg-gray-50 border-t border-gray-200 ${className}`}>
+    <div className={`flex items-center p-6 pt-0 ${className}`}>
       {children}
     </div>
   );

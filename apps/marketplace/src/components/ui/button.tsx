@@ -1,9 +1,9 @@
-import { ButtonHTMLAttributes, ReactNode, forwardRef } from 'react';
+import React, { ButtonHTMLAttributes, forwardRef } from 'react';
 import Link from 'next/link';
 import { LoadingSpinner } from './loading-spinner';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode;
+  children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
@@ -75,4 +75,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       {children}
     </button>
   );
-}); 
+});
+
+Button.displayName = 'Button'; 
