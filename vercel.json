@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/marketplace && npm install && npm run build",
+  "buildCommand": "npm install && cd packages/database && npx prisma generate && cd ../../apps/marketplace && npm run build",
   "outputDirectory": "apps/marketplace/.next",
   "framework": "nextjs",
   "installCommand": "npm install",
