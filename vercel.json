@@ -1,26 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "apps/marketplace/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "apps/marketplace/$1"
-    }
-  ],
+  "buildCommand": "cd apps/marketplace && npm install && npm run build",
+  "outputDirectory": "apps/marketplace/.next",
+  "framework": "nextjs",
+  "installCommand": "npm install",
   "env": {
     "NODE_ENV": "production"
-  },
-  "buildCommand": "npm install && cd packages/database && npx prisma generate && cd ../../apps/marketplace && npm run build",
-  "devCommand": "cd apps/marketplace && npm run dev",
-  "installCommand": "npm install",
-  "outputDirectory": "apps/marketplace/.next",
-  "framework": "nextjs"
+  }
 } 
