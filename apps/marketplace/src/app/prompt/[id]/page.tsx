@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { apiClient } from '@/lib/api-client';
 import { usePurchase } from '@/hooks/use-purchase';
-import { PromptWithRelations } from '@lazyprompt/database';
+import { PromptWithRelations } from '@/lib/types';
+import { Suspense } from 'react';
 
 interface PromptDetailPageProps {
   params: {

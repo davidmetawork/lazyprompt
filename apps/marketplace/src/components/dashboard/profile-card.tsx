@@ -1,11 +1,15 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
-import { UserProfile } from '@lazyprompt/database';
+import { UserProfile } from '@/lib/types';
 import { apiClient } from '@/lib/api-client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 interface ProfileCardProps {
   userProfile: UserProfile;

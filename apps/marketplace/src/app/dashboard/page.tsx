@@ -9,8 +9,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { ProfileCard } from '@/components/dashboard/profile-card';
 import { apiClient } from '@/lib/api-client';
-import { UserProfile } from '@lazyprompt/database';
-import { PurchaseWithRelations, PromptWithRelations } from '@lazyprompt/database';
+import { UserProfile, PurchaseWithRelations, PromptWithRelations } from '@/lib/types';
+import { Suspense } from 'react';
 
 export default function DashboardPage() {
   const router = useRouter();
