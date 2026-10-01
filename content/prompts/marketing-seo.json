@@ -1,0 +1,1382 @@
+{
+  "category": "marketing-seo",
+  "prompts": [
+    {
+      "key": "marketing-seo-positioning-statement",
+      "title": "Positioning statement and messaging pillars",
+      "description": "Turn what you know about your product, customer and competitors into a sharp positioning statement plus three provable messaging pillars.",
+      "body": "You are a product marketer helping me define positioning for {{product}}.\n\nContext\n- Target customer: {{customer}}\n- The problem they have today: {{problem}}\n- What we do differently: {{differentiator}}\n- Alternatives they use now (including doing nothing): {{alternatives}}\n- Proof we can point to (numbers, customers, features, awards): {{proof}}\n\nTask\n1. Write three candidate positioning statements using this frame: \"For [target customer] who [need], [product] is a [category] that [key benefit]. Unlike [alternative], we [primary differentiator].\"\n2. Recommend one and explain in two sentences why it is the most defensible.\n3. Give three messaging pillars for the recommended statement. For each pillar include: a short headline, the customer-facing claim, and the specific proof that supports it. If the proof I gave does not support a claim, say so and name the evidence I would need.\n4. List two claims I should avoid because they are generic or unprovable.\n\nRules\n- Use plain, concrete language. No \"revolutionary\", \"seamless\", \"cutting-edge\" or \"all-in-one\" unless I used them.\n- Do not invent statistics, customers or features. Mark any assumption as an assumption.\n- Tone for the final copy: {{tone}}.\n\nOutput format: a heading per step, statements as a numbered list, pillars as a table with columns Headline, Claim, Proof.\nOnly ask me a question first if a missing input would make the statement misleading.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product or company",
+          "type": "text",
+          "default": "Plotline, a project planning app for small design studios",
+          "required": false
+        },
+        {
+          "key": "customer",
+          "label": "Target customer",
+          "type": "text",
+          "default": "Studio owners and project leads at 5-30 person design agencies",
+          "required": false
+        },
+        {
+          "key": "problem",
+          "label": "Their core problem",
+          "type": "long",
+          "default": "They plan projects in spreadsheets and chat, so deadlines slip and nobody sees workload clashes until it is too late.",
+          "required": false
+        },
+        {
+          "key": "differentiator",
+          "label": "What we do differently",
+          "type": "long",
+          "default": "Plotline builds the schedule from the actual team calendar and flags overbooked weeks automatically.",
+          "required": false
+        },
+        {
+          "key": "alternatives",
+          "label": "Alternatives they use",
+          "type": "long",
+          "default": "Spreadsheets, Trello boards, Asana, and gut feel",
+          "required": false
+        },
+        {
+          "key": "proof",
+          "label": "Proof points",
+          "type": "long",
+          "default": "Setup takes about 20 minutes; 140 studios use it; customers report 2 fewer missed deadlines per quarter in our survey of 38 users",
+          "required": false,
+          "help": "Only include what you can back up."
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Confident and plain-spoken",
+            "Warm and friendly",
+            "Technical and precise",
+            "Bold and playful"
+          ],
+          "default": "Confident and plain-spoken",
+          "required": false
+        }
+      ],
+      "exampleOutput": "## 1. Candidate statements\n1. For design studio leads who juggle many projects at once, Plotline is a planning app that shows overbooked weeks before they become missed deadlines. Unlike spreadsheets and Trello boards, we build the schedule from your real team calendar.\n2. For small agency owners tired of chasing status in chat, Plotline is a project planner that keeps deadlines and workload in one view. Unlike Asana, it takes about 20 minutes to set up and needs no process overhaul.\n3. For project leads at 5-30 person studios, Plotline is a scheduling tool that turns the team calendar into a live capacity map. Unlike gut feel, it warns you when a promise cannot be kept.\n\n## 2. Recommendation\nStatement 1. It names the concrete pain (overbooked weeks) and the one mechanism competitors lack (calendar-driven scheduling), and both are demonstrable in a demo.\n\n## 3. Messaging pillars\n| Headline | Claim | Proof |\n|---|---|---|\n| See clashes early | Overbooked weeks are flagged automatically | Calendar-driven scheduling (product behavior) |\n| Set up in an afternoon | Go from zero to a live plan in about 20 minutes | Setup time; 140 studios in use |\n| Fewer missed deadlines | Studios report fewer slips | 2 fewer per quarter, survey of 38 users (note sample size when quoting) |\n\n## 4. Claims to avoid\n- \"The only planner built for creatives\": unprovable.\n- \"Eliminates missed deadlines\": your own data shows a reduction, not elimination.",
+      "notes": "Forcing each pillar to name its proof exposes weak claims before they reach a landing page. Re-run with a different tone or a single competitor to see how the angle shifts.",
+      "useCase": "generate",
+      "tags": [
+        "positioning",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-landing-page-critique",
+      "title": "Landing page copy critique",
+      "description": "Paste your landing page copy and get a blunt, prioritized critique of clarity, proof and calls to action, with rewritten examples.",
+      "body": "Act as a conversion copywriter reviewing a landing page. Be direct and specific. I want fixes, not praise.\n\nPage goal: {{goal}}\nVisitor profile and where they come from: {{visitor}}\nOffer: {{offer}}\n\nPage copy, top to bottom:\n\"\"\"\n{{page_copy}}\n\"\"\"\n\nReview it in this order:\n1. First-five-seconds test: from the headline and subhead alone, what would a stranger think this is, who it is for, and what to do next? Say where that breaks down.\n2. Clarity and specificity: quote up to five weak lines (vague, jargon, feature-without-benefit) and rewrite each.\n3. Proof: what claims lack evidence? What proof is missing for a visitor who is {{skepticism}} about this offer?\n4. Objections: list the top three unanswered objections and where on the page to answer each.\n5. Calls to action: assess wording, placement and friction. Suggest two alternative CTA labels.\n6. Top five changes ranked by expected impact on {{goal}}, each with a one-line reason.\n\nRules: quote the original text when criticizing it. Do not invent testimonials, numbers or features; use [placeholder: what is needed] where proof is missing. Keep the voice of the original unless it is the problem.\n\nFormat: numbered sections matching the above, then a final \"Revised hero section\" with a headline, subhead and CTA.",
+      "variables": [
+        {
+          "key": "goal",
+          "label": "Page goal",
+          "type": "text",
+          "default": "Get visitors to start a 14-day free trial",
+          "required": false
+        },
+        {
+          "key": "visitor",
+          "label": "Visitor and traffic source",
+          "type": "text",
+          "default": "Agency owners arriving from Google search for 'project planning software for agencies'",
+          "required": false
+        },
+        {
+          "key": "offer",
+          "label": "Offer",
+          "type": "text",
+          "default": "14-day free trial, no card needed, then $19 per user per month",
+          "required": false
+        },
+        {
+          "key": "skepticism",
+          "label": "Visitor skepticism",
+          "type": "select",
+          "options": [
+            "very skeptical",
+            "somewhat",
+            "already convinced"
+          ],
+          "default": "somewhat",
+          "required": false
+        },
+        {
+          "key": "page_copy",
+          "label": "Page copy",
+          "type": "long",
+          "default": "Headline: The Future of Project Management\nSubhead: Powerful, seamless, all-in-one planning for modern teams.\nBullets: Boost productivity. Collaborate better. Unlock insights.\nTestimonial: 'Great tool!' - A customer\nButton: Submit",
+          "required": false,
+          "help": "Paste the visible text in order, including headings and button labels."
+        }
+      ],
+      "exampleOutput": "## 1. First-five-seconds test\nA stranger learns almost nothing. \"Project management\" fits hundreds of products, \"modern teams\" names nobody, and the button says \"Submit\", which promises no outcome. Visitors from a search for agency planning software will not see their term or their problem.\n\n## 2. Weak lines, rewritten\n- \"The Future of Project Management\" -> \"Plan every agency project without overbooking your team\"\n- \"Powerful, seamless, all-in-one\" -> \"See who is free, who is stretched, and which deadlines are at risk, in one view\"\n- \"Boost productivity\" -> \"Catch overbooked weeks before they cost you a deadline\"\n- \"Collaborate better\" -> \"Share one live schedule instead of chasing status in chat\"\n\n## 3. Proof\n\"Great tool!\" has no name, role or result. Add [placeholder: named customer, role, agency size, and a measurable outcome]. A somewhat skeptical visitor also needs a screenshot of the real schedule view.\n\n## 4. Unanswered objections\n1. \"Will my team actually use it?\" -> add setup time and a short walkthrough under the hero.\n2. \"What does it cost?\" -> show price near the CTA.\n3. \"Can I move my data?\" -> note spreadsheet import.\n\n## 5. Calls to action\nReplace \"Submit\" with \"Start my free trial\" or \"Plan my first project\". Add \"No card needed\" beneath it.\n\n## 6. Top five changes\n1. Rewrite headline for the agency use case.\n2. Change the button label.\n3. Add a real product screenshot.\n4. Replace the testimonial.\n5. Surface pricing and no-card note.\n\n## Revised hero\n**Plan every project without overbooking your team**\nPlotline builds your schedule from the real team calendar and flags clashes early.\n[Start my free trial] No card needed",
+      "notes": "Quoting the original forces the critique to stay concrete, and the first-five-seconds test mirrors how visitors actually skim. Paste one section at a time for deeper rewrites.",
+      "useCase": "critique",
+      "tags": [
+        "advertising",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-ad-variants-constraints",
+      "title": "Ad copy variants within platform limits",
+      "description": "Generate distinct, honest ad variants for Google, Meta or LinkedIn that respect character limits and test different angles.",
+      "body": "Write {{count}} distinct ad variants for {{platform}}.\n\nProduct and offer: {{offer}}\nAudience: {{audience}}\nPrimary angle to emphasize: {{angle}}\nMust include: {{must_include}}\nMust avoid (claims, words, topics): {{avoid}}\n\nConstraints\n- Respect these limits strictly: {{limits}}. Count characters for every line and show the count in brackets.\n- Each variant must test a different angle (for example: pain point, outcome, social proof, price or risk reversal, curiosity). Label the angle.\n- Only make claims that follow from the information above. Do not invent numbers, reviews, or deadlines.\n- No clickbait, fake urgency, or misleading promises. Plain language over buzzwords.\n\nOutput a table with columns: #, Angle, Headline, Description or body, CTA, Character counts. After the table, add three sentences on which two variants to test first and what result would tell me which angle wins.",
+      "variables": [
+        {
+          "key": "count",
+          "label": "Number of variants",
+          "type": "number",
+          "default": "6",
+          "required": false
+        },
+        {
+          "key": "platform",
+          "label": "Platform",
+          "type": "select",
+          "options": [
+            "Google Search ads",
+            "Meta feed ads",
+            "LinkedIn sponsored content",
+            "Reddit ads"
+          ],
+          "default": "Google Search ads",
+          "required": false
+        },
+        {
+          "key": "offer",
+          "label": "Product and offer",
+          "type": "long",
+          "default": "Plotline, project planning software for design studios. 14-day free trial, no card required.",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Agency owners and project leads at small design studios",
+          "required": false
+        },
+        {
+          "key": "angle",
+          "label": "Primary angle",
+          "type": "text",
+          "default": "Avoiding overbooked weeks and missed deadlines",
+          "required": false
+        },
+        {
+          "key": "must_include",
+          "label": "Must include",
+          "type": "text",
+          "default": "The words 'free trial' and 'no card needed'",
+          "required": false
+        },
+        {
+          "key": "avoid",
+          "label": "Must avoid",
+          "type": "text",
+          "default": "Superlatives like 'best', and anything implying guaranteed results",
+          "required": false
+        },
+        {
+          "key": "limits",
+          "label": "Character limits",
+          "type": "text",
+          "default": "Headlines up to 30 characters (3 headlines), descriptions up to 90 characters (2 descriptions)",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| # | Angle | Headline | Description | CTA | Counts |\n|---|---|---|---|---|---|\n| 1 | Pain | Overbooked Again? [21] | See clashes before deadlines slip. Free trial, no card needed. [60] | Start free trial | ok |\n| 2 | Outcome | Plan Without Clashes [20] | Build your schedule from the real team calendar. Free trial. [59] | Try it free | ok |\n| 3 | Social proof | Used by 140 Studios [19] | Design studios plan projects in Plotline. No card needed. [57] | See how it works | ok |\n| 4 | Risk reversal | Free Trial, No Card [19] | Plan one real project in 14 days. Cancel nothing, pay nothing. [62] | Start free | ok |\n| 5 | Curiosity | Where Is Your Team Free? [24] | One view shows who is stretched next month. Try it free. [57] | See the view | ok |\n| 6 | Comparison | Beyond the Spreadsheet [22] | Replace project-plan spreadsheets with a live schedule. [55] | Start free trial | ok |\n\n(The table shows the first headline and description for each variant; the full response would list all three headlines and both descriptions per variant.)\n\nTest first: #1 (pain) and #4 (risk reversal). If #1 wins on click-through and trial starts, the problem framing resonates; if #4 wins, the barrier is commitment, so lead with the trial terms in other channels too.",
+      "notes": "Stating character limits and counts forces compliance, and labeling the angle makes results interpretable. Check final counts in the platform editor, since models can miscount.",
+      "useCase": "generate",
+      "tags": [
+        "advertising",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-persona-from-reviews",
+      "title": "Customer persona from reviews",
+      "description": "Synthesize real customer reviews or survey answers into evidence-backed personas, jobs to be done and messaging language.",
+      "body": "You are a customer research analyst. Using only the text below, build up to {{persona_count}} customer persona(s) for {{product}}.\n\nSource material ({{source_type}}):\n\"\"\"\n{{reviews}}\n\"\"\"\n\nInstructions\n1. Read everything first and list the recurring themes with a rough count of how many entries mention each.\n2. For each persona include: a short descriptive name (not a fake human biography), who they are as far as the text shows, the job they hire the product for, triggers that made them look for a solution, top frustrations, what they value, and objections or doubts.\n3. Support every claim with a short direct quote from the source and mark anything you infer rather than read as [inference].\n4. Extract a \"words they use\" list: exact phrases customers use to describe problems and benefits. These are for copy and keywords.\n5. Note what the data cannot tell us and what to ask in follow-up interviews.\n\nRules: do not invent demographics, job titles, ages or statistics that are not in the text. If the sample is too small or too uniform to justify separate personas, say so and give one.\n\nFormat: Themes table, then one section per persona, then Words They Use, then Gaps and Next Questions.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product",
+          "type": "text",
+          "default": "a standing desk converter",
+          "required": false
+        },
+        {
+          "key": "persona_count",
+          "label": "Max personas",
+          "type": "number",
+          "default": "2",
+          "required": false
+        },
+        {
+          "key": "source_type",
+          "label": "Source type",
+          "type": "select",
+          "options": [
+            "product reviews",
+            "survey answers",
+            "support tickets",
+            "interview notes"
+          ],
+          "default": "product reviews",
+          "required": false
+        },
+        {
+          "key": "reviews",
+          "label": "Paste the text",
+          "type": "long",
+          "default": "1. Works great, my back stopped hurting after two weeks of working from the kitchen table.\n2. Wobbles a bit at full height but fine for my laptop. Setup took 5 minutes.\n3. Bought for the office, our team of 6 all got one. Heavy to move though.\n4. Too bulky for my small apartment desk, returned it.\n5. I type all day and my wrists feel better. Wish it came with a keyboard tray.\n6. Great value compared to a full electric desk, which I could not afford.",
+          "required": false,
+          "help": "Paste 20 or more entries for better results. Remove personal details."
+        }
+      ],
+      "exampleOutput": "## Themes\n| Theme | Mentions |\n|---|---|\n| Back/wrist pain relief | 3 of 6 |\n| Easy setup | 2 of 6 |\n| Value vs electric desk | 2 of 6 |\n| Size, weight, or stability issues | 3 of 6 |\n\n## Persona 1: The Pain-Driven Home Worker\n- Who: works from a home table or small desk (3 of 6 entries).\n- Job: stop physical discomfort without buying a whole new desk.\n- Trigger: back or wrist pain after long sessions. \"my back stopped hurting after two weeks\"\n- Frustrations: limited space; bulk. \"Too bulky for my small apartment desk\"\n- Values: affordability, quick setup. \"Great value compared to a full electric desk\"\n- Doubts: stability at full height. \"Wobbles a bit at full height\" [inference: more likely for heavier monitors]\n\n## Persona 2: The Office Equipper\n- Who: buys for a team (1 entry; weak evidence).\n- Job: give several people a healthier setup quickly. \"our team of 6 all got one\"\n- Frustration: weight when moving.\n\n## Words they use\n\"stopped hurting\", \"setup took 5 minutes\", \"great value\", \"wobbles\", \"keyboard tray\".\n\n## Gaps and next questions\nSix entries cannot support two firm personas. Ask: how much desk space do you have, what equipment sits on it, and what did you consider instead?",
+      "notes": "Requiring a quote for each claim keeps the model anchored to your data rather than stereotypes. Feed in more reviews, plus competitor reviews, to compare what customers value.",
+      "useCase": "analyze",
+      "tags": [
+        "market-research"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-content-brief",
+      "title": "SEO content brief for writers",
+      "description": "Create a complete content brief with search intent, outline, key points, internal link slots and quality criteria a writer can follow.",
+      "body": "You are a senior content strategist. Create a content brief for a writer.\n\nPrimary keyword: {{keyword}}\nSecondary keywords or topics to cover (optional): {{secondary}}\nSite and audience: {{audience}}\nContent type: {{format}}\nTarget length: {{length}} words\nOur expertise or unique angle: {{angle}}\nCompeting pages I have already seen (optional): {{competitors}}\n\nProduce the brief with these sections:\n1. Search intent: what the searcher wants, their stage in the journey, and what a satisfying page must deliver in the first screen.\n2. Working title options (3) and a recommended meta description of at most 155 characters.\n3. Angle: how this piece will be better or different than typical results. Base this on the information given; if you do not know what currently ranks, say so rather than guessing.\n4. Outline: H2 and H3 headings with one line each about what the section must say, and the question it answers.\n5. Must-include facts, examples, data types or visuals. Mark where first-hand experience or an expert quote is needed.\n6. Internal link opportunities (descriptions of relevant pages) and suggested anchor text.\n7. FAQ section: 4 questions people really ask.\n8. Quality checklist: what the editor should verify before publishing, including claims that need a source.\n\nRules: no keyword stuffing guidance; write for the reader first. Do not invent statistics. Format as clean markdown a writer can paste into a doc.",
+      "variables": [
+        {
+          "key": "keyword",
+          "label": "Primary keyword",
+          "type": "text",
+          "default": "how to run a project kickoff meeting",
+          "required": false
+        },
+        {
+          "key": "secondary",
+          "label": "Secondary keywords",
+          "type": "text",
+          "default": "kickoff meeting agenda, project kickoff checklist, kickoff meeting template",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Site and audience",
+          "type": "text",
+          "default": "Blog for a project planning app; readers are agency project managers",
+          "required": false
+        },
+        {
+          "key": "format",
+          "label": "Content type",
+          "type": "select",
+          "options": [
+            "How-to guide",
+            "Listicle",
+            "Comparison",
+            "Pillar page",
+            "Product-led article",
+            "Glossary entry"
+          ],
+          "default": "How-to guide",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Target length",
+          "type": "number",
+          "default": "1800",
+          "required": false
+        },
+        {
+          "key": "angle",
+          "label": "Your unique angle",
+          "type": "text",
+          "default": "We have run 300+ client kickoffs and can share a real agenda and mistakes",
+          "required": false
+        },
+        {
+          "key": "competitors",
+          "label": "Competitor pages",
+          "type": "long",
+          "default": "",
+          "required": false,
+          "help": "Paste URLs or titles of top results you reviewed."
+        }
+      ],
+      "exampleOutput": "## 1. Search intent\nInformational with a practical bent. The searcher has a kickoff coming and wants a usable agenda and a clear sequence. The first screen should state what a kickoff meeting must achieve and link to a ready-made agenda.\n\n## 2. Titles and meta\n- How to Run a Project Kickoff Meeting (With an Agenda You Can Copy)\n- The Project Kickoff Meeting: Agenda, Roles and Mistakes to Avoid\n- Project Kickoff Meetings That Actually Align Your Team\nMeta (148): A practical guide to running a project kickoff meeting, with a time-boxed agenda, roles, and the mistakes that cause projects to drift.\n\n## 3. Angle\nLead with first-hand experience from 300+ kickoffs. I do not know what currently ranks; check the top results and note which sections they all share.\n\n## 4. Outline\n- H2 What a kickoff meeting is for: goals, not status\n- H2 Who should attend (and who should not)\n- H2 A 60-minute agenda: scope, goals, roles, timeline, risks, next steps\n- H2 Before the meeting: prep checklist\n- H3 Documents to send in advance\n- H2 During: how to keep it on track\n- H2 After: notes, owners, deadlines\n- H2 Five kickoff mistakes we see most\n\n## 5. Must include\nDownloadable agenda template; an anonymized example; quote from a PM [expert quote needed].\n\n## 6. Internal links\nProject scoping guide (anchor: \"define project scope\"); risk register template.\n\n## 7. FAQ\nHow long should a kickoff last? Who runs it? Should clients attend? What if stakeholders miss it?\n\n## 8. Quality checklist\nAgenda times add to 60; every claim from experience is real; template tested.",
+      "notes": "The brief separates intent, angle and evidence so writers know what to prove. Paste in competing outlines and ask for a gap analysis to sharpen differentiation.",
+      "useCase": "plan",
+      "tags": [
+        "seo",
+        "content-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-keyword-clustering",
+      "title": "Keyword clustering by search intent",
+      "description": "Group a raw keyword list into topical clusters with intent labels, a primary keyword per page and a suggested content type.",
+      "body": "You are an SEO analyst. Cluster the keyword list below into groups that should each be targeted by one page.\n\nWebsite or business: {{site}}\nGoal for the content: {{goal}}\n\nKeywords (one per line, optionally with monthly volume after a comma):\n{{keywords}}\n\nMethod\n1. Group keywords that a single page could satisfy, based on meaning and likely search intent, not just shared words.\n2. Label each cluster's dominant intent: informational, commercial investigation, transactional or navigational.\n3. Pick one primary keyword per cluster (highest volume among close synonyms, unless intent says otherwise) and list the supporting keywords.\n4. Suggest a page type and a working page title for each cluster.\n5. Flag keywords that need their own page despite similar wording, and any that are off-topic or should be dropped.\n6. Rank clusters by priority for {{goal}}, with a one-line reason. If volume is missing, say that ranking is judgement only.\n\nRules: do not claim difficulty scores, rankings or SERP details you cannot see. Mark intent as a judgement that should be checked against actual search results.\n\nFormat: a table with columns Cluster, Intent, Primary keyword, Supporting keywords, Page type, Priority. Then a short list of flags and next steps.",
+      "variables": [
+        {
+          "key": "site",
+          "label": "Business or site",
+          "type": "text",
+          "default": "Online store selling specialty coffee beans and brewing equipment",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Content goal",
+          "type": "text",
+          "default": "Grow organic sales of brewing equipment",
+          "required": false
+        },
+        {
+          "key": "keywords",
+          "label": "Keyword list",
+          "type": "long",
+          "default": "best pour over coffee maker, 5400\npour over coffee maker, 8100\nhow to use a v60, 2900\nv60 vs chemex, 1600\nchemex coffee maker, 6600\nbuy hario v60, 1000\nhow to make pour over coffee, 4400\ncoffee grinder for pour over, 880\nchemex filters, 2400",
+          "required": false,
+          "help": "One per line; volume optional."
+        }
+      ],
+      "exampleOutput": "| Cluster | Intent | Primary keyword | Supporting | Page type | Priority |\n|---|---|---|---|---|---|\n| Pour over buying guide | Commercial | best pour over coffee maker | pour over coffee maker, coffee grinder for pour over | Comparison guide: \"Best Pour Over Coffee Makers\" | 1 |\n| V60 vs Chemex | Commercial | v60 vs chemex | chemex coffee maker | Comparison article | 2 |\n| Pour over how-to | Informational | how to make pour over coffee | how to use a v60 | Step-by-step guide | 3 |\n| Buy V60 | Transactional | buy hario v60 | | Product/category page | 2 |\n| Chemex filters | Transactional | chemex filters | | Product page | 3 |\n\n## Flags\n- \"how to use a v60\" could be its own page if you want to rank for brand-specific brewing; here it is merged with the general how-to.\n- \"coffee grinder for pour over\" has a different buying need; consider a short section now and a dedicated page later.\n- Priority is judgement based on volume and closeness to equipment sales; no difficulty data was provided.\n\n## Next steps\nCheck each cluster's live search results to confirm intent before committing to the page type.",
+      "notes": "Grouping by intent rather than shared words avoids splitting one topic across pages or cramming two intents into one. For big lists, run it in batches of 200-300 keywords and then merge clusters.",
+      "useCase": "analyze",
+      "tags": [
+        "seo"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-meta-title-description",
+      "title": "Meta titles and descriptions that earn clicks",
+      "description": "Write search-friendly title tags and meta descriptions within length limits, with several angles per page.",
+      "body": "Write title tags and meta descriptions for the page below.\n\nPage URL or topic: {{page}}\nPrimary keyword: {{keyword}}\nWhat the page offers the searcher: {{value}}\nBrand name: {{brand}}\nSearch intent: {{intent}}\nTone: {{tone}}\n\nRequirements\n- Provide {{count}} options. Each has a title tag of at most 60 characters (include the brand only if it fits naturally, usually at the end) and a meta description of 120-155 characters.\n- Put the primary keyword near the start of the title, in natural wording. Do not repeat it in an awkward way.\n- Each meta description should state a concrete benefit or detail, match the search intent, and end with a light prompt to click when it fits. No ALL CAPS, no emoji, no hype words, no unverifiable claims like \"best\" or \"#1\".\n- Each option should use a different angle (for example: how-to, specificity, outcome, time saved, audience-specific). Label the angle.\n- Show the exact character count for each title and description.\n\nOutput as a table: Angle, Title, Title chars, Description, Description chars. Finish with a one-line recommendation of which option to publish and why. Remind me that search engines may rewrite snippets.",
+      "variables": [
+        {
+          "key": "page",
+          "label": "Page URL or topic",
+          "type": "text",
+          "default": "/blog/project-kickoff-meeting-agenda",
+          "required": false
+        },
+        {
+          "key": "keyword",
+          "label": "Primary keyword",
+          "type": "text",
+          "default": "project kickoff meeting agenda",
+          "required": false
+        },
+        {
+          "key": "value",
+          "label": "What the page offers",
+          "type": "long",
+          "default": "A free 60-minute kickoff agenda with roles, timings and a downloadable template.",
+          "required": false
+        },
+        {
+          "key": "brand",
+          "label": "Brand",
+          "type": "text",
+          "default": "Plotline",
+          "required": false
+        },
+        {
+          "key": "intent",
+          "label": "Search intent",
+          "type": "select",
+          "options": [
+            "Informational",
+            "Commercial investigation",
+            "Transactional",
+            "Local"
+          ],
+          "default": "Informational",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Helpful and direct",
+            "Friendly",
+            "Authoritative",
+            "Playful"
+          ],
+          "default": "Helpful and direct",
+          "required": false
+        },
+        {
+          "key": "count",
+          "label": "Number of options",
+          "type": "number",
+          "default": "4",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| Angle | Title | T | Description | D |\n|---|---|---|---|---|\n| Specificity | Project Kickoff Meeting Agenda: 60-Minute Template | 50 | Run a tighter kickoff with a minute-by-minute agenda, clear roles and a free template you can copy and adapt today. | 117 |\n| How-to | How to Run a Project Kickoff Meeting (Agenda) | 46 | Learn what to cover, who to invite and how to keep a kickoff on time, with a ready-to-use agenda and prep checklist. | 118 |\n| Outcome | Kickoff Meeting Agenda That Aligns Your Team | 44 | Align on scope, owners and risks in one hour. Copy our agenda, adjust the timings and start your project with clarity. | 119 |\n| Audience | Kickoff Agenda for Agency Project Managers | 42 | Built for agency PMs: a 60-minute kickoff agenda covering client goals, scope limits, roles, risks and next steps. Free. | 120 |\n\nRecommendation: the Specificity option. It names the format and time-box, which sets expectations and filters for the right click. Search engines may rewrite snippets, so make sure the first paragraph of the page supports the same message.",
+      "notes": "Different angles give you real variants to test in Search Console rather than five rewordings of one idea. Always re-check lengths in a SERP preview tool because pixel width matters as much as characters.",
+      "useCase": "generate",
+      "tags": [
+        "seo",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-launch-announcement",
+      "title": "Product launch announcement",
+      "description": "Write a clear launch announcement for a blog post, email or LinkedIn, built around the customer problem rather than hype.",
+      "body": "Write a launch announcement for {{product_name}}.\n\nChannel and format: {{channel}}\nWhat is launching: {{what}}\nWho it is for: {{audience}}\nThe problem it solves: {{problem}}\nKey features and what each does for the user: {{features}}\nAvailability, pricing and any launch offer: {{availability}}\nCall to action: {{cta}}\nVoice: {{voice}}\n\nStructure\n1. A headline (give three options) that states what is new and why a reader would care. No \"Introducing\" unless it is the clearest option.\n2. An opening of two or three sentences describing the problem as the reader experiences it, then what we built.\n3. A short section on the most important capabilities, each tied to a concrete outcome. Maximum {{max_features}} items.\n4. One honest sentence about who it is for and who it is not for yet, if the information supports that.\n5. Availability and pricing, stated plainly.\n6. A single call to action.\n\nConstraints\n- Only use facts I provided. Do not invent customer quotes, numbers, awards or roadmap promises. Use [placeholder] where I should add a quote or metric.\n- Avoid: \"game-changing\", \"revolutionary\", \"excited to announce\" (use a specific, human opener instead), and exclamation marks.\n- Match the length to the channel: email under 250 words, LinkedIn under 200 words, blog 400-600 words.",
+      "variables": [
+        {
+          "key": "product_name",
+          "label": "Product name",
+          "type": "text",
+          "default": "Plotline Capacity View",
+          "required": false
+        },
+        {
+          "key": "channel",
+          "label": "Channel",
+          "type": "select",
+          "options": [
+            "Customer email",
+            "Blog post",
+            "LinkedIn post",
+            "Product Hunt description",
+            "Press release"
+          ],
+          "default": "Customer email",
+          "required": false
+        },
+        {
+          "key": "what",
+          "label": "What is launching",
+          "type": "long",
+          "default": "A new view that shows each team member's workload by week across all projects, with automatic overbooking alerts.",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Who it is for",
+          "type": "text",
+          "default": "Project leads at small design and creative agencies",
+          "required": false
+        },
+        {
+          "key": "problem",
+          "label": "The problem it solves",
+          "type": "long",
+          "default": "Leads find out someone is overbooked only after a deadline slips.",
+          "required": false
+        },
+        {
+          "key": "features",
+          "label": "Features and outcomes",
+          "type": "long",
+          "default": "Weekly workload heatmap: spot clashes at a glance. Overbooking alerts: get warned when a plan exceeds someone's capacity. Calendar sync: capacity reflects real leave and meetings.",
+          "required": false
+        },
+        {
+          "key": "availability",
+          "label": "Availability and pricing",
+          "type": "text",
+          "default": "Live today for all paid plans at no extra cost",
+          "required": false
+        },
+        {
+          "key": "cta",
+          "label": "Call to action",
+          "type": "text",
+          "default": "Open Capacity View in your workspace",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "text",
+          "default": "Plain-spoken, practical, a little dry",
+          "required": false
+        },
+        {
+          "key": "max_features",
+          "label": "Max features to mention",
+          "type": "number",
+          "default": "3",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Headline options**\n1. See who is overbooked before the deadline slips\n2. New: Capacity View shows team workload by week\n3. A clearer view of who has room to take on work\n\nSubject: Know who is overbooked before it costs you a deadline\n\nMost project leads learn that someone is overloaded when a deadline has already slipped. By then the options are overtime or an awkward email to the client.\n\nToday we are releasing Capacity View in Plotline. It shows each person's workload by week across every project, so clashes are visible while you can still move things.\n\nWhat you can do with it\n- **Spot clashes at a glance.** A weekly heatmap shows who is light and who is stretched.\n- **Get warned early.** Overbooking alerts fire when a plan exceeds someone's capacity.\n- **Trust the numbers.** Calendar sync means leave and meetings reduce capacity automatically.\n\nIt is built for project leads at small creative agencies. If you plan work for one or two people, it may be more than you need; for teams of five and up, it should pay off quickly.\n\nCapacity View is live today on all paid plans at no extra cost.\n\n[Open Capacity View in your workspace]\n\n[placeholder: add one customer quote or early-access result if you have one]",
+      "notes": "The prompt forces a problem-first opening and bans the usual launch clichés, which makes the result read like a person wrote it. Run it once per channel to get properly sized versions.",
+      "useCase": "generate",
+      "tags": [
+        "startups",
+        "copywriting",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-email-nurture-sequence",
+      "title": "Email nurture sequence",
+      "description": "Plan and write a multi-email nurture sequence for new leads, with a clear purpose, timing and subject lines for each message.",
+      "body": "Design and write a {{num_emails}}-email nurture sequence.\n\nBusiness and offer: {{business}}\nWho signs up and how (lead magnet, trial, webinar, etc.): {{signup}}\nGoal of the sequence: {{goal}}\nReader's main doubts or obstacles: {{obstacles}}\nAssets I can reference (guides, case studies, features, demo): {{assets}}\nSender name and voice: {{sender}}\n\nStep 1: Plan. Give a table with: email number, send timing, purpose, key message, and the single action we want. Make sure each email has a different job (for example welcome and quick win, education, objection handling, proof, offer). Do not repeat the same pitch.\n\nStep 2: Write each email with: two subject line options (under 50 characters), a preview text line (under 90 characters), the body, and a one-line CTA. Keep bodies under {{max_words}} words, short paragraphs, conversational.\n\nRules\n- Honest, useful copy. No fake urgency, fake scarcity, or implied personal relationship that does not exist.\n- Do not invent testimonials, statistics or features. Use [placeholder] where I need to add them.\n- Include an unsubscribe-friendly tone (never guilt the reader) and a note on where the footer and unsubscribe link go.\n- Finish with 3 metrics to watch and one change to test first.",
+      "variables": [
+        {
+          "key": "num_emails",
+          "label": "Number of emails",
+          "type": "number",
+          "default": "5",
+          "required": false
+        },
+        {
+          "key": "business",
+          "label": "Business and offer",
+          "type": "long",
+          "default": "Plotline, project planning software for design studios, $19 per user per month",
+          "required": false
+        },
+        {
+          "key": "signup",
+          "label": "How they signed up",
+          "type": "text",
+          "default": "Downloaded our free kickoff meeting agenda template",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Get them to start a 14-day free trial",
+          "required": false
+        },
+        {
+          "key": "obstacles",
+          "label": "Doubts or obstacles",
+          "type": "long",
+          "default": "Think they already have a system in spreadsheets; worry about the time to switch tools; unsure it fits a small team",
+          "required": false
+        },
+        {
+          "key": "assets",
+          "label": "Assets to reference",
+          "type": "long",
+          "default": "Case study of a 12-person studio; 3-minute product tour; spreadsheet import tool",
+          "required": false
+        },
+        {
+          "key": "sender",
+          "label": "Sender and voice",
+          "type": "text",
+          "default": "Maya from the Plotline team; friendly and practical",
+          "required": false
+        },
+        {
+          "key": "max_words",
+          "label": "Max words per email",
+          "type": "number",
+          "default": "150",
+          "required": false
+        }
+      ],
+      "exampleOutput": "## Plan\n| # | Timing | Purpose | Key message | Action |\n|---|---|---|---|---|\n| 1 | Immediately | Welcome and quick win | Here is your template, plus one change that shortens kickoffs | Open the template |\n| 2 | Day 2 | Education | Why spreadsheets hide workload clashes | Read the short guide |\n| 3 | Day 5 | Objection: switching cost | Import your spreadsheet in minutes | Watch the 3-minute tour |\n| 4 | Day 8 | Proof | How a 12-person studio caught overbooking early | Read the case study |\n| 5 | Day 12 | Invitation | Try it on one real project | Start the 14-day free trial |\n\n## Email 1\nSubjects: \"Your kickoff agenda is ready\" / \"Here is your template (and one tip)\"\nPreview: Plus the one change that keeps kickoffs on time.\n\nHi {first name},\n\nThanks for grabbing the kickoff agenda. [link]\n\nOne tip: put \"risks and unknowns\" before the timeline. Teams talk more candidly before anyone has committed to dates.\n\nGot a kickoff coming up? Reply with the project type. I read every answer.\n\nMaya\nCTA: Open the template\n\n## Email 2\nSubjects: \"Where spreadsheets hide clashes\" / \"Is your plan really up to date?\"\nPreview: A two-minute read on workload clashes.\n\nHi {first name},\n\nA spreadsheet shows what you typed, not what collides. Two projects can need the same designer in the same week and nothing flags it until someone is already behind.\n\nWe wrote a short guide on spotting these clashes, whatever tool you use. [link]\n\nMaya\nCTA: Read the short guide\n\n## Email 3\nSubjects: \"Switching without starting over\" / \"Your spreadsheet, imported\"\nPreview: Bring your existing plan with you.\n\nHi {first name},\n\nSwitching tools sounds like a week of copying cells. Plotline has a spreadsheet import tool, so your current plan comes with you. The 3-minute tour shows how it works. [link]\n\nMaya\nCTA: Watch the 3-minute tour\n\n## Email 4\nSubjects: \"How a 12-person studio caught overbooking\" / \"Is a small team too small?\"\nPreview: A studio your size, and what changed.\n\nHi {first name},\n\nWondering if this fits a small team? This 12-person studio started on Plotline and caught overbooking before it hit deadlines. [link]\n\nTheir results: [add result from the case study]\n\nMaya\nCTA: Read the case study\n\n## Email 5\nSubjects: \"Try it on one real project\" / \"Your 14-day trial is waiting\"\nPreview: No big rollout needed.\n\nHi {first name},\n\nYou do not need to move everything. Pick one live project, import its spreadsheet and see if it helps over 14 days. Plotline is $19 per user per month if you stay on. If not, no hard feelings.\n\nMaya\nCTA: Start your free trial\n\nFooter on every email: [company name and postal address] and an unsubscribe link, placed below the signature.\n\n## Metrics to watch\nOpen rate on email 1, click-through on emails 3 and 4, trial starts per sequence. Test first: subject lines on email 1.",
+      "notes": "Giving every email a distinct job prevents the common failure of five near-identical pitches. Ask for a B version of one email once you have open-rate data.",
+      "useCase": "plan",
+      "tags": [
+        "email",
+        "email-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-social-repurpose",
+      "title": "Repurpose an article into social posts",
+      "description": "Turn one article or transcript into native posts for LinkedIn, X and Instagram without copy-pasting or inflating the claims.",
+      "body": "Repurpose the source content below into social posts.\n\nSource type: {{source_type}}\nAudience: {{audience}}\nMain takeaway I want people to remember: {{takeaway}}\nLink to include (if any): {{link}}\nVoice: {{voice}}\nPlatforms: {{platforms}}\n\nSource:\n\"\"\"\n{{source}}\n\"\"\"\n\nFor each platform, write 3 different posts, each built on a different hook type (a surprising detail, a practical tip, a short story or question). Follow native norms: LinkedIn posts of 600-1200 characters with a strong first line and line breaks; X posts under 280 characters (and one thread of up to 5 posts); Instagram captions of 150-400 characters with a suggested visual or carousel idea.\n\nRules\n- Every claim must come from the source. Do not add statistics or outcomes that are not in it.\n- Write each post to stand alone; do not simply cut the original into pieces.\n- No engagement bait (\"comment YES\"), no more than {{hashtags}} hashtags per post, no emoji walls.\n- Label each post with platform and hook type, and put the link only where it suits the platform.\n\nEnd with a suggested posting order across one week and one sentence on which post to try first.",
+      "variables": [
+        {
+          "key": "source_type",
+          "label": "Source type",
+          "type": "select",
+          "options": [
+            "Blog post",
+            "Podcast transcript",
+            "Webinar transcript",
+            "Case study",
+            "Newsletter"
+          ],
+          "default": "Blog post",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Agency owners and project managers",
+          "required": false
+        },
+        {
+          "key": "takeaway",
+          "label": "Main takeaway",
+          "type": "text",
+          "default": "Run kickoffs with an agenda that puts risks before the timeline",
+          "required": false
+        },
+        {
+          "key": "link",
+          "label": "Link",
+          "type": "text",
+          "default": "https://example.com/kickoff-agenda",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "text",
+          "default": "Practical, specific and a bit wry",
+          "required": false
+        },
+        {
+          "key": "platforms",
+          "label": "Platforms",
+          "type": "text",
+          "default": "LinkedIn, X",
+          "required": false
+        },
+        {
+          "key": "hashtags",
+          "label": "Max hashtags per post",
+          "type": "number",
+          "default": "2",
+          "required": false
+        },
+        {
+          "key": "source",
+          "label": "Source text",
+          "type": "long",
+          "default": "Most kickoff meetings fail because they open with the timeline. When dates come first, nobody feels safe raising what they do not know. We moved risks and unknowns to the start of our kickoff agenda and saw more concerns raised in the first 15 minutes. The meeting runs 60 minutes: goals, scope limits, risks, roles, timeline, next steps.",
+          "required": false,
+          "help": "Paste the article or transcript."
+        }
+      ],
+      "exampleOutput": "## LinkedIn\n**1. Surprising detail**\nWe moved one item in our kickoff agenda and the meetings got more honest.\n\nTimeline used to come first. Dates went on the board, and then nobody wanted to say what they were unsure about.\n\nNow risks and unknowns come first. More concerns get raised in the first 15 minutes, while they are still cheap to deal with.\n\nOur 60-minute order: goals, scope limits, risks, roles, timeline, next steps.\n\nFull agenda: https://example.com/kickoff-agenda\n#projectmanagement #agencylife\n\n**2. Practical tip**\nTry this at your next kickoff: swap two agenda items.\n\nPut risks and unknowns ahead of the timeline. Ask the room, \"What are we unsure about?\" before anyone sees a date.\n\nThe rest of our 60 minutes: goals, scope limits, roles, timeline, next steps. Same meeting, different order.\n#projectmanagement\n\n**3. Story**\nMost kickoff meetings fail before they start, and the culprit is usually the first slide.\n\nWhen we opened with the timeline, the room went quiet. Nobody feels safe saying \"I don't know\" next to a deadline.\n\nSo we gave unknowns their own slot at the start. People spoke up, and we heard more concerns in the first 15 minutes.\n\nWhat does your kickoff open with?\nhttps://example.com/kickoff-agenda\n#agencylife\n\n## X\n**1. Practical tip (276 chars)**\nKickoff agenda tip: put \"risks and unknowns\" before the timeline. Once dates are on the board, people stop admitting what they are unsure about. Order we use: goals, scope limits, risks, roles, timeline, next steps.\n\n**2. Surprising detail**\nSame kickoff, one change: risks before timeline. We heard more concerns in the first 15 minutes. The unknowns were always there, the agenda just gave them room.\n\n**3. Question**\nWhen does your kickoff meeting get to \"what are we unsure about\"? If the answer is \"after the timeline\", try moving it first.\n\n**Thread (5 posts)**\n1/ Most kickoff meetings fail because they open with the timeline.\n2/ Once dates are on the board, nobody feels safe raising what they do not know.\n3/ We moved risks and unknowns to the start of our agenda.\n4/ Result: more concerns raised in the first 15 minutes.\n5/ Our 60-minute order: goals, scope limits, risks, roles, timeline, next steps. https://example.com/kickoff-agenda\n\n## Posting order\nMon LinkedIn #1, Tue X tip, Wed LinkedIn #3, Thu X thread, Fri LinkedIn #2. Try LinkedIn #1 first because its first line carries a clear surprise.",
+      "notes": "Asking for different hook types gives you variety instead of three rewordings, and the source-only rule keeps posts honest. Add past top-performing posts to the prompt to mirror what works for your audience.",
+      "useCase": "rewrite",
+      "tags": [
+        "social-media",
+        "content-marketing",
+        "linkedin"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-on-page-seo-audit",
+      "title": "On-page SEO audit of a single page",
+      "description": "Audit one page's content and markup against a target keyword and get a prioritized fix list with rewritten title, headings and intro.",
+      "body": "Act as an on-page SEO reviewer. Audit the page below for the target keyword. Base your findings only on the content I paste; do not claim to know rankings, traffic or what competitors have unless I tell you.\n\nTarget keyword: {{keyword}}\nSearch intent I believe it serves: {{intent}}\nPage URL: {{url}}\nCurrent title tag: {{title_tag}}\nCurrent meta description: {{meta}}\n\nPage content (headings marked with #, ##, ###):\n\"\"\"\n{{content}}\n\"\"\"\n\nCheck and report on\n1. Intent match: does the page deliver what a searcher for this keyword expects, and early enough?\n2. Title and meta: length, keyword placement, appeal. Provide improved versions with character counts.\n3. Heading structure: one clear H1, logical H2/H3, and missing subtopics a reader would expect.\n4. Content quality: thin sections, vague claims, missing examples, unanswered questions, outdated statements to verify.\n5. Keyword use: natural presence in the intro, headings and body, without stuffing. Suggest related terms to add only where they help the reader.\n6. Internal links, images and alt text, schema or FAQ opportunities: what to check, since I have not provided markup.\n7. Trust signals: author, sources, dates, first-hand experience.\n\nOutput: a score out of 10 for each area with a sentence of reasoning, then a fix list ranked High, Medium, Low with the effort for each, then a rewritten intro paragraph (under 100 words).",
+      "variables": [
+        {
+          "key": "keyword",
+          "label": "Target keyword",
+          "type": "text",
+          "default": "standing desk for small spaces",
+          "required": false
+        },
+        {
+          "key": "intent",
+          "label": "Intent",
+          "type": "select",
+          "options": [
+            "Informational",
+            "Commercial investigation",
+            "Transactional",
+            "Local"
+          ],
+          "default": "Commercial investigation",
+          "required": false
+        },
+        {
+          "key": "url",
+          "label": "Page URL",
+          "type": "text",
+          "default": "/blog/standing-desk-small-spaces",
+          "required": false
+        },
+        {
+          "key": "title_tag",
+          "label": "Current title tag",
+          "type": "text",
+          "default": "Standing Desks | Best Standing Desks 2025 | Standing Desk Reviews | Desk Co",
+          "required": false
+        },
+        {
+          "key": "meta",
+          "label": "Current meta description",
+          "type": "text",
+          "default": "We review standing desks. Read our standing desk reviews.",
+          "required": false
+        },
+        {
+          "key": "content",
+          "label": "Page content",
+          "type": "long",
+          "default": "# Standing Desks\nStanding desks are popular. Many people want a standing desk. In this article we talk about standing desks.\n## Why standing desks\nStanding desks are good for health.\n## Our picks\nWe like the FlexiDesk and the Rise 2. Both are good.",
+          "required": false,
+          "help": "Paste headings and body text."
+        }
+      ],
+      "exampleOutput": "## Scores\n| Area | Score | Reason |\n|---|---|---|\n| Intent match | 3/10 | Searcher wants desks that fit small rooms; page never mentions dimensions or space |\n| Title and meta | 2/10 | Keyword stuffed, over 60 characters (72), no benefit |\n| Headings | 3/10 | H1 is generic; no sections on size, weight capacity, or compact designs |\n| Content quality | 2/10 | Repetitive, unsupported (\"good for health\"), picks without reasons |\n| Keyword use | 4/10 | Keyword varies but \"small spaces\" never appears |\n| Technical checks | n/a | Markup not provided |\n| Trust | 2/10 | No author, testing method or date |\n\n## Fix list\n**High**\n1. Rewrite title (below). Effort: low.\n2. Add a comparison of compact desks with width, depth and weight capacity. Effort: medium.\n3. Explain why you picked each desk and what you tested. Effort: medium.\n\n**Medium**\n4. Change H1 to match the query; add H2s for \"Measure your space\" and \"Desks under 40 inches wide\".\n5. Add an author line and review date.\n\n**Low**\n6. Add FAQ about balance boards and mats; check image alt text and internal links to ergonomics content.\n\n## Improved title and meta\nTitle (58): Best Standing Desks for Small Spaces (Tested)\nMeta (151): Compact standing desks compared by width, weight capacity and stability, with measuring tips for apartments and home offices.\n\n## Rewritten intro\nShort on space? A good standing desk for a small room needs to be narrow, stable and easy to adjust. We compared compact models by width, depth and weight capacity so you can see which one fits your corner.",
+      "notes": "Scoring each area and ranking fixes by effort turns a vague audit into a to-do list. For sharper findings, include your actual HTML or a Search Console query list in a follow-up message.",
+      "useCase": "critique",
+      "tags": [
+        "seo"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-content-refresh",
+      "title": "Refresh an outdated blog post",
+      "description": "Update an aging article for accuracy, clarity and search intent, and get a change log of what to verify before publishing.",
+      "body": "You are an editor refreshing an older article so it deserves to keep ranking and earning trust.\n\nArticle title: {{title}}\nOriginal publish date: {{published}}\nTarget keyword: {{keyword}}\nWhat changed in the topic or industry since then (what I know): {{changes}}\nAudience: {{audience}}\nGoal of the refresh: {{goal}}\n\nOriginal article:\n\"\"\"\n{{article}}\n\"\"\"\n\nDo the following\n1. Diagnose: list what is likely outdated, thin, unclear or off-intent. Flag every statement that could have gone stale (statistics, tool names, prices, laws, dates) as VERIFY, and do not replace them with new figures you cannot confirm.\n2. Update plan: sections to keep, rewrite, cut, merge or add, with a reason for each.\n3. Write the refreshed article. Preserve what was useful and the existing voice, tighten wording, improve headings and add the missing subtopics. Use [CITE: what source is needed] where a current statistic or source belongs.\n4. Provide a new title option, meta description (max 155 characters) and a short \"Updated on\" note to place under the heading.\n5. Give a change log of the edits and a pre-publish verification checklist.\n\nConstraints: do not invent data, quotes or sources. Do not change the URL slug. Keep length within 20 percent of the original unless the plan says otherwise.",
+      "variables": [
+        {
+          "key": "title",
+          "label": "Article title",
+          "type": "text",
+          "default": "10 Tips for Running Remote Team Meetings",
+          "required": false
+        },
+        {
+          "key": "published",
+          "label": "Original publish date",
+          "type": "text",
+          "default": "March 2021",
+          "required": false
+        },
+        {
+          "key": "keyword",
+          "label": "Target keyword",
+          "type": "text",
+          "default": "remote team meetings",
+          "required": false
+        },
+        {
+          "key": "changes",
+          "label": "What changed",
+          "type": "long",
+          "default": "Most teams now work hybrid, not fully remote; AI note-takers are common; we dropped the tool we recommended.",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Team leads at small and mid-sized companies",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal of refresh",
+          "type": "text",
+          "default": "Recover lost search traffic and keep the post useful",
+          "required": false
+        },
+        {
+          "key": "article",
+          "label": "Original article",
+          "type": "long",
+          "default": "Remote work is new for most teams, so meetings need extra care. 1. Always use Zoom. 2. Send the agenda a day early. 3. Keep video on. 4. End on time. 5. Record every meeting and share it. According to a survey, 70% of remote workers feel isolated.",
+          "required": false,
+          "help": "Paste the full text."
+        }
+      ],
+      "exampleOutput": "## Diagnosis\n- Framing (\"remote work is new\") is outdated; most readers now run hybrid teams.\n- \"Always use Zoom\": tool-specific advice, and the recommended tool changed. VERIFY any product names.\n- \"70% of remote workers feel isolated\": VERIFY. No source or date.\n- Tip 3 (\"keep video on\") is a policy, not a tip, and is debated.\n- Missing: hybrid meetings, async alternatives, AI note-takers and consent.\n\n## Update plan\nKeep: agenda in advance, end on time. Rewrite: tool advice and recording tip. Cut: blanket video rule. Add: hybrid meeting setup, when to replace a meeting with an async update, AI note-taker and recording consent.\n\n## Refreshed article\n# Remote and Hybrid Team Meetings: 5 Tips That Work\n*Updated [month year] for hybrid teams.*\n\nMost teams now mix office and remote days, which makes meetings harder: half the room talks while the other half squints at a screen. These tips keep meetings short, fair and worth attending.\n\n1. **Send the agenda a day early**, with the decision you need from the group.\n2. **Give remote attendees the first word**, so they are not an afterthought.\n3. **Use whatever video tool your team already knows.** Pick one and stick with it. [CITE: current tool comparison, if kept]\n4. **End on time.** If a topic runs long, schedule a follow-up or move it to an async update.\n5. **Share notes, not just recordings.** AI note-takers can help, but tell attendees first and get consent. Short written notes beat a 60-minute replay.\n\nFeeling cut off is a real risk for remote staff. [CITE: current survey on workplace isolation]\n\n## Metadata\nTitle: Remote and Hybrid Team Meetings: 5 Tips That Work\nMeta (146): Practical tips for running remote and hybrid meetings: agendas, fair turn-taking, async alternatives and notes that people actually read.\n\n## Change log\nReframed intro for hybrid; replaced Zoom tip; cut video rule; rewrote recording tip; added consent and async guidance; removed unsourced 70% statistic.\n\n## Pre-publish checklist\nConfirm every VERIFY and CITE item; test links; check recording laws for your regions; keep the URL slug; align internal links.",
+      "notes": "The VERIFY and CITE markers stop the model from replacing old statistics with confident but made-up new ones. Always have a person confirm each flagged item before republishing.",
+      "useCase": "rewrite",
+      "tags": [
+        "seo",
+        "content-marketing",
+        "editing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-competitor-messaging-teardown",
+      "title": "Competitor messaging teardown",
+      "description": "Compare how competitors position themselves from their own copy and find messaging gaps you can credibly own.",
+      "body": "You are a competitive messaging analyst. I will paste copy from competitor pages. Analyze only that text.\n\nMy product: {{product}}\nMy target customer: {{customer}}\nWhat I can honestly claim (strengths I can prove): {{strengths}}\n\nCompetitor copy (label each competitor):\n\"\"\"\n{{competitor_copy}}\n\"\"\"\n\nTasks\n1. For each competitor summarize: the audience they speak to, their main promise, claimed differentiators, proof they offer, tone, and the call to action.\n2. Create a comparison table across competitors of the claims they make, such as speed, ease, price, support, security, integrations. Mark claims many competitors share as \"table stakes\".\n3. Identify messaging gaps: customer concerns that no competitor addresses well. Note the evidence for each (or the lack of it).\n4. Recommend {{num_angles}} angles I could credibly own, grounded in my strengths. For each give the angle, a sample headline, the proof needed, and the risk of using it.\n5. List words and phrases to avoid because every competitor already uses them.\n\nRules: do not assume anything about competitors beyond the pasted text; do not invent features or pricing. Say plainly where the sample is too small to conclude.\n\nFormat: sections 1-5 with tables where useful.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Your product",
+          "type": "text",
+          "default": "Plotline, project planning for design studios",
+          "required": false
+        },
+        {
+          "key": "customer",
+          "label": "Target customer",
+          "type": "text",
+          "default": "Small design agencies with 5-30 people",
+          "required": false
+        },
+        {
+          "key": "strengths",
+          "label": "Provable strengths",
+          "type": "long",
+          "default": "Builds schedule from the real team calendar; flags overbooking automatically; 20-minute setup; spreadsheet import",
+          "required": false
+        },
+        {
+          "key": "num_angles",
+          "label": "Number of angles",
+          "type": "number",
+          "default": "3",
+          "required": false
+        },
+        {
+          "key": "competitor_copy",
+          "label": "Competitor copy",
+          "type": "long",
+          "default": "Competitor A: 'The all-in-one work management platform. Plan, track and deliver projects at scale.' Trusted by 50,000 teams.\nCompetitor B: 'Project management that just works. Simple. Powerful. Flexible.' Free plan available.\nCompetitor C: 'Resource planning for agencies. Know who is working on what.' Integrations with 40+ tools.",
+          "required": false,
+          "help": "Paste headlines and key sections, labeled by competitor."
+        }
+      ],
+      "exampleOutput": "## 1. Summaries\n- **A:** speaks to large teams; promise is breadth (\"all-in-one\"); proof is scale (50,000 teams); tone corporate; CTA unknown.\n- **B:** speaks to anyone; promise is simplicity; proof: free plan; tone casual.\n- **C:** speaks to agencies; promise is visibility into resourcing; proof: 40+ integrations.\n\n## 2. Claims table\n| Claim | A | B | C | Status |\n|---|---|---|---|---|\n| Easy or simple | - | yes | - | emerging |\n| Powerful or flexible | yes | yes | - | table stakes |\n| Scale or trust | yes | - | - | |\n| Agency focus | - | - | yes | |\n| Integrations | - | - | yes | |\n\n## 3. Gaps\nNo competitor addresses setup time, capacity warnings before deadlines slip, or planning from real calendar data. C comes closest but only claims visibility.\n\n## 4. Angles\n1. **Early warning:** \"Know about overbooking before the deadline does.\" Proof needed: a demo or example. Risk: C may respond.\n2. **Real calendars:** \"Plans that reflect leave and meetings.\" Proof: product demo.\n3. **Fast setup:** \"From spreadsheet to plan in 20 minutes.\" Risk: unverified for large teams.\n\n## 5. Words to avoid\n\"Powerful\", \"simple\", \"all-in-one\", \"flexible\".",
+      "notes": "Limiting the analysis to pasted text prevents the model from hallucinating competitor features. Repeat it quarterly with fresh copy to track shifts in the market.",
+      "useCase": "analyze",
+      "tags": [
+        "market-research",
+        "positioning",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-product-description",
+      "title": "Product descriptions that sell honestly",
+      "description": "Write specific, benefit-led product descriptions with scannable bullets and a search-friendly title, using only the details you provide.",
+      "body": "Write a product description for an online store.\n\nProduct: {{product}}\nKey specs and facts (materials, size, features, what is included): {{specs}}\nIdeal buyer and how they will use it: {{buyer}}\nMain concern buyers have before purchasing: {{concern}}\nPrimary search phrase to work in naturally: {{keyword}}\nBrand voice: {{voice}}\nLength: {{length}}\n\nDeliver\n1. A product title (under 70 characters) that is clear first and clever second.\n2. A one-sentence summary of who it is for and what it does for them.\n3. A short description in the requested length: lead with the benefit to the buyer, then support it with concrete details from the specs. Address the main concern directly and honestly.\n4. {{bullet_count}} scannable bullets in the form \"Detail: why it matters\".\n5. A meta description under 155 characters.\n6. One line of care or usage guidance if the specs allow it.\n\nRules\n- Use only the facts I supplied. If a useful detail is missing (for example dimensions or warranty), list it under \"Missing info to add\" instead of guessing.\n- No superlatives you cannot prove (\"best\", \"perfect\", \"premium quality\") and no filler like \"must-have\". Prefer sensory or practical specifics.\n- Use the primary search phrase once or twice where it reads naturally.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product",
+          "type": "text",
+          "default": "Stoneware pour-over coffee dripper, size 02",
+          "required": false
+        },
+        {
+          "key": "specs",
+          "label": "Specs and facts",
+          "type": "long",
+          "default": "Glazed stoneware, matte white. Fits 1-4 cups. Single large drain hole. Works with size 02 cone filters. Dishwasher safe. Height 10 cm, weight 380 g. Made in Japan.",
+          "required": false
+        },
+        {
+          "key": "buyer",
+          "label": "Ideal buyer",
+          "type": "text",
+          "default": "Home coffee drinkers upgrading from an automatic machine",
+          "required": false
+        },
+        {
+          "key": "concern",
+          "label": "Main concern",
+          "type": "text",
+          "default": "Whether it is hard to use and whether it will break",
+          "required": false
+        },
+        {
+          "key": "keyword",
+          "label": "Search phrase",
+          "type": "text",
+          "default": "stoneware pour over coffee dripper",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "text",
+          "default": "Calm, tactile, no hype",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "select",
+          "options": [
+            "About 60 words",
+            "About 100 words",
+            "About 200 words"
+          ],
+          "default": "About 100 words",
+          "required": false
+        },
+        {
+          "key": "bullet_count",
+          "label": "Number of bullets",
+          "type": "number",
+          "default": "4",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Title:** Matte White Stoneware Pour-Over Dripper, Size 02\n\n**Summary:** A simple ceramic dripper for home brewers who want a cleaner, more controllable cup than an automatic machine gives them.\n\n**Description:**\nIf you are moving from a machine to hand brewing, this dripper keeps the process gentle. Its single large drain hole lets you control the flow with your pour, and the glazed stoneware holds heat steadily. It looks like a plain white cone and works like one: set a size 02 filter, add grounds, pour. At 380 g it is solid enough to sit steady on your mug. Stoneware can chip if dropped on a hard floor, so keep it away from the counter edge, though it is dishwasher safe when you are done.\n\n**Bullets**\n- Single drain hole: slows or speeds the brew based on how you pour.\n- Fits 1-4 cups: one dripper for a solo morning or a shared pot.\n- Size 02 filters: widely available cone filters.\n- Dishwasher safe, glazed finish: easy cleanup.\n\n**Meta (147):** A matte white stoneware pour-over dripper in size 02. Brews 1-4 cups, dishwasher safe, made in Japan. Ideal for new hand brewers.\n\n**Care:** Warm the dripper with hot water before brewing.\n\n**Missing info to add:** warranty or return terms; whether it fits common mugs.",
+      "notes": "Naming the buyer's concern makes the copy answer a real doubt instead of listing features. The Missing info list is a useful checklist for your product data team.",
+      "useCase": "generate",
+      "tags": [
+        "ecommerce",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-email-subject-lines",
+      "title": "Email subject lines and preview text",
+      "description": "Generate subject line and preview text pairs across several honest angles, with notes on what each is testing.",
+      "body": "Write subject lines and preview text for an email campaign.\n\nEmail type: {{email_type}}\nWhat the email says or offers: {{content}}\nAudience and what they already know about us: {{audience}}\nBrand voice: {{voice}}\nWords or tactics to avoid: {{avoid}}\nNumber of pairs: {{count}}\n\nRequirements\n- Subject lines under 50 characters, preview text under 90 characters. The preview should add information, not repeat the subject.\n- Each pair uses a different angle: benefit, specific number or detail, question, curiosity with a real payoff, plain announcement, personalization that is true. Label the angle.\n- The subject must be an accurate promise of what is inside. No misleading \"Re:\" or \"Fwd:\", no fake urgency, no ALL CAPS, no spam-trigger style punctuation, at most one emoji and only if it suits the voice.\n- Mix at least two lowercase or conversational options and two more formal ones.\n\nOutput a table: #, Angle, Subject, Subject chars, Preview, Preview chars, What it tests. Then recommend an A/B test pair and say what result would show which approach to use going forward. Mention that I should check final rendering in my email tool.",
+      "variables": [
+        {
+          "key": "email_type",
+          "label": "Email type",
+          "type": "select",
+          "options": [
+            "Newsletter",
+            "Product update",
+            "Promotion or sale",
+            "Welcome email",
+            "Webinar invite",
+            "Re-engagement"
+          ],
+          "default": "Newsletter",
+          "required": false
+        },
+        {
+          "key": "content",
+          "label": "What the email says",
+          "type": "long",
+          "default": "This month's newsletter: a new free kickoff meeting template, a short guide on spotting overbooked weeks, and a customer story from a 12-person studio.",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Subscribers who are agency project managers; they signed up for our templates",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "text",
+          "default": "Practical, friendly, a bit dry",
+          "required": false
+        },
+        {
+          "key": "avoid",
+          "label": "Avoid",
+          "type": "text",
+          "default": "Exclamation marks, 'don't miss out', and fake urgency",
+          "required": false
+        },
+        {
+          "key": "count",
+          "label": "Number of pairs",
+          "type": "number",
+          "default": "6",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| # | Angle | Subject | S | Preview | P | Tests |\n|---|---|---|---|---|---|---|\n| 1 | Benefit | A kickoff agenda you can copy | 29 | Plus how to spot overbooked weeks before they bite | 51 | Plain benefit |\n| 2 | Specific detail | 60 minutes, 6 agenda items | 26 | The kickoff template our readers keep asking for | 49 | Numbers |\n| 3 | Question | Who on your team is overbooked? | 31 | A two-minute check, and a free template inside | 47 | Question |\n| 4 | Curiosity | What a 12-person studio changed | 31 | One planning habit, and the results they saw | 45 | Story pull |\n| 5 | Announcement | October newsletter: templates and a case study | 46 | Three useful things, no fluff | 29 | Plain label |\n| 6 | Personal | for project managers who hate chasing status | 44 | Our latest guide, template and customer story | 46 | Lowercase voice |\n\n**Suggested A/B test:** #1 against #4. If #1 wins on opens and clicks, your audience responds to concrete utility; if #4 wins, stories drive attention, so lead with case studies. Check rendering in your email tool, as inbox clients truncate differently.",
+      "notes": "The tests column reminds you that every subject line is an experiment, so each send teaches you something. Give it your last five best and worst subject lines to calibrate its style.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "email-marketing",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-content-calendar",
+      "title": "Content calendar built on audience questions",
+      "description": "Plan a month of content around real customer questions and business goals, mapped to formats, channels and effort.",
+      "body": "Build a {{weeks}}-week content calendar for the business below.\n\nBusiness: {{business}}\nAudience: {{audience}}\nBusiness goal for this period: {{goal}}\nChannels I can realistically run: {{channels}}\nWeekly capacity (hours and who does the work): {{capacity}}\nQuestions customers actually ask or topics sales and support hear: {{questions}}\nExisting content to reuse (optional): {{existing}}\n\nInstructions\n1. Start with 3-4 content themes derived from the questions and the goal. Explain in one line how each theme supports the goal.\n2. Create the calendar as a table: week, channel, format, working title, audience question it answers, funnel stage (awareness, consideration, decision), primary call to action, estimated hours.\n3. Respect my capacity. Do not schedule more hours than I have; if the ideas exceed capacity, show what you cut and why.\n4. Reuse: for each flagship piece, list 2 smaller derivatives (for example a post, a short email or a chart) so effort compounds.\n5. Define one success metric per piece and one review checkpoint at the halfway mark.\n\nRules: do not promise rankings or specific traffic. Prefer fewer, better pieces over a full grid. Titles should be specific and concrete, not generic (\"5 tips for success\").",
+      "variables": [
+        {
+          "key": "weeks",
+          "label": "Number of weeks",
+          "type": "number",
+          "default": "4",
+          "required": false
+        },
+        {
+          "key": "business",
+          "label": "Business",
+          "type": "text",
+          "default": "Plotline, project planning software for small design studios",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Studio owners and project leads",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Increase free trial signups from organic search and email",
+          "required": false
+        },
+        {
+          "key": "channels",
+          "label": "Channels",
+          "type": "text",
+          "default": "Blog, email newsletter, LinkedIn",
+          "required": false
+        },
+        {
+          "key": "capacity",
+          "label": "Weekly capacity",
+          "type": "text",
+          "default": "6 hours per week, one marketer plus occasional founder input",
+          "required": false
+        },
+        {
+          "key": "questions",
+          "label": "Customer questions",
+          "type": "long",
+          "default": "How do I know if my team is overbooked? What should a kickoff meeting cover? Can I switch from spreadsheets without losing data? How do I estimate design projects?",
+          "required": false
+        },
+        {
+          "key": "existing",
+          "label": "Existing content",
+          "type": "long",
+          "default": "",
+          "required": false
+        }
+      ],
+      "exampleOutput": "## Themes\n1. **Workload visibility:** answers \"am I overbooked\", the core product problem, so supports trial signups.\n2. **Project setup:** kickoffs and estimates, high search demand among our audience.\n3. **Switching tools:** removes the migration objection late in the funnel.\n\n## Calendar (6 h/week)\n| Wk | Channel | Format | Working title | Question | Stage | CTA | Hrs |\n|---|---|---|---|---|---|---|---|\n| 1 | Blog | Guide | How to tell if your design team is overbooked (and what to do) | Am I overbooked? | Awareness | Start trial | 4 |\n| 1 | LinkedIn | Post | Three signs of an overbooked week | same | Awareness | Read guide | 1 |\n| 2 | Blog | Template post | A 60-minute project kickoff agenda | Kickoff coverage | Awareness | Download | 4 |\n| 2 | Email | Newsletter | Kickoff agenda plus the overbooking guide | | Consideration | Read | 1.5 |\n| 3 | Blog | How-to | Moving from spreadsheets to a project planner in an afternoon | Switching | Decision | Import sheet | 4 |\n| 4 | Blog | Estimation guide | Estimating design projects without guessing | Estimating | Consideration | Start trial | 4 |\n\n## Cut for capacity\nA fifth post on pricing models and a webinar idea.\n\n## Reuse and metrics\nEach guide yields a LinkedIn post and a newsletter blurb. Metric per piece: trial starts from the page. Midpoint check at week 2: which piece drove clicks.",
+      "notes": "Tying each piece to a real customer question keeps the calendar useful and keeps you from filling slots with generic topics. The capacity rule makes the plan something you can actually deliver.",
+      "useCase": "plan",
+      "tags": [
+        "content-marketing",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-case-study-writer",
+      "title": "Customer case study from interview notes",
+      "description": "Turn rough interview notes into a credible case study with a clear before, during and after story and quotes you can verify.",
+      "body": "You are a B2B content writer. Draft a customer case study from the notes below.\n\nCustomer: {{customer}}\nOur product or service: {{product}}\nAudience for the case study: {{audience}}\nFormat and length: {{format}}\nTone: {{tone}}\n\nInterview notes and facts (raw, unedited):\n\"\"\"\n{{notes}}\n\"\"\"\n\nStructure\n1. Headline that states the result and who achieved it.\n2. Snapshot box: company, industry, size, product used, and 2-3 headline results.\n3. The challenge: what was happening before, in the customer's own terms.\n4. Why they chose us and what alternatives they considered (only if in the notes).\n5. The solution: how they implemented and used it, with concrete steps.\n6. Results: quantified where the notes allow, otherwise qualitative. Note the time frame and how it was measured.\n7. A closing quote and a soft call to action.\n\nRules\n- Use only facts in the notes. Quotes must be taken from, or minimally cleaned up from, words in the notes; mark any lightly edited quote with [confirm quote with customer].\n- Never invent metrics, names or dates. Where a number would strengthen the story but is missing, add [need: description of data].\n- Avoid \"game-changer\", \"seamless\", \"transformed\". Describe what actually changed.\n- End with a list of facts and quotes the customer must approve before publication.",
+      "variables": [
+        {
+          "key": "customer",
+          "label": "Customer",
+          "type": "text",
+          "default": "Northfield Studio, a 12-person branding agency",
+          "required": false
+        },
+        {
+          "key": "product",
+          "label": "Our product",
+          "type": "text",
+          "default": "Plotline project planning software",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Prospective agency owners comparing planning tools",
+          "required": false
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "Web page, about 500 words",
+            "One-page PDF",
+            "LinkedIn post",
+            "Short email blurb"
+          ],
+          "default": "Web page, about 500 words",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "text",
+          "default": "Straightforward and specific",
+          "required": false
+        },
+        {
+          "key": "notes",
+          "label": "Interview notes",
+          "type": "long",
+          "default": "Used spreadsheets for 6 years. Two big deadline misses last year, both from overbooked designers. Looked at Asana and Trello. Chose us because setup took an afternoon and calendar sync. 'We found a clash in week one that we would have missed.' Since using it for 5 months: no missed client deadlines. Imported old spreadsheet. Team of 12 uses it daily.",
+          "required": false,
+          "help": "Paste notes, transcript excerpts and any numbers."
+        }
+      ],
+      "exampleOutput": "# How a 12-person studio stopped missing client deadlines\n\n**Snapshot**\n- Company: Northfield Studio, branding agency, 12 people\n- Product: Plotline\n- Results: no missed client deadlines in 5 months; first clash found in week one; setup in one afternoon\n\n## The challenge\nFor six years Northfield planned projects in spreadsheets. Last year two big deadlines slipped, and both times the cause was a designer booked beyond capacity that nobody saw in time.\n\n## Why Plotline\nThe team looked at Asana and Trello. They chose Plotline because setup took an afternoon and calendar sync reflected real availability.\n\n## The solution\nThey imported their existing spreadsheet and now use Plotline daily across the 12-person team.\n\n## Results\nIn the first week, Plotline surfaced a clash that would have been missed: \"We found a clash in week one that we would have missed.\" [confirm quote with customer] Over five months there were no missed client deadlines. [need: previous deadline-miss rate for comparison]\n\n[Closing quote and CTA: Try Plotline on your next project.]\n\n## Needs approval before publishing\nCompany name and size; the 5-month claim; the quote; the comparison with Asana and Trello.",
+      "notes": "Marking gaps and quotes to confirm keeps the story credible and saves legal and customer-approval rounds. Ask for a second version formatted as a sales one-pager once the facts are approved.",
+      "useCase": "generate",
+      "tags": [
+        "content-marketing",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-internal-linking-plan",
+      "title": "Internal linking plan for a content cluster",
+      "description": "Map internal links between a set of related pages with anchor text and placement so the cluster supports your priority page.",
+      "body": "You are an SEO strategist planning internal links. Use only the page list I provide.\n\nSite: {{site}}\nPriority page I most want to rank (and its target keyword): {{priority}}\n\nPages on the site (one per line: URL | title | target keyword | short summary):\n{{pages}}\n\nTask\n1. Identify the pillar page and the supporting pages in this cluster. Note any page that does not belong or that competes with another for the same keyword (possible cannibalization) and say what to do about it.\n2. Produce a link map as a table: from page, to page, suggested anchor text (natural, descriptive, varied; not always exact match), where in the page it fits (for example: after the section on X), and the reader benefit.\n3. Make sure the priority page receives links from every relevant page and links out to helpful supporting pages. Avoid more than {{max_links}} new internal links per page.\n4. Flag missing pages that would make the cluster stronger, with a working title.\n5. Give a short implementation checklist ordered by impact.\n\nRules: do not suggest links purely to pass authority when they are not useful to a reader. Do not assume the existing content of pages beyond the summaries.",
+      "variables": [
+        {
+          "key": "site",
+          "label": "Site",
+          "type": "text",
+          "default": "Blog of a project planning app for creative agencies",
+          "required": false
+        },
+        {
+          "key": "priority",
+          "label": "Priority page and keyword",
+          "type": "text",
+          "default": "/guides/planning | project planning for agencies",
+          "required": false
+        },
+        {
+          "key": "max_links",
+          "label": "Max new links per page",
+          "type": "number",
+          "default": "4",
+          "required": false
+        },
+        {
+          "key": "pages",
+          "label": "Page list",
+          "type": "long",
+          "default": "/guides/planning | Agency Planning | project planning for agencies | Guide\n/blog/kickoff-agenda | Kickoff Agenda | project kickoff meeting agenda | Agenda\n/blog/overbooked-team-signs | Overbooked Signs | overbooked team | Warning signs\n/blog/estimating | Estimating Projects | project estimate | Estimating\n/blog/templates | Planning Templates | project planning template | Templates\n/blog/planning-tips | Planning Tips | project planning for agencies | Tips",
+          "required": false,
+          "help": "URL | title | keyword | summary"
+        }
+      ],
+      "exampleOutput": "## Cluster roles\nPillar: /guides/planning. Supporting: kickoff agenda, overbooked signs, estimating, templates.\n\n**Cannibalization flag:** /blog/planning-tips targets the same keyword as the pillar. Either retarget it to \"agency project planning tips\" or merge it into the pillar and redirect.\n\n## Link map\n| From | To | Anchor | Placement | Benefit |\n|---|---|---|---|---|\n| Kickoff agenda | Pillar | how agencies plan projects end to end | closing section | next step after kickoff |\n| Overbooked signs | Pillar | project planning for agencies | intro, after the problem is framed | context |\n| Estimating | Pillar | agency planning guide | after the scope section | wider process |\n| Templates | Pillar | planning process | intro | overview |\n| Pillar | Kickoff agenda | our 60-minute kickoff agenda | \"Starting a project\" section | practical detail |\n| Pillar | Estimating | estimating design projects | \"Scoping\" section | depth |\n| Pillar | Overbooked signs | spotting an overbooked team | \"Capacity\" section | depth |\n| Pillar | Templates | free planning templates | closing | resources |\n\n## Missing pages\n\"Resource planning for agencies: a weekly capacity method\", to sit between estimating and overbooked signs.\n\n## Checklist\n1. Resolve the cannibalizing page. 2. Add the four links into the pillar. 3. Add pillar-to-spoke links. 4. Check anchors vary.",
+      "notes": "Mapping where each link goes, not just which pages to link, makes the plan quick to implement. Add real search console data in a follow-up to prioritize which pages deserve links first.",
+      "useCase": "plan",
+      "tags": [
+        "seo"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-ab-test-hypotheses",
+      "title": "A/B test hypotheses and prioritization",
+      "description": "Turn a weak-performing page or email into well-formed test hypotheses, ranked by impact and effort, with clean success criteria.",
+      "body": "You are a growth marketer designing experiments. Help me plan A/B tests for the asset below.\n\nAsset: {{asset}}\nCurrent performance (conversion rate, traffic, any known drop-off): {{performance}}\nGoal metric: {{metric}}\nAudience and traffic source: {{audience}}\nWeekly traffic or sends available for testing: {{traffic}}\nKnown qualitative feedback (surveys, support, session notes): {{feedback}}\nCurrent copy or description of the asset:\n\"\"\"\n{{current}}\n\"\"\"\n\nDeliver\n1. Diagnosis: the 3 most likely reasons performance is weak, each tied to evidence in what I gave you. Say what data I would need to confirm.\n2. {{num_tests}} test hypotheses in this format: \"Because [observation], we believe changing [element] to [variant] will [effect] for [segment], measured by [metric].\" Include the control and variant described concretely, with sample copy.\n3. Prioritize with a table scoring Impact, Confidence and Effort from 1 to 5, and an overall rank. Explain the logic in a sentence.\n4. For the top test: minimum detectable effect that is realistic for my traffic, rough duration, a guardrail metric, and what I should not change during the test. Tell me plainly if my traffic is too low for a reliable test and suggest an alternative approach (for example, sequential or qualitative testing).\n\nRules: one change per test. Do not promise lift percentages. Do not invent data.",
+      "variables": [
+        {
+          "key": "asset",
+          "label": "Asset",
+          "type": "text",
+          "default": "Pricing page for a project planning app",
+          "required": false
+        },
+        {
+          "key": "performance",
+          "label": "Current performance",
+          "type": "text",
+          "default": "4,000 visitors per month; 1.2% start a trial; 55% leave without scrolling past the plans table",
+          "required": false
+        },
+        {
+          "key": "metric",
+          "label": "Goal metric",
+          "type": "text",
+          "default": "Trial starts per visitor",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience and source",
+          "type": "text",
+          "default": "Agency owners from search and a monthly newsletter",
+          "required": false
+        },
+        {
+          "key": "traffic",
+          "label": "Traffic for testing",
+          "type": "text",
+          "default": "About 1,000 visitors per week",
+          "required": false
+        },
+        {
+          "key": "feedback",
+          "label": "Qualitative feedback",
+          "type": "long",
+          "default": "Prospects ask if they can cancel anytime and whether pricing is per user; some say the three plans look the same.",
+          "required": false
+        },
+        {
+          "key": "current",
+          "label": "Current copy",
+          "type": "long",
+          "default": "Headline: 'Pricing'. Three plans: Starter $19, Team $29, Studio $49 (all per user per month). Button on each: 'Get started'. FAQ at the bottom of the page.",
+          "required": false
+        },
+        {
+          "key": "num_tests",
+          "label": "Number of hypotheses",
+          "type": "number",
+          "default": "4",
+          "required": false
+        }
+      ],
+      "exampleOutput": "## Diagnosis\n1. The headline gives no reassurance or framing, and 55% leave early (evidence: bounce rate).\n2. Key doubts (per user pricing, cancellation) are answered only in a footer FAQ (evidence: prospect questions).\n3. Plans look similar, so choosing is hard (evidence: feedback). Confirm with heatmaps or plan-click data.\n\n## Hypotheses\n1. Because prospects ask about cancellation, adding \"14-day trial, cancel anytime\" under the headline will increase trial starts. Control: \"Pricing\". Variant: \"Simple pricing. Try it free for 14 days, cancel anytime.\"\n2. Because buyers ask whether pricing is per user, labeling \"per user per month\" in bold on each plan and adding a team-cost example will reduce hesitation.\n3. Because plans look alike, highlighting who each plan is for will help.\n4. Because \"Get started\" is vague, \"Start free trial\" will increase clicks.\n\n| Test | Impact | Confidence | Effort | Rank |\n|---|---|---|---|---|\n| 1 | 4 | 4 | 1 | 1 |\n| 4 | 2 | 3 | 1 | 2 |\n| 2 | 3 | 3 | 2 | 3 |\n| 3 | 3 | 2 | 3 | 4 |\n\n## Top test details\nAt 1,000 visitors per week and a 1.2% baseline, only a large lift would be detectable in a month; expect around 8-10 weeks for a modest change. Guardrail: trial-to-paid conversion. Do not change pricing or layout meanwhile. If that is too slow, combine tests 1 and 4 as a single \"messaging\" variant.",
+      "notes": "Tying each hypothesis to an observation prevents random-idea testing, and the traffic reality check stops underpowered tests. Share real analytics screenshots as text to improve the diagnosis.",
+      "useCase": "plan",
+      "tags": [
+        "advertising",
+        "analytics"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "marketing-seo-faq-section",
+      "title": "FAQ section that answers real questions",
+      "description": "Write a helpful FAQ for a page from real customer questions, with concise answers suited to readers and search snippets.",
+      "body": "Write an FAQ section for the page described below.\n\nPage and business: {{page}}\nAudience: {{audience}}\nReal questions to answer (from customers, sales calls, support or search suggestions): {{questions}}\nFacts, policies and numbers you may rely on: {{facts}}\nTone: {{tone}}\nAnswer length: {{answer_length}}\n\nInstructions\n1. Reorder the questions by how often buyers need the answer, and group them under 2-4 short headings if there are more than six.\n2. Rewrite each question in the exact, natural way a customer would ask it.\n3. Answer directly in the first sentence, then add the detail or condition that matters. Where the honest answer is \"it depends\", say what it depends on.\n4. Use only the facts provided. If a question cannot be answered from them, give a draft answer marked [confirm: what to check] rather than guessing.\n5. Suggest 3 additional questions customers are likely to have but did not list.\n6. Add a closing line pointing to the best next step (contact, trial or documentation).\n\nRules: no marketing fluff inside answers, no hidden upsells, no promises beyond the stated policies. Keep each answer self-contained so it can be understood on its own.\n\nOutput as markdown with H3 questions and plain-text answers, followed by a note on whether FAQ structured data is appropriate for this page.",
+      "variables": [
+        {
+          "key": "page",
+          "label": "Page and business",
+          "type": "text",
+          "default": "Pricing page for Plotline, project planning software for design studios",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Agency owners comparing tools",
+          "required": false
+        },
+        {
+          "key": "questions",
+          "label": "Questions",
+          "type": "long",
+          "default": "Can I cancel anytime? Is pricing per user? Can I import my spreadsheet? Is there a free plan? Do you offer discounts for nonprofits?",
+          "required": false
+        },
+        {
+          "key": "facts",
+          "label": "Facts and policies",
+          "type": "long",
+          "default": "14-day free trial, no card needed. Plans are $19, $29 and $49 per user per month, billed monthly or yearly (yearly saves 15 percent). Cancel anytime from account settings; no refunds on partial months. CSV spreadsheet import. No free plan after the trial.",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "text",
+          "default": "Clear, friendly and direct",
+          "required": false
+        },
+        {
+          "key": "answer_length",
+          "label": "Answer length",
+          "type": "select",
+          "options": [
+            "1-2 sentences",
+            "2-3 sentences",
+            "A short paragraph"
+          ],
+          "default": "2-3 sentences",
+          "required": false
+        }
+      ],
+      "exampleOutput": "### Pricing and billing\n**Is pricing per user?**\nYes. Plans cost $19, $29 or $49 per user per month, depending on the plan. You are billed monthly, or yearly with a 15 percent saving.\n\n**Is there a free plan?**\nNo. You can try every feature free for 14 days with no card needed, after which you choose a paid plan.\n\n**Do you offer discounts for nonprofits?**\n[confirm: whether a nonprofit discount exists] We do not list one, so contact us before assuming.\n\n### Cancelling and setup\n**Can I cancel anytime?**\nYes. Cancel from your account settings whenever you like. Partial months are not refunded, so cancelling just before renewal is the most economical.\n\n**Can I import my spreadsheet?**\nYes, via CSV import, so you can bring existing projects in without retyping.\n\n### Questions you may also have\n- What happens to my data if I cancel?\n- Can I change plans later?\n- How many people can I invite?\n\nNot sure which plan fits? Start the free trial and invite your team.\n\n**Structured data:** FAQ markup is optional here; use it only if the visible page contains these exact questions and answers.",
+      "notes": "Rewriting questions in customer wording and answering in the first sentence makes the FAQ useful and snippet-friendly. The confirm markers keep unverified policies from slipping into public copy.",
+      "useCase": "generate",
+      "tags": [
+        "documentation",
+        "seo",
+        "copywriting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

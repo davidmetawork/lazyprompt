@@ -1,0 +1,1071 @@
+{
+  "category": "business-strategy",
+  "prompts": [
+    {
+      "key": "business-strategy-swot-analysis",
+      "title": "SWOT analysis that leads to decisions",
+      "description": "Turn a business, product or project into a sharp SWOT with evidence, cross-links between quadrants and three priority moves.",
+      "body": "Run a SWOT analysis for {{subject}} in the context of {{market_context}}.\n\nWhat I know:\n{{facts}}\n\nRules:\n- Strengths and weaknesses are internal and within our control. Opportunities and threats are external. Move anything that sits in the wrong quadrant.\n- Every point must be specific and carry a one-line piece of evidence or reasoning. Drop generic items such as \"strong brand\" unless you can say why.\n- Give 4 to 5 points per quadrant, ranked by impact.\n- If my facts are too thin to support a quadrant, say what is missing instead of inventing details.\n\nOutput format:\n1. A 2x2 table with the four quadrants.\n2. \"Cross-links\": 3 strategic moves, each tagged SO (use a strength to capture an opportunity), WO (fix a weakness to capture an opportunity), ST (use a strength against a threat) or WT (limit exposure).\n3. \"Do first\": the single move you would start this quarter, with the reason and the first concrete step.\n4. \"Assumptions to verify\": up to 3 claims you leaned on that I should check.\n\nTime horizon: {{horizon}}.",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "What are we analyzing?",
+          "type": "text",
+          "default": "a 12-person B2B invoicing software startup",
+          "required": true
+        },
+        {
+          "key": "market_context",
+          "label": "Market context",
+          "type": "text",
+          "default": "small-business accounting software in the UK",
+          "required": true,
+          "help": "Industry, region, stage"
+        },
+        {
+          "key": "facts",
+          "label": "What you know",
+          "type": "long",
+          "default": "Founded 3 years ago, 400 paying customers, churn 3% monthly, strong onboarding, one engineer holds most billing code, larger rivals are bundling invoicing for free.",
+          "required": true,
+          "help": "Facts, numbers, gut feelings: anything useful"
+        },
+        {
+          "key": "horizon",
+          "label": "Time horizon",
+          "type": "select",
+          "default": "12 months",
+          "required": true,
+          "options": [
+            "6 months",
+            "12 months",
+            "3 years"
+          ]
+        }
+      ],
+      "exampleOutput": "**SWOT: invoicing startup, UK small-business accounting, 12-month view**\n\n| Strengths | Weaknesses |\n|---|---|\n| Onboarding is a differentiator: customers report first invoice in under 10 minutes | Monthly churn of 3% means roughly 30% of customers are lost each year |\n| 400 paying customers is enough signal to know who retains | Billing logic sits with one engineer, a key-person risk |\n| Small team ships fast | No evidence of a second acquisition channel |\n\n| Opportunities | Threats |\n|---|---|\n| Making Tax Digital rules push sole traders to adopt software | Larger rivals bundle invoicing for free |\n| Accountants can act as a referral channel | Price pressure on entry plans |\n\n**Cross-links**\n- SO: Build an accountant referral programme around the fast onboarding.\n- WO: Document and share billing code ownership before scaling sign-ups.\n- ST: Compete on time-to-first-invoice, which bundled tools do not optimise.\n\n**Do first:** Interview 10 churned customers this month to learn whether churn is price-driven or fit-driven.\n\n**Assumptions to verify:** that churn clusters in the first 90 days; that accountants influence purchase; that free bundles are actually used by your segment.",
+      "notes": "Splitting internal and external factors and forcing cross-links is what turns a list into strategy. Paste real numbers into the facts field and the output gets much sharper.",
+      "useCase": "analyze",
+      "tags": [
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-competitor-teardown",
+      "title": "Competitor teardown with positioning gaps",
+      "description": "Compare you against up to three competitors on offer, pricing, positioning and weak spots, then find the gap worth owning.",
+      "body": "Act as a competitive strategist. Produce a teardown of these competitors for {{our_business}}.\n\nCompetitors: {{competitors}}\nWho we sell to: {{target_customer}}\nWhat I already know about them (pricing, reviews, features, anything else):\n{{notes}}\n\nWork from the information I gave plus general knowledge you are confident about. Mark any claim you are unsure of with \"(verify)\" and never invent figures. If you cannot access current data, say so once and carry on.\n\nOutput format:\n1. **Snapshot table**: rows are competitors and us; columns are core offer, target customer, pricing model, main channel, stated positioning.\n2. **How customers choose**: the 3 to 5 criteria buyers weigh most, and how each player scores (strong / average / weak).\n3. **Each competitor in 4 bullets**: what they do best, where they are vulnerable, what they will likely do next, how to win a deal against them.\n4. **Open positioning gaps**: 2 or 3 gaps nobody owns, with the evidence for each.\n5. **Recommendation**: the one positioning statement we should test, plus a cheap experiment to test it in 30 days.\n6. **Research list**: what to look up to confirm the \"(verify)\" items.",
+      "variables": [
+        {
+          "key": "our_business",
+          "label": "Our business",
+          "type": "text",
+          "default": "a meal-prep subscription for busy parents",
+          "required": true
+        },
+        {
+          "key": "competitors",
+          "label": "Competitors (up to 3)",
+          "type": "text",
+          "default": "HelloFresh, Gousto, Mindful Chef",
+          "required": true,
+          "help": "Comma-separated"
+        },
+        {
+          "key": "target_customer",
+          "label": "Target customer",
+          "type": "text",
+          "default": "working parents with kids under 10, household income above average",
+          "required": true
+        },
+        {
+          "key": "notes",
+          "label": "What you already know",
+          "type": "long",
+          "default": "Gousto is cheaper per portion; HelloFresh has the biggest menu; Mindful Chef is premium and health-focused. Our edge is 15-minute meals.",
+          "required": true,
+          "help": "Optional but improves the result"
+        }
+      ],
+      "exampleOutput": "**Snapshot**\n| | HelloFresh | Gousto | Mindful Chef | Us |\n|---|---|---|---|---|\n| Core offer | Large menu, broad appeal | Value-led recipe boxes | Healthy, premium boxes | 15-minute family meals |\n| Pricing | Mid, heavy intro discounts | Lowest per portion | Highest | Mid-high |\n| Positioning | Variety and convenience | Affordable cooking | Clean eating | Speed for busy parents |\n\n**How customers choose:** speed, price per portion, menu variety, health credentials, flexibility to skip. Competitors win on price and variety; nobody clearly wins on speed.\n\n**HelloFresh**: best at breadth and marketing reach. Vulnerable on perceived complexity and discount dependence (verify). Likely to launch quicker-meal ranges. To win: show total time from fridge to table.\n\n**Open gaps**\n1. Provable speed: no rival guarantees a cook time.\n2. Kid-approved meals: parents want fewer dinner arguments.\n\n**Recommendation:** test \"Dinner on the table in 15 minutes or your next box is free\" on a landing page with paid traffic for 30 days, measuring sign-up rate against current messaging.\n\n**Research list:** current intro offers, review themes about prep time, churn reasons on forums.",
+      "notes": "The prompt separates what you provided from what the model merely recalls, which cuts down on invented competitor facts. Feed it real review snippets or pricing pages for the best result.",
+      "useCase": "analyze",
+      "tags": [
+        "market-research",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-pricing-options",
+      "title": "Pricing options analysis with a recommendation",
+      "description": "Compare three pricing models for your product, test them against your costs and customers, and get a recommended price test plan.",
+      "body": "You are a pricing strategist. Help me choose how to price {{product}}.\n\nCustomer: {{customer}}\nCosts and economics: {{economics}}\nCompetitor or alternative pricing: {{alternatives}}\nMain goal: {{goal}}\n\nTask:\n1. Propose 3 distinct pricing structures that fit this product (for example flat tiers, usage-based, per-seat, one-time plus service). For each, state the exact price points you would start with and the logic behind them.\n2. Score each structure from 1 to 5 on: revenue potential, ease of understanding, fit with how customers get value, risk of cannibalising other options, and fit with my main goal. Show the table, then explain any surprising scores.\n3. Run a quick sanity check on unit economics using my numbers: margin per customer, breakeven customer count if I can calculate it, and show the arithmetic. If a number is missing, state the assumption you used.\n4. Recommend one structure and a pricing page layout (names of tiers, what each includes, which one to highlight).\n5. Give a 4-week test plan: what to change, what to measure, and what result would make me raise or lower prices.\n\nBe direct. Flag where reasonable people would disagree.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product or service",
+          "type": "text",
+          "default": "a project management app for freelance designers",
+          "required": true
+        },
+        {
+          "key": "customer",
+          "label": "Who buys it",
+          "type": "text",
+          "default": "solo freelancers and small studios of 2-5 people",
+          "required": true
+        },
+        {
+          "key": "economics",
+          "label": "Costs and economics",
+          "type": "long",
+          "default": "Hosting and support cost about $4 per active user per month. 600 free users, 8% convert today at $9/month. Target $20k monthly revenue.",
+          "required": true,
+          "help": "Costs, margins, volumes"
+        },
+        {
+          "key": "alternatives",
+          "label": "Alternatives and their prices",
+          "type": "long",
+          "default": "Trello free, Notion $10 per seat, Asana $13 per seat, spreadsheets are free.",
+          "required": true
+        },
+        {
+          "key": "goal",
+          "label": "Main goal",
+          "type": "select",
+          "default": "Maximize revenue",
+          "required": true,
+          "options": [
+            "Maximize revenue",
+            "Grow users fast",
+            "Protect margin",
+            "Land larger customers"
+          ]
+        }
+      ],
+      "exampleOutput": "**Three structures**\nA. Flat tiers: Solo $12, Studio $29 (up to 5 seats).\nB. Per seat: $10 per seat per month, minimum 1.\nC. Freemium plus usage: free up to 3 projects, $15 for unlimited.\n\n| | Revenue | Simple | Value fit | Cannibalise | Goal fit |\n|---|---|---|---|---|---|\n| A | 4 | 5 | 4 | 3 | 4 |\n| B | 3 | 5 | 3 | 5 | 3 |\n| C | 3 | 4 | 4 | 2 | 3 |\n\n**Unit economics:** at $9 with $4 cost, margin is $5 (56%). At $12, margin is $8 (67%). Target $20k per month needs about 1,670 paying users at $12, versus 2,222 at $9. Today 8% of 600 is 48 payers.\n\n**Recommendation:** Option A. Highlight Studio, since small studios hold more value per account and no competitor offers a flat 5-seat price.\n\n**Test plan:** Weeks 1-2 show $12 to half of new sign-ups. Measure conversion, trial-to-paid time and refund requests. Raise to $12 for everyone if conversion falls less than 15% relative; otherwise keep $9 and test the Studio tier alone.",
+      "notes": "Asking for exact price points, an arithmetic check and a decision rule keeps the answer practical rather than a generic list of models. Add real conversion data to make the test plan more precise.",
+      "useCase": "analyze",
+      "tags": [
+        "pricing",
+        "strategy",
+        "startups"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-okr-drafting",
+      "title": "OKR drafting that avoids vanity metrics",
+      "description": "Turn vague goals into a tight set of objectives and measurable key results with baselines, targets and check-in cadence.",
+      "body": "Help me write OKRs for {{team}} for {{period}}.\n\nCompany or team priorities:\n{{priorities}}\n\nCurrent numbers and baselines:\n{{baselines}}\n\nConstraints (headcount, budget, dependencies): {{constraints}}\n\nWrite {{num_objectives}} objectives. For each:\n- The objective: one inspiring, qualitative sentence in plain language, no jargon.\n- 3 key results: each must be a measurable outcome (not an activity or a task), include a baseline, a target, and a way to measure it. Make the target ambitious but not absurd; label each as \"committed\" or \"stretch\".\n- 1 or 2 initiatives that would drive the key results (these are not key results).\n- The main risk and who owns the objective.\n\nThen review your own draft: list any key result that is really an output or a vanity metric and rewrite it. Finish with a weekly check-in template of 4 questions and a note on any dependency between objectives.\n\nIf the baselines are missing for a key result, propose a \"measure first\" key result rather than inventing a number.",
+      "variables": [
+        {
+          "key": "team",
+          "label": "Team or company",
+          "type": "text",
+          "default": "Customer Support team at a 200-person software company",
+          "required": true
+        },
+        {
+          "key": "period",
+          "label": "Time period",
+          "type": "text",
+          "default": "Q1",
+          "required": true,
+          "help": "e.g. Q1 2027"
+        },
+        {
+          "key": "priorities",
+          "label": "Priorities",
+          "type": "long",
+          "default": "Reduce time customers wait for help; improve satisfaction after the product redesign; cut ticket volume from repeated questions.",
+          "required": true
+        },
+        {
+          "key": "baselines",
+          "label": "Current numbers",
+          "type": "long",
+          "default": "First response time 9 hours, CSAT 82%, 5,000 tickets per month with about 35% repeat questions, help centre articles: 120.",
+          "required": true
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "No new headcount, one support engineer shared with product",
+          "required": false
+        },
+        {
+          "key": "num_objectives",
+          "label": "Number of objectives",
+          "type": "select",
+          "default": "3",
+          "required": true,
+          "options": [
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      ],
+      "exampleOutput": "**Objective 1: Customers get answers fast, without chasing us**\n- KR1 (committed): Cut median first response time from 9 hours to 3 hours, measured in the helpdesk report.\n- KR2 (stretch): Raise CSAT from 82% to 90% on tickets resolved within one reply.\n- KR3 (committed): Reduce reopened tickets from a baseline to measure in week 1 to 10% below that level.\nInitiatives: triage rota with a one-hour first-touch rule; saved replies for top 20 issues.\nRisk: seasonal volume spike. Owner: Support Lead.\n\n**Objective 2: The help centre answers the repeat questions**\n- KR1: Lower repeat-question tickets from 35% to 20% of volume.\n- KR2: Raise self-service resolution rate (help article views without a ticket) from a baseline to measure to +25%.\n\n**Review:** \"Publish 40 articles\" was an output, so I replaced it with the repeat-question KR.\n**Check-in questions:** What moved? What is stuck? What is the leading indicator saying? What do we need?\n**Dependency:** Objective 2 reduces load, which makes Objective 1 achievable.",
+      "notes": "The self-review step catches the most common OKR mistake: key results that are secretly tasks. Give honest baselines and it will set targets you can actually defend.",
+      "useCase": "plan",
+      "tags": [
+        "planning",
+        "habits"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-meeting-agenda-preread",
+      "title": "Meeting agenda and pre-read pack",
+      "description": "Build a time-boxed agenda with a purpose, decisions needed, roles and a short pre-read so the meeting actually ends in a decision.",
+      "body": "Design a meeting and a pre-read for me.\n\nMeeting topic: {{topic}}\nAttendees and roles: {{attendees}}\nLength: {{duration}} minutes\nBackground and context: {{context}}\nWhat I need from the meeting: {{outcome}}\n\nCreate:\n1. **Meeting brief** (3 lines): purpose, the decisions or outputs required, and what is explicitly out of scope.\n2. **Agenda table**: time slot, topic, owner, format (inform, discuss, decide), and the question to answer. Total time must equal {{duration}} minutes and include a 5-minute buffer or wrap-up for action items. Put the hardest decision early, not last.\n3. **Pre-read (one page max)**: situation, the options or proposals, my recommendation with its reasoning, and the 3 questions attendees should come ready to answer. Write it so someone can read it in under four minutes.\n4. **Roles**: facilitator, note-taker, decision owner. State who has the final say if there is no consensus.\n5. **Follow-up template**: decisions made, actions with owner and deadline, open questions.\n\nIf the meeting could be an email or a document, say so and explain what you would do instead.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Meeting topic",
+          "type": "text",
+          "default": "Decide whether to move our product launch from March to May",
+          "required": true
+        },
+        {
+          "key": "attendees",
+          "label": "Attendees and roles",
+          "type": "long",
+          "default": "Maya (CEO, decision owner), Dev (Engineering), Priya (Marketing), Sam (Sales), Lena (Finance)",
+          "required": true
+        },
+        {
+          "key": "duration",
+          "label": "Length in minutes",
+          "type": "select",
+          "default": "45",
+          "required": true,
+          "options": [
+            "30",
+            "45",
+            "60",
+            "90"
+          ]
+        },
+        {
+          "key": "context",
+          "label": "Background",
+          "type": "long",
+          "default": "Beta bugs are slowing the March launch. Marketing has spent 60% of launch budget. Two enterprise deals hinge on the launch date.",
+          "required": true
+        },
+        {
+          "key": "outcome",
+          "label": "What you need",
+          "type": "text",
+          "default": "A decision and an owner for each follow-up",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**Brief:** Decide launch timing (March vs May). Output: a date plus mitigation owners. Out of scope: feature redesign.\n\n| Time | Topic | Owner | Format | Question |\n|---|---|---|---|---|\n| 0:00-0:05 | Context and status | Dev | Inform | What is the bug picture today? |\n| 0:05-0:20 | Cost of delay vs cost of risk | Lena, Sam | Discuss | What do we lose with each date? |\n| 0:20-0:35 | Decision | Maya | Decide | March, May, or a phased launch? |\n| 0:35-0:45 | Actions and wrap-up | Facilitator | Confirm | Who does what by when? |\n\n**Pre-read:** Situation: beta defects at 14 open, 4 severe. Options: (A) hold March; (B) move to May; (C) March soft launch to existing customers. Recommendation: C, because it protects the two enterprise deals while limiting exposure. Questions to prepare: What is the earliest date Engineering will commit to? What revenue is at risk if we slip? Can marketing spend be reused?\n\n**Roles:** facilitator Priya, notes Lena, decision owner Maya.\n\n**Follow-up template:** Decision / Actions (owner, date) / Open questions.",
+      "notes": "Naming the decision owner and putting the hard question early prevents meetings from running out of time before the real conversation. The pre-read does the heavy lifting so the live time is for deciding.",
+      "useCase": "plan",
+      "tags": [
+        "meetings",
+        "productivity",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-decision-memo",
+      "title": "Decision memo for a high-stakes choice",
+      "description": "Write a one-to-two-page decision memo that frames the choice, compares options honestly, states a recommendation and names the risks.",
+      "body": "Write a decision memo for {{audience}} on this decision: {{decision}}.\n\nBackground and facts:\n{{background}}\n\nOptions on the table: {{options}}\nDecision criteria that matter most: {{criteria}}\nDeadline for the decision: {{deadline}}\n\nStructure the memo exactly like this:\n1. **Decision required** (one sentence, including who decides and by when).\n2. **Recommendation** (up front, two or three sentences with the main reason).\n3. **Context** (no more than 5 sentences: only what the reader needs).\n4. **Options** (each option: what it is, cost and effort, upside, downside, what must be true for it to be the right call).\n5. **Comparison table** against my criteria, using plain words rather than scores where scores would be false precision.\n6. **Risks and how to reduce them** for the recommended option.\n7. **What would change my mind**: the specific facts or events that would flip the recommendation.\n8. **Next steps** with owners if approved.\n\nStyle: plain, direct, short sentences. Include the strongest argument against the recommendation and answer it. Do not invent numbers; where a figure is unknown write \"[need: ...]\" so I can fill it in.",
+      "variables": [
+        {
+          "key": "decision",
+          "label": "The decision",
+          "type": "text",
+          "default": "Whether to build our own mobile app or keep using a mobile-friendly website",
+          "required": true
+        },
+        {
+          "key": "audience",
+          "label": "Who will read it",
+          "type": "text",
+          "default": "our executive team",
+          "required": true
+        },
+        {
+          "key": "background",
+          "label": "Background and facts",
+          "type": "long",
+          "default": "40% of traffic is mobile but mobile converts at half the rate. A native app would take about 6 months and 3 engineers. Competitors have apps. Our customers order about twice a month.",
+          "required": true
+        },
+        {
+          "key": "options",
+          "label": "Options",
+          "type": "text",
+          "default": "Build a native app; improve the mobile web experience; do a progressive web app",
+          "required": true,
+          "help": "Comma-separated"
+        },
+        {
+          "key": "criteria",
+          "label": "What matters most",
+          "type": "text",
+          "default": "time to impact, cost, conversion lift, maintenance burden",
+          "required": true
+        },
+        {
+          "key": "deadline",
+          "label": "Decide by",
+          "type": "text",
+          "default": "end of this month",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**Decision required:** The executive team to choose a mobile approach by 31 October.\n\n**Recommendation:** Improve the mobile web experience and ship a progressive web app (PWA) in 8 weeks. It targets the real problem, the conversion gap, at roughly a fifth of the effort of a native app.\n\n**Context:** Mobile is 40% of traffic but converts at half the desktop rate. Customers order about twice a month, so repeat access matters more than first-time discovery.\n\n**Options**\n- Native app: 6 months, 3 engineers. Upside: push notifications, loyalty. Downside: long delay, two platforms. Right call if repeat customers drive most revenue [need: share of revenue from repeat orders].\n- Mobile web improvements: 4 to 6 weeks. Upside: fastest fix. Downside: no home-screen presence.\n- PWA: 8 weeks. Upside: installable, offline basics.\n\n**Comparison:** Native is slowest and costliest; PWA balances speed and reach; web fixes are cheapest but weakest on retention.\n\n**Strongest counterargument:** competitors have apps. Reply: customers have not asked for one; test demand with the PWA install rate.\n\n**What would change my mind:** an app-install waitlist above 15% of monthly customers.\n\n**Next steps:** Eng scopes PWA in week 1; Design audits checkout in week 1.",
+      "notes": "Putting the recommendation first and requiring a counterargument forces clarity and makes the memo readable by busy executives. The placeholder rule avoids made-up figures.",
+      "useCase": "generate",
+      "tags": [
+        "decision-making",
+        "writing",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-pre-mortem",
+      "title": "Project pre-mortem that finds failure early",
+      "description": "Imagine your project has failed and work backwards: ranked failure causes, early warning signs, and prevention actions you can start now.",
+      "body": "Run a pre-mortem on this project.\n\nProject: {{project}}\nGoal and success measure: {{goal}}\nPlan, timeline and team: {{plan}}\nBiggest worries so far (optional): {{worries}}\n\nAssume it is {{when}} and the project has failed badly. Write from that future point of view.\n\nOutput format:\n1. **The failure story**: a short, believable narrative (about 150 words) of how it went wrong.\n2. **Failure causes**: 8 causes grouped under People, Process, Market/Customers, Technology, and External. For each give likelihood (low/med/high), impact (low/med/high) and one sentence of reasoning. Include at least two causes that a cheerful team would be reluctant to say aloud.\n3. **Top 5 risks**: ranked by likelihood x impact, each with an early warning sign I can observe within the first month, a specific prevention action, and a trigger that makes us switch to a backup plan.\n4. **Hidden assumptions**: 5 things the plan quietly assumes, phrased as testable statements.\n5. **First week actions**: 5 concrete steps with suggested owners (by role).\n\nBe candid, not alarmist. Do not pad with generic risks like \"scope creep\" unless you tie them to the details I gave you.",
+      "variables": [
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "default": "Launch a self-serve onboarding flow for our SaaS product",
+          "required": true
+        },
+        {
+          "key": "goal",
+          "label": "Goal and success measure",
+          "type": "text",
+          "default": "Increase activation from 25% to 40% within 3 months of launch",
+          "required": true
+        },
+        {
+          "key": "plan",
+          "label": "Plan, timeline and team",
+          "type": "long",
+          "default": "8-week build, 2 engineers, 1 designer, PM part-time. Launch to all users at once on week 9. No usability testing planned yet.",
+          "required": true
+        },
+        {
+          "key": "worries",
+          "label": "Worries so far",
+          "type": "long",
+          "default": "Engineering is also on-call for outages; unclear who owns the activation metric",
+          "required": false
+        },
+        {
+          "key": "when",
+          "label": "Imagine it is",
+          "type": "select",
+          "default": "3 months after launch",
+          "required": true,
+          "options": [
+            "3 months after launch",
+            "6 months from now",
+            "1 year from now"
+          ]
+        }
+      ],
+      "exampleOutput": "**Failure story:** Three months after launch, activation sits at 26%. The new flow shipped on time but confused enterprise users who needed admin setup. Two sprint weeks were lost to outages, testing was skipped, and nobody was accountable for the number.\n\n**Top risks**\n1. Skipped usability testing (high x high). Early sign: first 20 sessions show drop-off at step 2. Prevention: test with 5 users in week 4. Switch trigger: more than 30% abandon at any step, so revert to a gradual rollout.\n2. Engineering capacity eaten by on-call (high x med). Sign: missed sprint goals twice. Prevention: ring-fence one engineer.\n3. No metric owner (med x high). Prevention: name an owner in week 1.\n4. Big-bang launch to all users (med x high). Prevention: roll out to 10% first.\n5. Segment mismatch (med x med). Prevention: split flows by user type.\n\n**Hidden assumptions:** new users, not existing ones, drive activation; the current 25% is measured consistently; users want self-serve rather than guided help.\n\n**First week:** assign the metric owner (PM), agree on on-call limits (EM), book test participants (design), define rollout stages (PM), instrument funnel events (eng).",
+      "notes": "Writing from a future failure unlocks candour that ordinary risk lists miss, and the request for early warning signs and triggers turns worry into action. Run it with your team and compare notes.",
+      "useCase": "critique",
+      "tags": [
+        "project-management"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-stakeholder-update",
+      "title": "Stakeholder status update that gets read",
+      "description": "Convert raw project notes into a crisp status update with a clear status colour, what changed, risks, and exactly what you need from readers.",
+      "body": "Turn my raw notes into a stakeholder update.\n\nProject: {{project}}\nReader: {{audience}}\nReporting period: {{period}}\nRaw notes:\n{{notes}}\n\nWrite an update that a busy reader can absorb in under 90 seconds:\n1. **Status line**: overall status (On track / At risk / Off track) with one sentence of justification. Be honest; do not default to green. Base it on the notes and tell me if the notes suggest a different status than I implied.\n2. **Headline** (one sentence): the most important thing to know this period.\n3. **Progress**: 3 to 5 bullets of outcomes, not activities.\n4. **Risks and blockers**: each with impact, owner, and the mitigation date.\n5. **Decisions or help needed**: explicit asks with a name and a date. If there are none, say \"No asks this period.\"\n6. **Next period**: top 3 priorities.\n\nTone: {{tone}}. Use plain language, no jargon, no filler openers. Keep the update under 250 words. After it, add a two-line version suitable for a Slack message.",
+      "variables": [
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "default": "Customer data platform migration",
+          "required": true
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "VP of Operations and the steering committee",
+          "required": true
+        },
+        {
+          "key": "period",
+          "label": "Reporting period",
+          "type": "text",
+          "default": "week of 14 March",
+          "required": true
+        },
+        {
+          "key": "notes",
+          "label": "Raw notes",
+          "type": "long",
+          "default": "Migrated 3 of 5 data sources. CRM source is delayed because vendor API limits. Data quality tests found 2% duplicate records. Budget used 55%, plan was 50%. Need approval for 2 extra weeks of vendor support. Team is tired but fine.",
+          "required": true
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "default": "Neutral and factual",
+          "required": true,
+          "options": [
+            "Neutral and factual",
+            "Reassuring but honest",
+            "Urgent"
+          ]
+        }
+      ],
+      "exampleOutput": "**Status: At risk.** The CRM source is delayed by vendor API limits and budget is running 5 points above plan.\n\n**Headline:** Three of five data sources are migrated, but the CRM delay may push final cut-over back by about two weeks unless vendor support is extended.\n\n**Progress**\n- 3 of 5 sources live and validated\n- Duplicate-record test complete: 2% rate identified, cleanup rules drafted\n- Cut-over runbook reviewed with IT\n\n**Risks and blockers**\n- CRM vendor API limits: delays 2 sources; owner Raj; mitigation: batch throttling by 21 March.\n- Budget at 55% used versus 50% planned; owner Finance partner; review by 18 March.\n\n**Decisions needed:** VP Operations to approve 2 extra weeks of vendor support by 17 March.\n\n**Next period:** finish source 4, deduplicate records, rehearse cut-over.\n\n**Slack version:** Migration at risk: 3/5 sources done, CRM delayed by API limits. Need approval for 2 more weeks of vendor support by 17 Mar.",
+      "notes": "The prompt forces an honest status and explicit asks, which are the two things stakeholders actually want. Paste unedited notes; the tidying is the model's job.",
+      "useCase": "generate",
+      "tags": [
+        "reporting",
+        "project-management",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-investor-update",
+      "title": "Monthly investor update email",
+      "description": "Draft a candid investor update with KPIs, wins, misses, runway, and specific asks for introductions or advice.",
+      "body": "Write the monthly update email to investors for {{company}}.\n\nMonth: {{month}}\nStage and what we do: {{stage}}\nKey numbers (this month vs last month, include revenue, burn, cash, runway if known):\n{{metrics}}\n\nNotes on the month (wins, misses, hiring, product, customers):\n{{notes}}\n\nWhat we need from investors: {{asks}}\n\nFormat:\n- Subject line (three alternatives).\n- **TL;DR**: 3 bullets, including one that names the biggest problem.\n- **Metrics**: a compact table with this month, last month and change. If a number is missing, leave it blank rather than guessing.\n- **Wins**, **Misses and lessons** (give misses as much space as wins), **What we are focusing on next month**.\n- **Asks**: specific, with what a good intro looks like, for example a role and a company type rather than \"any intros\".\n- A one-line sign-off.\n\nVoice: founder to trusted partners; plain, specific and honest; no hype words such as \"exciting\" or \"thrilled\". Keep it under 350 words. Make the cash and runway line impossible to miss.",
+      "variables": [
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "text",
+          "default": "Brightline, a scheduling tool for dental clinics",
+          "required": true
+        },
+        {
+          "key": "month",
+          "label": "Month",
+          "type": "text",
+          "default": "September",
+          "required": true
+        },
+        {
+          "key": "stage",
+          "label": "Stage and what we do",
+          "type": "text",
+          "default": "seed stage, 14 months post-launch, 70 clinics paying",
+          "required": true
+        },
+        {
+          "key": "metrics",
+          "label": "Key numbers",
+          "type": "long",
+          "default": "MRR $41k vs $36k last month. Net new clinics: 9, churned: 2. Burn $58k per month. Cash $620k, about 10.7 months of runway.",
+          "required": true
+        },
+        {
+          "key": "notes",
+          "label": "Notes on the month",
+          "type": "long",
+          "default": "Closed a 12-clinic group. Hired a head of customer success. Missed the insurance integration deadline by 3 weeks. Sales cycle lengthened to 38 days.",
+          "required": true
+        },
+        {
+          "key": "asks",
+          "label": "What we need",
+          "type": "long",
+          "default": "Intros to dental support organisations; advice on pricing for multi-site groups",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**Subject options:** Brightline September: MRR $41k, 10.7 months runway / September update: group deal won, integration late / Brightline Sept: what worked, what slipped\n\n**TL;DR**\n- MRR grew 14% to $41k; we signed a 12-clinic group.\n- Insurance integration slipped three weeks, and sales cycles stretched to 38 days.\n- Cash $620k; runway 10.7 months.\n\n| Metric | Sept | Aug | Change |\n|---|---|---|---|\n| MRR | $41k | $36k | +14% |\n| New / churned clinics | 9 / 2 | | |\n| Burn | $58k | | |\n\n**Wins:** Closed our first group deal. Hired a head of customer success to protect retention.\n\n**Misses and lessons:** We underestimated the integration work and did not tell prospects early; we now give delivery dates with a buffer. Longer sales cycles mean we need earlier qualification.\n\n**Next month:** ship integration, shorten the sales cycle, test group pricing.\n\n**Asks:** (1) Intros to operations leads at dental support organisations with 20 or more sites. (2) 30 minutes with anyone who has priced multi-site SaaS.",
+      "notes": "Giving misses equal room and making asks specific are what make investors reply. Keep the same structure every month so changes are easy to spot.",
+      "useCase": "generate",
+      "tags": [
+        "startups",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-market-sizing",
+      "title": "Market sizing with explicit assumptions",
+      "description": "Estimate TAM, SAM and SOM using bottom-up and top-down methods, with every assumption listed and a sensitivity range.",
+      "body": "Estimate the market size for {{offer}} in {{geography}}.\n\nCustomer definition: {{customer}}\nRevenue per customer per year: {{price}}\nData I already have: {{data}}\n\nDo the work in this order:\n1. **Customer definition**: define the buyer precisely and state what you exclude.\n2. **Bottom-up estimate**: number of target customers x realistic adoption x annual revenue per customer. Show each step as a labelled line with the number and the reason for it.\n3. **Top-down cross-check**: start from a broader known market or spend category and narrow it with percentages. Show each step.\n4. **TAM, SAM, SOM**: give a figure for each. Define SOM for a {{timeframe}} horizon, assuming a small team and modest marketing.\n5. **Assumption register**: a table listing every assumption, your confidence (high/medium/low), the likely direction of error, and the cheapest way I could verify it.\n6. **Sensitivity**: low, base and high scenarios, and the two assumptions that move the answer most.\n7. **Sanity check**: compare the result with known comparable companies or spend, and say whether it passes.\n\nRules: label every number as \"given\", \"estimated\" or \"recalled (verify)\". Never present a recalled statistic as verified. Show the arithmetic and round sensibly.",
+      "variables": [
+        {
+          "key": "offer",
+          "label": "Product or service",
+          "type": "text",
+          "default": "an online platform for booking certified home energy audits",
+          "required": true
+        },
+        {
+          "key": "geography",
+          "label": "Geography",
+          "type": "text",
+          "default": "United States",
+          "required": true
+        },
+        {
+          "key": "customer",
+          "label": "Customer definition",
+          "type": "text",
+          "default": "owners of single-family homes built before 2000 who may do energy upgrades",
+          "required": true
+        },
+        {
+          "key": "price",
+          "label": "Revenue per customer per year",
+          "type": "text",
+          "default": "$350 per audit, about one audit per household every 5 years",
+          "required": true
+        },
+        {
+          "key": "data",
+          "label": "Data you already have",
+          "type": "long",
+          "default": "About 80 million single-family homes in the US (recalled); roughly half were built before 2000.",
+          "required": false
+        },
+        {
+          "key": "timeframe",
+          "label": "SOM horizon",
+          "type": "select",
+          "default": "3 years",
+          "required": true,
+          "options": [
+            "1 year",
+            "3 years",
+            "5 years"
+          ]
+        }
+      ],
+      "exampleOutput": "**Customer:** owners of pre-2000 single-family homes in the US; rentals and condos excluded.\n\n**Bottom-up**\n- Single-family homes: 80M (recalled, verify)\n- Built before 2000, about 50%: 40M (estimated)\n- Owner-occupied, about 80%: 32M (estimated)\n- Likely to audit within 5 years, 15%: 4.8M homes (estimated)\n- 4.8M x $350 = $1.68B over 5 years, or about $336M per year\n\n**Top-down check:** US residential energy-efficiency services spend is in the tens of billions per year (recalled, verify). If audits are 1-2% of it, that gives roughly $300-600M. Consistent with the bottom-up figure.\n\n**TAM / SAM / SOM**\n- TAM: about $336M per year.\n- SAM: the roughly 25% of homes in states with strong rebates, about $84M per year.\n- SOM at 3 years: 1.5% of SAM, about $1.3M per year.\n\n| Assumption | Confidence | Error direction | Verify by |\n|---|---|---|---|\n| 15% will audit within 5 years | Low | Probably high | Survey 200 owners |\n| $350 average price | Medium | Either | Collect 10 local quotes |\n| 25% of homes in rebate states | Medium | Probably high | Check state programme lists |\n\n**Sensitivity:** low $170M, base $336M, high $520M. The intent rate and audit frequency move the result most.\n\n**Sanity check:** passes; consistent with the scale of existing audit marketplaces (verify).",
+      "notes": "Labelling every figure as given, estimated or recalled keeps the model from passing off remembered statistics as facts. The assumption register tells you exactly which numbers to go and verify first.",
+      "useCase": "analyze",
+      "tags": [
+        "market-research",
+        "strategy",
+        "startups"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-process-improvement",
+      "title": "Process improvement from bottleneck to fix",
+      "description": "Map a messy workflow, find the bottlenecks and waste, and get ranked improvements with effort, impact and a pilot plan.",
+      "body": "Act as an operations improvement consultant. Analyse this process and recommend improvements.\n\nProcess: {{process}}\nWho is involved: {{people}}\nCurrent steps and pain points (as messy as you like):\n{{steps}}\n\nMetrics, if known (volume, cycle time, error rate, cost): {{metrics}}\nConstraints (tools, budget, compliance): {{constraints}}\n\nPlease deliver:\n1. **Cleaned-up process map**: numbered steps with owner, tool and approximate time per step. Mark waiting time separately from working time.\n2. **Diagnosis**: the 3 biggest bottlenecks and the root cause of each (ask \"why\" until you reach something fixable). Separate real problems from symptoms.\n3. **Waste check**: rework, handoffs, approvals that add no value, duplicate data entry, and steps that can be removed entirely.\n4. **Improvement options**: 6 to 8 changes in the order: eliminate, simplify, automate, then reorder. Present them in a table with impact (high/med/low), effort, cost and risk.\n5. **Recommended package**: pick the best 3 and describe the future-state process in numbered steps.\n6. **Pilot plan**: what to test for 2 weeks, how to measure success against the current metrics, and how to bring the team along.\n\nIf a metric is unknown, propose how to measure it quickly rather than guessing.",
+      "variables": [
+        {
+          "key": "process",
+          "label": "Process",
+          "type": "text",
+          "default": "New customer onboarding for a small accounting firm",
+          "required": true
+        },
+        {
+          "key": "people",
+          "label": "Who is involved",
+          "type": "text",
+          "default": "Sales, 2 account managers, 1 admin, the client",
+          "required": true
+        },
+        {
+          "key": "steps",
+          "label": "Steps and pain points",
+          "type": "long",
+          "default": "Sales emails a signed proposal. Admin re-types client details into 3 systems. Account manager sends a document checklist by email and chases it weekly. Compliance check done manually. Engagement letter often has errors.",
+          "required": true
+        },
+        {
+          "key": "metrics",
+          "label": "Metrics",
+          "type": "text",
+          "default": "Average 19 days from signature to first work; about 40 new clients per quarter",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "Must keep client ID verification for compliance; budget under $200 per month for tools",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Process map (current)**\n1. Proposal signed (Sales, e-sign) - 0 days\n2. Details re-keyed into CRM, billing and practice system (Admin) - 1 day, plus 2 days waiting\n3. Document checklist emailed and chased (Account manager) - 9 days, mostly waiting\n4. Manual ID and compliance check (Admin) - 1 day\n5. Engagement letter drafted, corrected, sent (Account manager) - 3 days\n6. First work begins - day 19\n\n**Bottlenecks and root causes**\n1. Document chasing: no single portal, so reminders rely on memory.\n2. Triple data entry: systems are not connected, and errors then flow into the engagement letter.\n3. Letter errors: drafted from scratch rather than from a template.\n\n**Options**\n| Change | Type | Impact | Effort | Cost |\n|---|---|---|---|---|\n| Single intake form feeding all systems | Eliminate | High | Medium | Low |\n| Automated reminder sequence | Automate | High | Low | Low |\n| Engagement letter template with merge fields | Simplify | Medium | Low | None |\n| Run compliance check in parallel with document collection | Reorder | Medium | Low | None |\n\n**Future state:** intake form on signature, automatic reminders, parallel ID check, letter generated from the form.\n\n**Pilot (2 weeks):** use it for the next 8 clients; target 10 days from signature to first work; track time, errors and client feedback.",
+      "notes": "Asking for root causes and an eliminate-first ordering stops the model from simply recommending software for every problem. Measure cycle time for a week before and after to prove the gain.",
+      "useCase": "analyze",
+      "tags": [
+        "project-management",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-negotiation-prep",
+      "title": "Negotiation preparation brief",
+      "description": "Prepare for a negotiation with your goals, their likely interests, trade-offs, opening position, concessions and scripted responses to pushback.",
+      "body": "Help me prepare for a negotiation. Act as a seasoned negotiator and sparring partner.\n\nSituation: {{situation}}\nCounterparty and what I know about them: {{counterparty}}\nMy goals and limits: {{my_goals}}\nMy alternatives if no deal is reached: {{alternatives}}\nRelationship and timing: {{relationship}}\n\nProduce a preparation brief with these sections:\n1. **My position**: target outcome, realistic outcome, walk-away point. Say whether my alternatives make my walk-away credible.\n2. **Their likely position**: interests and pressures behind what they say they want, their probable alternatives, and what they fear. Label your guesses as guesses.\n3. **Issues and trade-offs**: a table of every negotiable item (price, timing, scope, terms, extras) with the relative value to me and a guess at the value to them. Highlight trades where something cheap for me is valuable to them.\n4. **Opening plan**: my first offer with the reasoning, how to anchor, and the exact words for the first two minutes.\n5. **Concession plan**: the order in which I give things up, what I ask for in return each time, and my limits.\n6. **Pushback script**: the 5 most likely objections or tactics and a calm response to each.\n7. **Questions to ask them**: 5 questions that reveal their real priorities.\n8. **Close**: how to confirm agreement and what to put in writing.\n\nKeep it practical and honest; no manipulative tactics.",
+      "variables": [
+        {
+          "key": "situation",
+          "label": "Situation",
+          "type": "text",
+          "default": "Negotiating a salary and start date for a senior product manager role",
+          "required": true
+        },
+        {
+          "key": "counterparty",
+          "label": "Counterparty",
+          "type": "text",
+          "default": "Hiring manager and recruiter at a 300-person fintech; they have been recruiting for 4 months",
+          "required": true
+        },
+        {
+          "key": "my_goals",
+          "label": "My goals and limits",
+          "type": "long",
+          "default": "Target $165k base plus equity; would accept $150k if equity is meaningful; need 4 weeks before starting; won't accept less than $145k.",
+          "required": true
+        },
+        {
+          "key": "alternatives",
+          "label": "Alternatives",
+          "type": "text",
+          "default": "One other offer at $148k, and I am currently employed at $140k",
+          "required": true
+        },
+        {
+          "key": "relationship",
+          "label": "Relationship and timing",
+          "type": "text",
+          "default": "Good rapport; they want an answer by Friday",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**My position:** target $165k + equity, realistic $155-160k + equity, walk-away $145k. Your current job and a $148k offer make walking away credible.\n\n**Their likely position (guesses):** four months of searching means pressure to close; the budget band is probably $150-170k; they fear losing you and restarting.\n\n**Trade-offs**\n| Item | Value to me | Value to them |\n|---|---|---|\n| Base salary | High | High, constrained by band |\n| Equity | High | Low-medium |\n| Signing bonus | Medium | Medium, one-off |\n| Start date (4 weeks) | Medium | Medium |\n\n**Opening:** \"I'm excited about this role. Based on scope and the market, I'm looking for $165k base with a meaningful equity grant. Can we talk about how to get there?\"\n\n**Concessions:** first trade start date flexibility for a higher base; next trade some base for equity or a signing bonus; do not go below $150k without more equity.\n\n**Pushback:** \"That's above our band.\" Response: \"What flexibility exists in equity or a signing bonus to close the gap?\"\n\n**Questions:** How is performance rewarded? What is the equity vesting schedule? What is the timeline for decisions?\n\n**Close:** confirm every term by email and request the written offer.",
+      "notes": "Separating target, realistic and walk-away points, and scripting responses to pushback, lets you rehearse rather than improvise. Swap the situation for a supplier, client or partnership deal and it works just as well.",
+      "useCase": "plan",
+      "tags": [
+        "negotiation",
+        "planning",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-board-deck-outline",
+      "title": "Board deck outline with the story",
+      "description": "Build a board meeting deck outline with slide-by-slide headlines, content, key charts and the decisions you need from directors.",
+      "body": "Create a board deck outline for {{company}}'s {{meeting}} board meeting.\n\nBusiness snapshot and results this period:\n{{results}}\n\nStrategic issues, risks or decisions for the board:\n{{issues}}\n\nAudience: {{board_profile}}\nTime available: {{duration}} minutes\n\nDesign the deck as a story, not a data dump:\n1. **Meeting objective**: what I want the board to know, discuss and decide.\n2. **Slide list**: for each slide give a number, an assertive headline written as a conclusion (not a topic label), 3 to 4 supporting points, the best chart or table to show, and a time allocation. The total time must fit the duration and leave at least 40% for discussion of strategic issues.\n3. **Order logic**: start with a one-page executive summary, then results against plan, then strategic issues, then decisions and asks. Put routine items in an appendix.\n4. **Decision slides**: for every decision, write the exact resolution wording, the recommendation and the risks.\n5. **Anticipated questions**: the 6 hardest questions the board is likely to ask, with a short suggested answer for each.\n6. **Appendix list** and a pre-read checklist (what to send, and when).\n\nFlag any data I should collect before building the slides. Where my information is missing, mark it as \"[need: ...]\".",
+      "variables": [
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "text",
+          "default": "Northwind Logistics",
+          "required": true
+        },
+        {
+          "key": "meeting",
+          "label": "Meeting",
+          "type": "text",
+          "default": "Q3",
+          "required": true
+        },
+        {
+          "key": "results",
+          "label": "Results and snapshot",
+          "type": "long",
+          "default": "Revenue $12.4M, plan $13M. Gross margin up 2 points to 31%. Lost our second-largest customer (8% of revenue). Cash $3.1M. Hiring plan behind by 6 roles.",
+          "required": true
+        },
+        {
+          "key": "issues",
+          "label": "Issues and decisions",
+          "type": "long",
+          "default": "Approve a $1.5M investment in a second warehouse. Discuss customer concentration risk. Update on CFO search.",
+          "required": true
+        },
+        {
+          "key": "board_profile",
+          "label": "Board profile",
+          "type": "text",
+          "default": "5 directors: 2 investors, 2 independents, CEO; financially literate, time-poor",
+          "required": true
+        },
+        {
+          "key": "duration",
+          "label": "Time available",
+          "type": "select",
+          "default": "90",
+          "required": true,
+          "options": [
+            "60",
+            "90",
+            "120"
+          ]
+        }
+      ],
+      "exampleOutput": "**Objective:** Board approves the $1.5M warehouse investment and aligns on a customer concentration plan.\n\n| # | Headline | Evidence | Minutes |\n|---|---|---|---|\n| 1 | Q3 landed 5% below plan, with margins improving | Revenue vs plan bar chart; margin trend | 5 |\n| 2 | Losing our #2 customer cuts 8% of revenue; the pipeline covers about half | Customer concentration chart; pipeline table | 15 |\n| 3 | Gross margin up 2 points as routing savings take hold | Margin bridge | 5 |\n| 4 | A second warehouse unlocks capacity but needs $1.5M and 14 months to pay back | Options table; payback chart | 25 |\n| 5 | Hiring is 6 roles behind and the CFO search is on track | Hiring tracker; search timeline | 10 |\n| 6 | Decisions and next steps | Resolution text | 10 |\n\nDiscussion time: 55 of 90 minutes.\n\n**Resolution wording:** \"The Board approves capital expenditure of up to $1.5M for a second warehouse, subject to lease terms within the presented range.\"\n\n**Hardest questions:** What is the plan if no replacement customer arrives? What is the downside case on payback? Why is hiring late?\n\n**Pre-read:** send the deck and a one-page summary five days ahead.\n\n**Data to collect:** [need: pipeline by stage; warehouse utilisation by month].",
+      "notes": "Writing slide headlines as conclusions forces the story before the design work starts, and protecting discussion time keeps the meeting from becoming a read-out. Send the outline to your CEO before building the slides.",
+      "useCase": "plan",
+      "tags": [
+        "meetings",
+        "presentations",
+        "project-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-business-idea-stress-test",
+      "title": "Business idea stress test",
+      "description": "Challenge a business idea on customer, problem, model and economics, then get a verdict and the cheapest tests to prove or kill it.",
+      "body": "Act as a skeptical but constructive investor evaluating my business idea. Your job is to find the weak points before I invest time or money.\n\nIdea: {{idea}}\nTarget customer: {{customer}}\nHow we will make money: {{model}}\nWhy we think we can win: {{edge}}\nResources I have (time, money, skills): {{resources}}\n\nEvaluate in this order:\n1. **Restatement**: the idea in one sentence and the core bet it relies on.\n2. **Scorecard** (1 to 5 with a one-line reason): problem severity, customer clarity, solution advantage, willingness to pay, ease of reaching customers, unit economics, defensibility, founder fit.\n3. **Fatal flaws**: anything that would kill the idea, if it exists. If none, say so.\n4. **Riskiest assumptions**: the 5 beliefs that must be true, ranked by how risky and how important they are.\n5. **Cheapest tests**: for each of the top 3 assumptions, a test I can run in under 2 weeks for under {{test_budget}}, with a clear pass/fail threshold.\n6. **Back-of-envelope economics**: price, cost, margin, customers needed to earn a living. Show the arithmetic and state the assumptions.\n7. **Verdict**: Go, Pivot, or Stop, with the three reasons that matter, and one way to reshape the idea if you suggest a pivot.\n\nBe blunt but specific. Praise only what is actually strong.",
+      "variables": [
+        {
+          "key": "idea",
+          "label": "The idea",
+          "type": "long",
+          "default": "A subscription service that delivers curated spare-parts kits to independent bike shops",
+          "required": true
+        },
+        {
+          "key": "customer",
+          "label": "Target customer",
+          "type": "text",
+          "default": "independent bicycle shops with 1 to 3 staff",
+          "required": true
+        },
+        {
+          "key": "model",
+          "label": "How we make money",
+          "type": "text",
+          "default": "monthly subscription of $120 plus a 10% mark-up on parts",
+          "required": true
+        },
+        {
+          "key": "edge",
+          "label": "Why we can win",
+          "type": "text",
+          "default": "I ran a bike shop for 8 years and know which parts sell out",
+          "required": true
+        },
+        {
+          "key": "resources",
+          "label": "Resources",
+          "type": "text",
+          "default": "$15k savings, 15 hours per week, no software skills",
+          "required": true
+        },
+        {
+          "key": "test_budget",
+          "label": "Test budget",
+          "type": "select",
+          "default": "$500",
+          "required": true,
+          "options": [
+            "$100",
+            "$500",
+            "$1,000"
+          ]
+        }
+      ],
+      "exampleOutput": "**Core bet:** small bike shops will pay a monthly fee to stop running out of fast-moving parts.\n\n| Criterion | Score | Reason |\n|---|---|---|\n| Problem severity | 3 | Stockouts hurt, but shops already have distributor accounts |\n| Customer clarity | 4 | Clear segment, easy to list |\n| Willingness to pay | 2 | Subscription plus mark-up on thin-margin parts is unproven |\n| Unit economics | 2 | Shipping and inventory risk eat the 10% |\n| Founder fit | 5 | Direct industry experience |\n\n**Fatal flaw:** none confirmed, but margin risk is serious.\n\n**Riskiest assumptions:** shops lack reliable restocking; they will pay above distributor price; you can predict demand per shop; shipping is cheap enough; owners will switch suppliers.\n\n**Cheapest tests (under $500)**\n1. Call 25 shops: do at least 8 describe stockouts costing over $500 a month?\n2. Offer a manual kit to 5 shops at the proposed price: 2 of 5 should pay.\n3. Quote distributor lead times and compare.\n\n**Economics:** $120 + 10% on about $400 parts = $160 revenue; if parts cost $360 and shipping $15, gross profit is about $25 per month. To earn $4k a month needs about 160 shops.\n\n**Verdict: Pivot.** Charge for the service (inventory forecasting) rather than marking up parts.",
+      "notes": "Scoring the idea against explicit criteria and demanding pass/fail thresholds for each test turns opinion into a plan. Run the cheapest test before building anything.",
+      "useCase": "critique",
+      "tags": [
+        "startups"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-go-to-market-plan",
+      "title": "Go-to-market plan for a new product",
+      "description": "Build a practical go-to-market plan covering segment, positioning, channels, launch sequence, budget and the metrics that tell you it is working.",
+      "body": "Create a go-to-market plan for {{product}}.\n\nTarget customer: {{customer}}\nProblem solved and key differentiator: {{value}}\nPricing: {{pricing}}\nBudget and team available: {{resources}}\nLaunch window: {{timing}}\nMain goal for the first 90 days: {{goal}}\n\nStructure the plan like this:\n1. **Beachhead segment**: the narrow group to win first, why them, and how to recognise them (3 qualifying traits). Say what you deliberately leave out.\n2. **Positioning**: a one-line statement using \"For [who] who [need], [product] is a [category] that [benefit], unlike [alternative]\". Add 3 proof points and the main objection with a reply.\n3. **Channel plan**: pick the best 2 channels (not 6) and explain why. For each: the tactic, the weekly effort, the expected cost per lead or sign-up (state as an estimate), and how to know whether it works.\n4. **Launch timeline**: week by week for the first 12 weeks: pre-launch, launch and post-launch actions with owners.\n5. **Funnel math**: working backwards from the 90-day goal, how many leads, trials and conversions I need, with clearly labelled assumptions.\n6. **Budget allocation** within my limit.\n7. **Metrics and decision rules**: 5 metrics, with the number at which I double down on a channel or stop it at week 6.\n8. **Biggest risks** and the plan if the launch underperforms.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product",
+          "type": "text",
+          "default": "an AI meeting-notes app for freelance consultants",
+          "required": true
+        },
+        {
+          "key": "customer",
+          "label": "Target customer",
+          "type": "text",
+          "default": "independent consultants and small agencies billing by the hour",
+          "required": true
+        },
+        {
+          "key": "value",
+          "label": "Problem and differentiator",
+          "type": "text",
+          "default": "Consultants lose billable time writing follow-ups. Our app produces client-ready summaries and action lists and logs time automatically.",
+          "required": true
+        },
+        {
+          "key": "pricing",
+          "label": "Pricing",
+          "type": "text",
+          "default": "$19 per month, 14-day free trial",
+          "required": true
+        },
+        {
+          "key": "resources",
+          "label": "Budget and team",
+          "type": "text",
+          "default": "$3,000 and two founders part-time",
+          "required": true
+        },
+        {
+          "key": "timing",
+          "label": "Launch window",
+          "type": "text",
+          "default": "starting 1 June",
+          "required": true
+        },
+        {
+          "key": "goal",
+          "label": "90-day goal",
+          "type": "text",
+          "default": "300 paying users",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**Beachhead:** solo management and IT consultants who bill hourly and hold 10+ client calls a week. Traits: bills hourly, uses Zoom or Meet, sends written follow-ups. Excluded: large firms, in-house teams.\n\n**Positioning:** For independent consultants who lose billable time on admin, the app is a note-taking tool that produces client-ready follow-ups and logs time, unlike generic transcription tools. Proof: minutes saved per call, sample outputs, time-log export. Objection: \"I can use a free recorder.\" Reply: it delivers the follow-up, not just a transcript.\n\n**Channels:** (1) LinkedIn content and direct outreach, 5 hours a week, about $15 per trial (estimated). (2) Consultant communities and newsletters, sponsored slots about $300 each.\n\n**Timeline:** weeks 1-2 build waitlist; week 3 private beta with 20; week 5 public launch; weeks 6-12 iterate on conversion.\n\n**Funnel math:** 300 paying / 35% trial-to-paid = about 860 trials; at 12% visitor-to-trial, about 7,100 visitors (assumptions).\n\n**Budget:** $1,800 sponsorships, $600 ads, $600 tools.\n\n**Decision rules:** week 6, cost per trial above $30 means stop the channel; trial-to-paid under 20% means fix onboarding before spending more.",
+      "notes": "Limiting the plan to two channels and one beachhead segment is what makes it executable for a small team. The funnel arithmetic shows early whether your goal is realistic.",
+      "useCase": "plan",
+      "tags": [
+        "strategy",
+        "content-marketing",
+        "startups"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-business-case",
+      "title": "Business case for a new initiative",
+      "description": "Write a persuasive but honest business case with costs, benefits, ROI, payback, risks and a clear ask for approval.",
+      "body": "Write a business case that I can submit to {{approver}} for this initiative: {{initiative}}.\n\nProblem or opportunity: {{problem}}\nProposed solution: {{solution}}\nCosts I know (one-off and ongoing): {{costs}}\nBenefits I expect (savings, revenue, risk reduced): {{benefits}}\nTime horizon for evaluation: {{horizon}}\n\nInclude these sections:\n1. **Summary and ask** (under 100 words): what we want approved, the total cost, and the headline return.\n2. **Problem and urgency**: the cost of doing nothing, quantified where possible.\n3. **Options considered**: do nothing, the proposed option and one alternative. Explain why the proposed option wins.\n4. **Financials**: a table by year for costs, benefits, net benefit and cumulative cash flow; then ROI, payback period and a simple NPV if I gave enough information. Show formulas in words. Where I gave no number, use a clearly marked assumption.\n5. **Benefits not in the numbers**: strategic, customer and morale benefits, written without exaggeration.\n6. **Risks and mitigations** and a downside scenario at 30% lower benefits.\n7. **Implementation outline**: phases, owners and milestones.\n8. **Success measures**: how we will know after 6 months whether it is working.\n\nTone: confident, concrete and transparent about uncertainty. Avoid buzzwords. Highlight the two numbers the approver is most likely to challenge.",
+      "variables": [
+        {
+          "key": "initiative",
+          "label": "Initiative",
+          "type": "text",
+          "default": "Replace manual invoice processing with an automated accounts-payable system",
+          "required": true
+        },
+        {
+          "key": "approver",
+          "label": "Approver",
+          "type": "text",
+          "default": "the CFO and finance leadership team",
+          "required": true
+        },
+        {
+          "key": "problem",
+          "label": "Problem or opportunity",
+          "type": "long",
+          "default": "The team of 4 processes 1,800 invoices a month by hand. Late payments cost about $2,500 monthly in fees. Month-end close takes 9 days.",
+          "required": true
+        },
+        {
+          "key": "solution",
+          "label": "Proposed solution",
+          "type": "long",
+          "default": "Buy an AP automation tool with OCR capture and approval workflows; integrate with the ERP.",
+          "required": true
+        },
+        {
+          "key": "costs",
+          "label": "Costs",
+          "type": "long",
+          "default": "Licence $24k per year, implementation $30k one-off, internal time about 120 hours.",
+          "required": true
+        },
+        {
+          "key": "benefits",
+          "label": "Expected benefits",
+          "type": "long",
+          "default": "Save about 60% of processing time (equal to 1.5 FTE at $60k each), eliminate late fees, shorten close to 6 days.",
+          "required": true
+        },
+        {
+          "key": "horizon",
+          "label": "Time horizon",
+          "type": "select",
+          "default": "3 years",
+          "required": true,
+          "options": [
+            "1 year",
+            "3 years",
+            "5 years"
+          ]
+        }
+      ],
+      "exampleOutput": "**Summary and ask:** Approve $54k in year 1 ($30k implementation + $24k licence) for automated AP. Expected net benefit over 3 years: about $252k, payback in roughly 10 months.\n\n**Problem:** Four people process 1,800 invoices monthly. Late fees cost about $30k a year; close takes 9 days.\n\n**Options:** do nothing (cost keeps rising with volume); automate (proposed); hire two clerks (higher cost, same errors).\n\n| | Year 1 | Year 2 | Year 3 |\n|---|---|---|---|\n| Costs | $54k | $24k | $24k |\n| Benefits | $90k + $30k fees = $120k | $120k | $120k |\n| Net | $66k | $96k | $96k |\n| Cumulative | $66k | $162k | $258k |\n\nAssumption: benefits are 1.5 FTE x $60k = $90k plus $30k avoided fees. Three-year net is $258k; after about $6k of internal time, roughly $252k. Payback is around month 10.\n\n**Risks:** adoption, ERP integration delays. Downside at 30% lower benefits: still positive by month 14.\n\n**Challenged numbers:** the 60% time saving and the fee elimination.\n\n**Success measures:** invoices per person per month; late-payment fees; days to close.",
+      "notes": "Listing the two numbers the approver will challenge, and showing a downside case, builds trust. Replace every assumption with a figure from your finance team before submitting.",
+      "useCase": "generate",
+      "tags": [
+        "strategy",
+        "pricing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-kpi-diagnosis",
+      "title": "KPI drop diagnosis and action plan",
+      "description": "Investigate why a key metric moved: a structured hypothesis tree, the data cuts to run, and a prioritized plan to confirm and fix.",
+      "body": "Help me diagnose a change in a business metric.\n\nMetric and change: {{metric}}\nBusiness context: {{context}}\nWhat changed recently (releases, campaigns, pricing, seasonality, team, market): {{changes}}\nData I can access: {{data}}\n\nAct as an analyst working with me step by step:\n1. **Restate the problem** precisely: metric definition, size of change, time window, baseline, and whether the change is outside normal variation. Tell me how to check that quickly.\n2. **Metric decomposition**: break the metric into its drivers (for example revenue = visitors x conversion x order value). Show the formula.\n3. **Hypothesis tree**: list 8 to 10 candidate causes grouped by Data issue, Internal change, Customer/segment mix, Competition/market and Seasonality. For each, state what we would see in the data if it were true.\n4. **Analysis plan**: a ranked list of the cuts or queries to run, in order of speed and diagnostic power, with the exact segmentation (by channel, product, cohort, region, device, time). State what result confirms or rules out each hypothesis.\n5. **Most likely explanations**: your top 3 based on my details, with your confidence.\n6. **Actions**: what to fix now, what to monitor, and who to talk to.\n7. **Summary for leadership**: 3 sentences, written so it stays accurate whatever the analysis finds.\n\nDo not claim a cause as fact until the data supports it.",
+      "variables": [
+        {
+          "key": "metric",
+          "label": "Metric and change",
+          "type": "text",
+          "default": "Weekly new customer sign-ups fell 22% over the last 4 weeks",
+          "required": true
+        },
+        {
+          "key": "context",
+          "label": "Business context",
+          "type": "long",
+          "default": "B2C meal-planning app, subscription model, most sign-ups come from paid social and search.",
+          "required": true
+        },
+        {
+          "key": "changes",
+          "label": "What changed recently",
+          "type": "long",
+          "default": "Website redesign went live 5 weeks ago. Ad budget unchanged. A competitor launched a free tier. School holidays started 3 weeks ago.",
+          "required": true
+        },
+        {
+          "key": "data",
+          "label": "Data available",
+          "type": "text",
+          "default": "Analytics funnel by channel and device, ad platform reports, CRM sign-up records",
+          "required": true
+        }
+      ],
+      "exampleOutput": "**Problem:** Sign-ups down 22% for 4 weeks, starting roughly when the redesign launched. First check: compare against the same weeks last year and the weekly standard deviation.\n\n**Decomposition:** sign-ups = traffic x landing conversion x sign-up completion, by channel.\n\n**Hypotheses and what we would see**\n- Data: tracking broke in redesign - sudden step change on one day, ad platform conversions unchanged.\n- Internal: redesign hurt conversion - traffic flat, conversion down, especially on mobile.\n- Mix: paid traffic quality fell - click-through steady, conversion down only for paid social.\n- Market: free competitor tier - search impressions steady, brand search down.\n- Seasonality: holidays - last year showed a similar dip in the same weeks.\n\n**Analysis plan (in order)**\n1. Conversion by device before and after the redesign. Confirms redesign if mobile fell more than desktop.\n2. Ad platform conversions vs analytics sign-ups, to rule out a tracking issue.\n3. Same weeks last year.\n\n**Likeliest:** redesign impact (medium-high), tracking gap (medium), seasonality (low-medium).\n\n**Actions:** audit sign-up events today; run A/B of old and new page for a week.\n\n**Leadership summary:** Sign-ups have dropped about a fifth since the redesign. We are checking tracking, mobile conversion and seasonality and will report the cause within three working days.",
+      "notes": "The hypothesis tree states what each cause would look like in data, which makes the analysis falsifiable rather than a hunt for a story. Add real numbers and it will rank the cuts to run.",
+      "useCase": "analyze",
+      "tags": [
+        "analytics",
+        "data-analysis",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "business-strategy-meeting-notes-actions",
+      "title": "Meeting notes to decisions and action items",
+      "description": "Turn messy meeting notes or a transcript into clear decisions, owners, deadlines, open questions and a follow-up message.",
+      "body": "Process these meeting notes into a clean record.\n\nMeeting: {{meeting}}\nDate and attendees: {{attendees}}\nRaw notes or transcript:\n{{notes}}\n\nProduce:\n1. **Summary**: 3 to 4 sentences on what the meeting was about and what was concluded.\n2. **Decisions made**: bullet list. Only include something as a decision if the notes show agreement; otherwise move it to open questions.\n3. **Action items**: a table with columns Action, Owner, Deadline, and Notes. If the owner or deadline was not stated, write \"Unassigned\" or \"No date given\" rather than guessing, and list those items again under \"Needs an owner\".\n4. **Open questions and disagreements**: what remains unresolved, who raised it, and the next step to resolve it.\n5. **Risks or blockers** mentioned.\n6. **Follow-up message**: a short email or Slack message in a {{tone}} tone, ready to send to attendees, listing decisions and each person's actions.\n\nDo not add information that is not in the notes. Where the notes are ambiguous, quote the unclear phrase and ask me about it at the end instead of resolving it yourself.",
+      "variables": [
+        {
+          "key": "meeting",
+          "label": "Meeting",
+          "type": "text",
+          "default": "Weekly product planning",
+          "required": true
+        },
+        {
+          "key": "attendees",
+          "label": "Date and attendees",
+          "type": "text",
+          "default": "12 May: Ana (PM), Tom (Eng), Lee (Design), Ravi (Support)",
+          "required": true
+        },
+        {
+          "key": "notes",
+          "label": "Raw notes",
+          "type": "long",
+          "default": "Discussed search bug, Tom says fix by Friday maybe. Agreed to drop the dark mode project for this quarter. Lee to share new onboarding mockups. Ravi worried about support volume after pricing change, not sure who is to handle the FAQ update. Need to decide on beta customers next week.",
+          "required": true
+        },
+        {
+          "key": "tone",
+          "label": "Follow-up tone",
+          "type": "select",
+          "default": "Friendly and brief",
+          "required": true,
+          "options": [
+            "Friendly and brief",
+            "Formal",
+            "Direct and concise"
+          ]
+        }
+      ],
+      "exampleOutput": "**Summary:** The team reviewed the search bug, the quarter's scope and onboarding design. Dark mode was dropped for this quarter; beta customer selection is still pending.\n\n**Decisions**\n- Dark mode project dropped for this quarter.\n\n**Action items**\n| Action | Owner | Deadline | Notes |\n|---|---|---|---|\n| Fix search bug | Tom | Friday (tentative) | \"Maybe\" in notes |\n| Share onboarding mockups | Lee | No date given | |\n| Update pricing FAQ | Unassigned | No date given | Ravi raised the need |\n\n**Needs an owner:** pricing FAQ update; date for mockups.\n\n**Open questions:** Which customers join the beta (decide next week)? Expected support load after the pricing change (Ravi).\n\n**Risks:** support volume spike after pricing change.\n\n**Follow-up message:** Hi all, quick recap from today: we agreed to drop dark mode this quarter. Tom is aiming to fix the search bug by Friday, and Lee will share onboarding mockups. We still need an owner for the pricing FAQ, and we will choose beta customers next week. Shout if I missed anything.\n\n**Questions for you:** Is Tom's \"maybe\" a firm Friday commitment?",
+      "notes": "Telling the model not to guess owners or dates makes the gaps visible, which is where most follow-up fails. Paste a transcript and keep the follow-up message short so people read it.",
+      "useCase": "extract",
+      "tags": [
+        "meetings",
+        "productivity"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

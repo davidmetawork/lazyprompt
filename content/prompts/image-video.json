@@ -1,0 +1,551 @@
+{
+  "category": "image-video",
+  "prompts": [
+    {
+      "key": "image-video-product-photo-scene",
+      "title": "Product photo scene prompt builder",
+      "description": "Turn a product into a detailed, photorealistic scene prompt for an image generator, with lighting, surface, props and framing spelled out.",
+      "body": "You are a commercial product photographer and art director who writes prompts for AI image generators.\n\nWrite {{count}} distinct image prompts for this product shot.\n\nProduct: {{product}}\nBrand feel: {{brand_feel}}\nWhere it will be used: {{placement}}\nSetting or surface ideas (optional): {{setting}}\nAspect ratio: {{aspect_ratio}}\n\nFor each prompt:\n- Describe the product accurately first (material, color, shape, key details) so the generator does not invent features.\n- Specify the surface, background, props and how much negative space to leave for copy.\n- Give the lighting setup (direction, softness, color temperature), the camera angle, and a lens or focal-length feel.\n- Name the mood in two or three words and the color palette.\n- Keep every prompt to one paragraph of 60 to 110 words, written as a single comma-friendly description with no line breaks.\n\nThen add one line per prompt listing a negative prompt (things to exclude, such as extra logos, warped text, harsh reflections).\nFinish with two tips for keeping the product consistent across a series of shots. Do not ask questions; make sensible assumptions and note them in one line at the end.",
+      "variables": [
+        {
+          "key": "product",
+          "label": "Product",
+          "type": "long",
+          "default": "A matte-black stainless steel insulated water bottle with a bamboo lid",
+          "required": true,
+          "help": "Material, color, shape, anything that must stay accurate"
+        },
+        {
+          "key": "brand_feel",
+          "label": "Brand feel",
+          "type": "text",
+          "default": "calm, premium, outdoorsy",
+          "required": true
+        },
+        {
+          "key": "placement",
+          "label": "Where it's used",
+          "type": "select",
+          "options": [
+            "Online store hero image",
+            "Instagram ad",
+            "Amazon listing",
+            "Print catalog",
+            "Email banner"
+          ],
+          "default": "Online store hero image",
+          "required": true
+        },
+        {
+          "key": "setting",
+          "label": "Setting ideas",
+          "type": "text",
+          "default": "wet slate, morning light, pine branches",
+          "required": false,
+          "help": "Leave blank to let the model choose"
+        },
+        {
+          "key": "aspect_ratio",
+          "label": "Aspect ratio",
+          "type": "select",
+          "options": [
+            "1:1",
+            "4:5",
+            "16:9",
+            "9:16",
+            "3:2"
+          ],
+          "default": "4:5",
+          "required": true
+        },
+        {
+          "key": "count",
+          "label": "Number of prompts",
+          "type": "number",
+          "default": "3",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Prompt 1: Matte-black stainless steel insulated water bottle with a bamboo lid, standing upright on wet dark slate, fine water droplets on the body, a single pine branch lying to the left, soft window light from camera right with a gentle cool rim light on the lid, shallow depth of field, 85mm lens feel, camera at eye level with the bottle, calm premium outdoor mood, palette of charcoal, forest green and warm bamboo tan, large soft-focus negative space in the upper third for headline copy, 4:5 vertical, photorealistic commercial photography.\nNegative: extra logos, distorted lid, floating objects, harsh specular glare, text artifacts.\n\nPrompt 2: Same bottle seen from a low three-quarter angle on a weathered granite ledge, misty hillside blurred behind it, early-morning golden backlight creating a thin glowing edge along the steel, bamboo grain crisp in the foreground, cool-to-warm color contrast, 50mm lens feel, minimalist composition with the bottle on the lower right third, 4:5, high-end lifestyle advertising photograph.\nNegative: duplicate bottles, hands, brand text, oversaturation.\n\nPrompt 3: Top-down flat lay on pale linen with the bottle lying diagonally, a folded map, a small compass and a sprig of pine arranged with generous spacing, diffused overhead light, soft shadows falling lower left, muted earth palette, 4:5.\nNegative: cluttered props, tilted horizon, plastic sheen.\n\nSeries tip: reuse the exact product description sentence at the start of every prompt. Keep lighting direction constant.\nAssumptions: no logo on the bottle; no people in frame.",
+      "notes": "Leading with an accurate product description stops generators from altering your product. Reuse that first sentence verbatim across prompts to keep a series consistent.",
+      "useCase": "generate",
+      "tags": [
+        "ecommerce",
+        "image-generation"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-logo-concept-brief",
+      "title": "Logo concept brief and image prompts",
+      "description": "Turn your brand story into three distinct logo directions, each with a design rationale and ready-to-use image prompts for a generator.",
+      "body": "Act as a brand identity designer. Create a concept brief for a logo, then write image-generation prompts for each concept.\n\nBrand name: {{brand_name}}\nWhat it does: {{business}}\nAudience: {{audience}}\nPersonality words: {{personality}}\nPreferred style: {{style}}\nColors to use or avoid: {{colors}}\n\nSteps:\n1. Propose three clearly different concepts (for example wordmark, symbol, lettermark or emblem). For each, give a name, the idea behind it in two sentences, and what it should signal to the audience.\n2. For each concept write one image prompt for a vector-style logo on a plain white background. Include: shape language, number of colors, line weight, whether text appears, and what to avoid. Keep to 50 to 90 words and avoid asking the generator to render long text; recommend adding the brand name in a design tool afterward unless it is a short wordmark.\n3. Note how each concept scales down to a 32 pixel icon and works in one color.\n4. Recommend the strongest concept and give one reason.\n\nFormat as a table of the three concepts followed by the prompts under clear headings. Do not ask questions first; state any assumptions at the end.",
+      "variables": [
+        {
+          "key": "brand_name",
+          "label": "Brand name",
+          "type": "text",
+          "default": "Fernwick Coffee",
+          "required": true
+        },
+        {
+          "key": "business",
+          "label": "What it does",
+          "type": "long",
+          "default": "A small-batch coffee roaster that sells beans by subscription and runs one cafe",
+          "required": true,
+          "help": "One or two sentences"
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Young professionals who care about ethical sourcing",
+          "required": true
+        },
+        {
+          "key": "personality",
+          "label": "Personality words",
+          "type": "text",
+          "default": "warm, honest, crafted",
+          "required": true
+        },
+        {
+          "key": "style",
+          "label": "Style",
+          "type": "select",
+          "options": [
+            "Minimal and geometric",
+            "Hand-drawn",
+            "Vintage badge",
+            "Bold and playful",
+            "Elegant and serif"
+          ],
+          "default": "Minimal and geometric",
+          "required": true
+        },
+        {
+          "key": "colors",
+          "label": "Colors",
+          "type": "text",
+          "default": "Deep green and cream; avoid brown",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Concept table\n1. Leaf-in-cup symbol: a fern frond forming the steam above a cup. Signals nature and warmth.\n2. Wordmark \"Fernwick\": lowercase geometric letters, the \"w\" with a subtle leaf notch. Signals approachable craft.\n3. Round badge: circular emblem with a stylized bean split by a fern vein. Signals tradition and quality.\n\nPrompt 1: Minimal geometric vector logo, a single fern frond rising as steam from a simple round coffee cup, two colors only (deep green on cream), uniform medium line weight, rounded terminals, centered on plain white background, flat design, no gradients, no text, no shadows.\n\nPrompt 2: Lowercase wordmark \"fernwick\" in a clean geometric sans serif, deep green, the letter w with a small leaf-shaped notch, even letter spacing, flat vector on white background, no extra symbols.\n\nPrompt 3: Circular badge emblem, a coffee bean whose center line becomes a fern vein, thin concentric ring border, deep green and cream, flat vector, balanced symmetry, no text, white background.\n\nScaling: Concept 1 holds at 32px if the cup is simplified; concept 2 needs an icon variant using the \"f\"; concept 3 loses ring detail, drop the border at small sizes.\nRecommendation: Concept 1 because it is the most distinctive and works in one color.\nAssumptions: brand name will be added in a design tool for concepts 1 and 3.",
+      "notes": "Asking for scaling and one-color behavior filters out pretty but unusable marks. Generators often misspell text, so the prompt keeps long lettering out of the image.",
+      "useCase": "brainstorm",
+      "tags": [
+        "branding",
+        "image-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-consistent-character-sheet",
+      "title": "Consistent character sheet for image generators",
+      "description": "Build a locked character description and reusable prompt blocks so the same character looks the same across every image or video clip.",
+      "body": "You are a character designer helping me keep one character visually consistent across many AI-generated images and video clips.\n\nCharacter concept: {{concept}}\nAge and build: {{age_build}}\nArt style: {{art_style}}\nMust-keep details (scars, accessories, colors): {{signature_details}}\nWhere the character will appear: {{scenes}}\n\nProduce:\n1. A \"character lock\": one paragraph of 70 to 100 words that describes face, hair, skin tone, build, clothing and signature details using concrete, visual terms only (no backstory, no vague adjectives like \"beautiful\"). This paragraph must be pasteable at the start of every prompt without edits.\n2. A short-form version of 25 words or fewer for tight prompt limits.\n3. Four prompt templates using the lock: front view turnaround, three-quarter portrait, full-body action pose, and an expression sheet with six emotions. Mark scene-specific parts in [brackets].\n4. Three example scene prompts for the places listed above, each starting with the lock.\n5. A checklist of five things that commonly drift between generations for this character and how to correct each one.\n\nUse plain text with headings. Do not ask clarifying questions; infer anything missing and flag it.",
+      "variables": [
+        {
+          "key": "concept",
+          "label": "Character concept",
+          "type": "long",
+          "default": "A retired lighthouse keeper turned sea-glass collector, gentle but stubborn",
+          "required": true,
+          "help": "Who they are in a sentence or two"
+        },
+        {
+          "key": "age_build",
+          "label": "Age and build",
+          "type": "text",
+          "default": "late 60s, broad-shouldered, slightly stooped",
+          "required": true
+        },
+        {
+          "key": "art_style",
+          "label": "Art style",
+          "type": "select",
+          "options": [
+            "Photorealistic",
+            "Painterly storybook illustration",
+            "Anime",
+            "3D animated film",
+            "Flat vector",
+            "Comic book ink"
+          ],
+          "default": "Painterly storybook illustration",
+          "required": true
+        },
+        {
+          "key": "signature_details",
+          "label": "Must-keep details",
+          "type": "text",
+          "default": "white beard, yellow oilskin coat, round wire glasses, a turquoise sea-glass pendant",
+          "required": true
+        },
+        {
+          "key": "scenes",
+          "label": "Scenes",
+          "type": "text",
+          "default": "a rocky beach at dawn, a cluttered workshop, a rowboat in fog",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Character lock: Painterly storybook illustration of a man in his late 60s, broad-shouldered and slightly stooped, weathered tan face with deep smile lines, thick white beard trimmed short, short white hair under a faded navy knit cap, round thin wire-frame glasses, bright yellow oilskin coat with brass buttons over a gray wool sweater, a turquoise sea-glass pendant on a leather cord, soft watercolor texture, warm muted palette.\n\nShort form: elderly man, white beard, wire glasses, yellow oilskin coat, turquoise pendant, storybook watercolor.\n\nTemplates\n- Turnaround: [lock], full-body, neutral pose, front, side and back views, plain pale background, even lighting.\n- Portrait: [lock], three-quarter view, [expression], shallow depth, soft side light.\n- Action: [lock], full-body, [action] in [location], dynamic pose.\n- Expressions: [lock], six head studies in a grid: joy, worry, surprise, stubbornness, sadness, laughter.\n\nScene 1: [lock] walking a rocky beach at dawn, bending to pick up a green glass shard, low golden light, mist.\n\nDrift checklist: 1. Glasses vanish: put them earlier in the prompt. 2. Coat color shifts: repeat \"bright yellow\" explicitly. 3. Age creeps: restate \"late 60s\". 4. Pendant disappears: name its position. 5. Style slides realistic: end every prompt with the style phrase.",
+      "notes": "A single frozen paragraph reused verbatim does most of the consistency work. Pair it with a fixed seed or reference image if your tool supports it.",
+      "useCase": "generate",
+      "tags": [
+        "worldbuilding",
+        "image-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-cinematic-shot-description",
+      "title": "Cinematic shot description with camera, lens and lighting",
+      "description": "Describe any scene as a precise cinematic shot, with camera movement, lens, lighting and mood, ready for an AI video or image model.",
+      "body": "You are a cinematographer translating a scene idea into a precise shot description for an AI image or video generator.\n\nScene: {{scene}}\nEmotional tone: {{tone}}\nGenre or reference feel: {{genre}}\nCamera style: {{camera_style}}\nShot length (for video): {{duration}} seconds\n\nWrite {{variations}} alternative shot descriptions. For each one include:\n- Shot type and framing (for example wide establishing, medium close-up, over-the-shoulder)\n- Camera position and movement, described physically (dolly in, handheld drift, slow crane up)\n- Lens and depth of field (focal length feel, aperture look)\n- Lighting: key source, direction, quality, color temperature, practical lights\n- Color palette and film texture\n- Subject action beat by beat across the shot length\n- Sound or atmosphere cues if useful, kept to one line\n\nThen provide a single-paragraph version of each shot of 70 words or fewer that can be pasted directly into a generator. Avoid brand names, named living people and ambiguous words like \"epic\" or \"stunning\". Output as numbered shots with the paste-ready paragraph at the end of each. No questions; make reasonable choices.",
+      "variables": [
+        {
+          "key": "scene",
+          "label": "Scene",
+          "type": "long",
+          "default": "A lone night-shift baker opens the shop door to find snow falling on an empty street",
+          "required": true,
+          "help": "What happens and where"
+        },
+        {
+          "key": "tone",
+          "label": "Emotional tone",
+          "type": "text",
+          "default": "quiet, hopeful, slightly lonely",
+          "required": true
+        },
+        {
+          "key": "genre",
+          "label": "Genre or feel",
+          "type": "select",
+          "options": [
+            "Indie drama",
+            "Thriller",
+            "Sci-fi",
+            "Documentary",
+            "Fantasy",
+            "Commercial",
+            "Horror"
+          ],
+          "default": "Indie drama",
+          "required": true
+        },
+        {
+          "key": "camera_style",
+          "label": "Camera style",
+          "type": "select",
+          "options": [
+            "Slow and steady",
+            "Handheld and raw",
+            "Smooth tracking",
+            "Static and symmetrical",
+            "Fast and kinetic"
+          ],
+          "default": "Slow and steady",
+          "required": true
+        },
+        {
+          "key": "duration",
+          "label": "Shot length",
+          "type": "number",
+          "default": "6",
+          "required": true
+        },
+        {
+          "key": "variations",
+          "label": "Number of variations",
+          "type": "number",
+          "default": "2",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Shot 1: Medium wide, slow push-in\nCamera: tripod-mounted dolly moving forward very slowly from inside the bakery, framing the open doorway.\nLens: 35mm feel, f/2 look, doorway sharp, street softly blurred.\nLighting: warm tungsten oven glow from behind the baker, cool blue streetlamp light and snow catching it outside, high contrast between the two.\nPalette: amber against steel blue, fine grain.\nAction: 0-2s baker, flour-dusted apron, pushes the door open; 2-4s steps into the threshold, breath visible; 4-6s looks up as snowflakes drift onto the apron and a faint smile forms.\nAtmosphere: muffled silence, distant hum of a fridge.\n\nPaste-ready: Medium wide cinematic shot, slow dolly-in through a bakery doorway, a flour-dusted baker opens the door and watches snow fall on an empty street at night, warm amber oven light behind, cool blue streetlamp glow outside, shallow depth of field, 35mm lens feel, fine film grain, quiet hopeful mood, indie drama.\n\nShot 2: Close-up on the baker's face from a slightly low angle, handheld micro-drift, 85mm feel, snow reflected in the glasses, the same lighting contrast, a slow exhale, eyes lifting. 6 seconds.",
+      "notes": "Describing camera moves physically and splitting action into time beats gives video models far more to work with than adjectives do. Use the paste-ready paragraph as your first draft and tweak one element at a time.",
+      "useCase": "generate",
+      "tags": [
+        "video-generation",
+        "image-generation"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-style-transfer-description",
+      "title": "Describe an art style as a reusable prompt",
+      "description": "Break down a visual style, whether an era, medium or aesthetic, into precise descriptive terms you can apply to any subject in an image generator.",
+      "body": "You are an art historian and prompt writer. Turn a visual style into a reusable description that an AI image generator can apply to any subject, without naming living artists.\n\nStyle I want to capture: {{style_source}}\nMedium it should look like: {{medium}}\nSubject to apply it to (for the examples): {{subject}}\nStrictness: {{strictness}}\n\nDeliver:\n1. Style anatomy: a short list covering line quality, shape language, color palette (with approximate hex values), texture, lighting, composition habits and typical subject matter.\n2. A \"style block\": a comma-separated phrase of 40 to 70 words that captures the look using descriptive terms rather than names of living artists or trademarked franchises. Historical movements, materials and techniques are fine.\n3. Three example prompts that apply the style block to the subject, each with a different composition.\n4. Common failure modes when generators attempt this style, and a fix for each.\n5. A shorter 15-word style block for tools with prompt length limits.\n\nNote: if my description points to a specific living artist or franchise, translate it into its underlying visual traits instead of naming it. Output as headed sections with no questions.",
+      "variables": [
+        {
+          "key": "style_source",
+          "label": "Style to capture",
+          "type": "long",
+          "default": "Mid-century Japanese travel posters with flat color and bold shapes",
+          "required": true,
+          "help": "Describe the look, era or paste a short description of a reference"
+        },
+        {
+          "key": "medium",
+          "label": "Medium",
+          "type": "select",
+          "options": [
+            "Screenprint",
+            "Oil painting",
+            "Watercolor",
+            "Pencil sketch",
+            "Digital illustration",
+            "Photograph",
+            "Woodblock print"
+          ],
+          "default": "Screenprint",
+          "required": true
+        },
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "default": "a mountain village at dusk",
+          "required": true
+        },
+        {
+          "key": "strictness",
+          "label": "Strictness",
+          "type": "select",
+          "options": [
+            "Faithful but fresh",
+            "Very faithful",
+            "Loose inspiration"
+          ],
+          "default": "Faithful but fresh",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Style anatomy\n- Line: minimal outlines; shapes defined by color edges\n- Shapes: simplified, geometric mountains and rooftops, strong diagonals\n- Palette: indigo #2B3A67, vermilion #D94F30, ochre #E0A458, cream #F4EBD9, pine #2F5D50\n- Texture: slight ink grain, visible registration offsets, matte paper\n- Lighting: flat, implied by color contrast, no soft shading\n- Composition: tall poster layout, subject offset, generous sky area\n\nStyle block: mid-century screenprint poster, flat color fields, bold simplified geometric shapes, limited palette of indigo, vermilion, ochre and cream, slight misregistration, matte paper grain, strong diagonal composition, no gradients, no outlines, travel advertising aesthetic.\n\nExamples\n1. A mountain village at dusk, [style block], low angle with rooftops stacked up the slope, a vermilion sun disc.\n2. A mountain village at dusk, [style block], viewed from across a lake, mirrored in flat indigo water.\n3. A mountain village at dusk, [style block], close crop on a lit window and a pine silhouette.\n\nFailure modes: gradients creep in, so add \"no gradients, flat color\"; photoreal faces appear, so add \"faceless simplified figures\".\nShort block: flat-color screenprint poster, indigo vermilion cream, geometric shapes, paper grain.",
+      "notes": "Translating a vibe into measurable traits (palette, line, texture) gives more repeatable results than naming an artist. Save the short block as a snippet and append it to any subject.",
+      "useCase": "analyze",
+      "tags": [
+        "image-generation",
+        "branding"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-storyboard-to-shot-list",
+      "title": "Storyboard to AI video shot list",
+      "description": "Convert a script or story beat into a numbered shot list with ready-to-paste video prompts, built to stay consistent across clips.",
+      "body": "You are a video director and prompt engineer preparing an AI-generated video made of short clips.\n\nStory or script:\n{{story}}\n\nTotal runtime target: {{runtime}} seconds\nMax clip length my tool allows: {{clip_length}} seconds\nVisual style: {{visual_style}}\nAspect ratio: {{aspect_ratio}}\nMain characters and recurring props: {{recurring}}\n\nDo the following:\n1. Define a style and continuity header of under 60 words (look, palette, lighting, lens feel, character descriptions) that will be prepended to every shot prompt.\n2. Break the story into a numbered shot list that fits the runtime and never exceeds the max clip length. For each shot give: shot number, duration, shot type, camera movement, what happens, and how it connects to the next shot (cut, match cut, continued motion).\n3. Write a paste-ready video prompt per shot of 60 words or fewer that includes the action in plain language, camera movement and the subject's position in frame. Do not repeat the header; I will add it.\n4. Flag any shot that is risky for current video generators (complex hands, text on screen, crowds, fast physical interaction) and give a simpler alternative.\n5. Close with a total duration check.\n\nPresent the shot list as a table, with the prompts listed beneath it by shot number. No questions; state assumptions.",
+      "variables": [
+        {
+          "key": "story",
+          "label": "Story or script",
+          "type": "long",
+          "default": "A girl finds a glowing paper boat in a puddle, follows it through the rainy city, and releases it into the river at night.",
+          "required": true,
+          "help": "Paste your script or outline"
+        },
+        {
+          "key": "runtime",
+          "label": "Total runtime",
+          "type": "number",
+          "default": "30",
+          "required": true
+        },
+        {
+          "key": "clip_length",
+          "label": "Max clip length",
+          "type": "number",
+          "default": "6",
+          "required": true
+        },
+        {
+          "key": "visual_style",
+          "label": "Visual style",
+          "type": "text",
+          "default": "soft animated film, rainy blue palette, warm glowing accents",
+          "required": true
+        },
+        {
+          "key": "aspect_ratio",
+          "label": "Aspect ratio",
+          "type": "select",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "default": "16:9",
+          "required": true
+        },
+        {
+          "key": "recurring",
+          "label": "Characters and props",
+          "type": "text",
+          "default": "A girl of about 8 in a red raincoat, the glowing paper boat",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Header: Soft animated film look, rainy blue palette with warm amber glow from the boat, gentle diffused light, shallow depth of field, 16:9. Girl of about 8 with a red raincoat, black bob and yellow boots. Small paper boat glowing warm amber.\n\nShot list\n| # | Sec | Type | Camera | Action | Transition |\n| 1 | 6 | Wide | static | Rain on empty street, girl waits at curb | cut |\n| 2 | 5 | Close-up | slow push-in | Glowing boat floats in a puddle | match cut |\n| 3 | 6 | Medium | tracking | She follows the boat down a gutter stream | continued motion |\n| 4 | 6 | Wide | crane up | City lights blur as she runs under neon signs | cut |\n| 5 | 7 | Medium wide | slow dolly | At the river she kneels and sets the boat free | end |\n\nPrompts\n1. Wide shot, empty rainy city street at dusk, a small girl stands at the curb holding her hood, rain falling steadily, static camera.\n2. Close-up of a small paper boat glowing amber on a rain-dimpled puddle, camera pushing in slowly, ripples spreading.\n\nRisk flags: Shot 4 neon text may garble; use unlettered colored lights. Hands in shot 5 are risky; frame from behind her shoulder.\nDuration check: 30 seconds.",
+      "notes": "A shared continuity header does most of the work of keeping characters and look stable between clips. Generate shots individually and re-roll the weak ones rather than the whole sequence.",
+      "useCase": "plan",
+      "tags": [
+        "screenwriting",
+        "video-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-thumbnail-concept",
+      "title": "YouTube thumbnail concept generator",
+      "description": "Get several high-contrast thumbnail concepts with composition, text overlay and an image prompt for each, built around your video's hook.",
+      "body": "You are a YouTube thumbnail designer who knows what makes people click without misleading them.\n\nVideo title: {{video_title}}\nVideo summary or hook: {{hook}}\nChannel niche: {{niche}}\nOn-camera face available: {{has_face}}\nBrand colors: {{colors}}\n\nCreate {{count}} thumbnail concepts. For each concept provide:\n- Concept name and the single idea it communicates at a glance\n- Composition: where the subject, key object and text sit, using thirds or a simple layout sketch in words\n- Text overlay: 4 words or fewer, with font weight and color, and a reason it adds information beyond the title\n- Emotion or expression and any visual contrast (before/after, big/small, close-up/wide)\n- An image-generation prompt of 50 to 80 words for the background or hero visual, leaving clear room for the text\n- A readability check at phone-thumbnail size\n\nAvoid fake arrows, fake play buttons and misleading imagery. Rank the concepts by expected click appeal with a one-sentence reason, and suggest one A/B test between the top two. Output in sections, no preliminary questions.",
+      "variables": [
+        {
+          "key": "video_title",
+          "label": "Video title",
+          "type": "text",
+          "default": "I Built a Tiny Home for Under $5,000",
+          "required": true
+        },
+        {
+          "key": "hook",
+          "label": "Hook or summary",
+          "type": "long",
+          "default": "Time-lapse of building a 120 sq ft cabin using reclaimed materials, with a surprise cost breakdown at the end",
+          "required": true,
+          "help": "What happens or what the viewer learns"
+        },
+        {
+          "key": "niche",
+          "label": "Channel niche",
+          "type": "text",
+          "default": "DIY and small-space living",
+          "required": true
+        },
+        {
+          "key": "has_face",
+          "label": "Face on camera?",
+          "type": "select",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "default": "Yes",
+          "required": true
+        },
+        {
+          "key": "colors",
+          "label": "Brand colors",
+          "type": "text",
+          "default": "orange and charcoal",
+          "required": false
+        },
+        {
+          "key": "count",
+          "label": "Number of concepts",
+          "type": "number",
+          "default": "3",
+          "required": true
+        }
+      ],
+      "exampleOutput": "CONCEPT 1: \"The Receipt\"\nSingle idea: a whole cabin for less than a used laptop.\nComposition: finished cabin fills the right two-thirds; creator on the left third looking up in disbelief; price text top left over clean sky.\nText overlay: \"$4,870\" in extra-bold white sans serif on an orange block. It adds the exact figure the title only rounds to \"under $5,000\".\nExpression and contrast: wide-eyed, mouth open; tiny cabin against a huge price stamp.\nImage prompt: Small timber cabin with a corrugated metal roof and reclaimed-wood cladding in a forest clearing, warm late-afternoon light, vivid orange door and window trim, charcoal shadows, high contrast, wide empty sky on the left third for text, sharp focus, photographic style.\nPhone check: 6 characters in a solid block, readable at 120px wide.\n\nCONCEPT 2: \"From Junk\"\nSingle idea: a pile of scrap becomes a home.\nComposition: diagonal split; heap of pallets and old windows lower left, finished cabin interior upper right; text along the dividing line.\nText overlay: \"FROM JUNK\" in bold orange with charcoal outline. It adds the reclaimed-materials angle the title never mentions.\nExpression and contrast: no face needed; messy against tidy.\nImage prompt: Split scene, salvaged pallets and window frames on the left, bright tiny-home interior with pale plywood walls, loft bed and orange blanket on the right, natural light, strong contrast, open space along the diagonal for text.\nPhone check: the split reads clearly; keep text at 2 words.\n\nCONCEPT 3: \"No Plans\"\nSingle idea: the creator improvised the whole build.\nComposition: close-up of the creator on the left holding a hammer, bare cabin frame behind on the right; text across the bottom third.\nText overlay: \"NO PLANS\" in heavy white caps on charcoal. It adds a story hook the title lacks.\nExpression and contrast: confident grin; close face against a wide unfinished frame.\nImage prompt: Wooden cabin frame under construction in a sunlit field, exposed studs and rafters, tools in the foreground, orange sunset glow, dark empty band along the bottom for text, photographic style.\nPhone check: face and hammer stay clear; enlarge the text slightly.\n\nRANKING\n1. Concept 1: a concrete number gives curiosity and proof at a glance.\n2. Concept 2: a clear transformation, but less specific text.\n3. Concept 3: good personality, least information about the result.\n\nA/B TEST: Concept 1 against Concept 2, compared on click-through rate over the first 48 hours.",
+      "notes": "Text that adds information beyond the title performs better than text that repeats it. Always test candidates at phone-thumbnail size before committing.",
+      "useCase": "brainstorm",
+      "tags": [
+        "social-media",
+        "image-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "image-video-vague-idea-to-image-prompt",
+      "title": "Vague idea to detailed image prompt refiner",
+      "description": "Paste a rough idea and get back polished, structured image prompts, plus the choices the model made so you can steer the result.",
+      "body": "You are an expert at writing prompts for text-to-image models. I will give you a rough idea. Turn it into strong, specific prompts.\n\nMy rough idea: {{idea}}\nWhere the image will be used: {{purpose}}\nLook I'm after: {{look}}\nThings to avoid (optional): {{avoid}}\nTarget tool: {{tool}}\n\nProcess:\n1. Identify the subject, setting, action, mood and anything vague or missing. Fill gaps with the most likely intent rather than asking me questions.\n2. Write three prompts of different directions (for example realistic, stylized, minimal). Each should be a single paragraph of 40 to 90 words ordered by importance: subject, details, setting, composition and camera, lighting, style and medium, color palette. Use concrete nouns and visual terms; avoid filler such as \"masterpiece\", \"ultra HD\" or \"trending\".\n3. For each prompt add a short negative prompt line or an \"avoid\" clause, formatted to suit the target tool.\n4. List the five assumptions you made, so I can correct them.\n5. Give three one-word tweaks I could append to change the result (for example lighting or era).\n\nFormat: headings per prompt, then assumptions and tweaks. Do not mention any model version.",
+      "variables": [
+        {
+          "key": "idea",
+          "label": "Rough idea",
+          "type": "long",
+          "default": "a cozy reading nook on a rainy day",
+          "required": true,
+          "help": "A few words is fine"
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "Blog header image",
+          "required": true
+        },
+        {
+          "key": "look",
+          "label": "Look",
+          "type": "select",
+          "options": [
+            "Photorealistic",
+            "Illustration",
+            "3D render",
+            "Watercolor",
+            "Cinematic",
+            "Minimal flat"
+          ],
+          "default": "Photorealistic",
+          "required": true
+        },
+        {
+          "key": "avoid",
+          "label": "Things to avoid",
+          "type": "text",
+          "default": "people, text, clutter",
+          "required": false
+        },
+        {
+          "key": "tool",
+          "label": "Target tool",
+          "type": "select",
+          "options": [
+            "Midjourney",
+            "Stable Diffusion",
+            "Flux",
+            "ChatGPT image",
+            "Gemini image",
+            "Other"
+          ],
+          "default": "Midjourney",
+          "required": true
+        }
+      ],
+      "exampleOutput": "Prompt 1 (realistic): Cozy reading nook built into a bay window, deep green velvet cushion, a worn paperback and steaming mug on the sill, rain streaking the glass with a blurred gray garden beyond, warm lamp glow against cool window light, soft wool blanket, shallow depth of field, 35mm lens feel, eye-level composition with space on the right for a headline, muted green, cream and amber palette, photorealistic. --no people, text, clutter\n\nPrompt 2 (illustrated): A flat-color illustration of a window seat with stacked books and a mug, raindrops as diagonal lines on the glass, warm yellow lamp, teal and rust palette, simple shapes, gentle texture, horizontal composition. --no people, text\n\nPrompt 3 (minimal): Minimal composition, single armchair beside a rain-spattered window, beige wall, one lamp, large empty space, soft diffused light, muted tones, photographic.\n\nAssumptions: 1. Horizontal 16:9 for a blog. 2. Evening or overcast daylight. 3. No people. 4. Autumn feel. 5. Space reserved for a headline.\nTweaks: golden-hour, moody, vintage.",
+      "notes": "Ordering a prompt by importance gives the subject the most weight. Reviewing the assumptions list is the fastest way to steer the next round.",
+      "useCase": "rewrite",
+      "tags": [
+        "prompt-engineering",
+        "image-generation"
+      ],
+      "featured": false,
+      "models": [],
+      "license": "cc0"
+    }
+  ]
+}

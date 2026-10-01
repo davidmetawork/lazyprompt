@@ -1,0 +1,972 @@
+{
+  "category": "productivity",
+  "prompts": [
+    {
+      "key": "productivity-weekly-plan-from-task-dump",
+      "title": "Turn a messy task dump into a realistic weekly plan",
+      "description": "Paste everything on your mind and get a prioritized, time-boxed plan for the week that fits your real capacity.",
+      "body": "You are my planning partner. Turn the brain dump below into a realistic plan for the week of {{week_start}}.\n\nMy brain dump:\n{{task_dump}}\n\nMy constraints:\n- Working hours per day: {{hours_per_day}}\n- Fixed commitments (meetings, appointments, deadlines): {{fixed_commitments}}\n- Peak-energy time of day: {{peak_energy}}\n\nInstructions:\n1. Group the dump into projects or themes and drop exact duplicates.\n2. Pick at most 3 \"must win\" outcomes for the week. Everything else is secondary.\n3. Assign tasks to days, putting demanding work in my peak-energy window and leaving about 20% of each day unscheduled as buffer.\n4. If the total work exceeds my capacity, say so plainly and list what you moved to \"Not this week\", with a one-line reason each.\n5. Flag any task that is vague and rewrite it as a concrete next action starting with a verb.\n\nOutput format:\n- **Must-win outcomes** (max 3)\n- **Day-by-day plan** (Mon to Fri, each task with an estimate in minutes)\n- **Not this week** (task, reason)\n- **Risks and assumptions** (max 3 bullets)\n\nOnly ask me a question if a missing detail would change the plan significantly; otherwise state your assumption and continue.",
+      "variables": [
+        {
+          "key": "week_start",
+          "label": "Week starting",
+          "type": "text",
+          "required": true,
+          "default": "Monday 6 October",
+          "help": "Any date format works"
+        },
+        {
+          "key": "task_dump",
+          "label": "Task dump",
+          "type": "long",
+          "required": true,
+          "default": "Finish Q3 budget draft\nreply to Priya about vendor contract\nbook dentist\nprep slides for Thursday review\nfix onboarding doc typos\nresearch standing desks\nplan team offsite agenda\nexpense report\nlearn pivot tables",
+          "help": "Paste everything, in any order"
+        },
+        {
+          "key": "hours_per_day",
+          "label": "Focused hours per day",
+          "type": "number",
+          "required": true,
+          "default": "5",
+          "help": "Realistic deep-work hours, not total hours at desk"
+        },
+        {
+          "key": "fixed_commitments",
+          "label": "Fixed commitments",
+          "type": "text",
+          "required": true,
+          "default": "Team standup daily 9:30-9:45; Thursday 2pm review; Wednesday 12:30 dentist if booked"
+        },
+        {
+          "key": "peak_energy",
+          "label": "Peak energy time",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Morning",
+            "Midday",
+            "Afternoon",
+            "Evening"
+          ],
+          "default": "Morning"
+        }
+      ],
+      "exampleOutput": "**Must-win outcomes**\n1. Q3 budget draft finished and sent for comment (Tue)\n2. Thursday review slides ready by Wed EOD\n3. Vendor contract reply to Priya sent (Mon)\n\n**Day-by-day plan (5 focused hours/day)**\n- Mon: Reply to Priya re vendor contract (20) | Q3 budget draft, part 1 (150) | Expense report (30)\n- Tue: Q3 budget draft, part 2 and send for comment (180) | Book dentist (10) | Buffer\n- Wed: Thursday review slides, build (150) | Dry run and tidy (60)\n- Thu: Final slide polish (30) | Review at 2pm | Plan offsite agenda, rough outline (60)\n- Fri: Fix onboarding doc typos (30) | Offsite agenda finalize (60) | Weekly wrap-up (30)\n\n**Not this week**\n- Research standing desks: no deadline, low impact\n- Learn pivot tables: schedule 2 x 30 min next week once budget is out\n\n**Risks and assumptions**\n- Assumed the budget draft needs about 5.5 hours total; if finance data arrives late, Tuesday slips.\n- Assumed the dentist call is a short phone task, not an appointment this week.\n- Thursday has the least spare time, so slides must be done by Wednesday.",
+      "notes": "It forces a capacity check and a short 'Not this week' list, which is what keeps plans from collapsing by Wednesday. Re-run it on Wednesday with the remaining tasks to replan.",
+      "useCase": "plan",
+      "tags": [
+        "planning",
+        "time-management"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-eisenhower-matrix-sorter",
+      "title": "Sort your to-do list with an Eisenhower matrix",
+      "description": "Classify tasks into do now, schedule, delegate and drop, with a short reason for each call and a first action.",
+      "body": "Sort the task list below using the Eisenhower matrix (urgent vs important).\n\nContext about me and my goals: {{context}}\nMy top goal this {{period}}: {{top_goal}}\n\nTasks:\n{{tasks}}\n\nRules:\n- \"Urgent\" means a real consequence arrives soon if it is not done. A loud request is not automatically urgent.\n- \"Important\" means it clearly moves my top goal or protects something I care about.\n- Be decisive. If a task is ambiguous, pick the more likely quadrant and note what would change your mind.\n- Anything delegated should name who or what kind of person it could go to.\n\nOutput format: a table per quadrant with columns Task | Why | Next action (verb first, under 15 words).\n1. Do now (urgent and important)\n2. Schedule (important, not urgent), with a suggested timeframe\n3. Delegate or automate (urgent, not important)\n4. Drop or defer (neither)\n\nFinish with one sentence naming the single task that deserves my attention first.",
+      "variables": [
+        {
+          "key": "tasks",
+          "label": "Your tasks",
+          "type": "long",
+          "required": true,
+          "default": "Respond to client escalation\nQuarterly tax payment due Friday\nOrganize photo library\nDraft 2025 hiring plan\nAnswer 40 unread Slack threads\nBook flights for conference\nRead industry newsletter backlog\nUpdate website bio",
+          "help": "One task per line"
+        },
+        {
+          "key": "context",
+          "label": "About you",
+          "type": "long",
+          "required": true,
+          "default": "Founder of a 6-person design studio; revenue depends on two big clients."
+        },
+        {
+          "key": "top_goal",
+          "label": "Top goal",
+          "type": "text",
+          "required": true,
+          "default": "Land one new retainer client"
+        },
+        {
+          "key": "period",
+          "label": "Planning period",
+          "type": "select",
+          "required": true,
+          "options": [
+            "week",
+            "month",
+            "quarter"
+          ],
+          "default": "week"
+        }
+      ],
+      "exampleOutput": "**1. Do now**\n| Task | Why | Next action |\n|---|---|---|\n| Respond to client escalation | Major client at risk, directly tied to revenue | Call them within the hour |\n| Quarterly tax payment due Friday | Real penalty if missed | Pay online today |\n\n**2. Schedule**\n| Task | Why | Next action |\n|---|---|---|\n| Draft 2025 hiring plan | Shapes capacity for new retainer | Block 90 min Wed morning |\n| Book flights for conference | Prices rise; networking may bring clients | Book by Thursday |\n\n**3. Delegate or automate**\n| Task | Why | Next action |\n|---|---|---|\n| Answer 40 Slack threads | Most need a quick answer, not you | Ask studio manager to triage; reply only to flagged ones |\n\n**4. Drop or defer**\n- Organize photo library: defer to a quiet month\n- Read newsletter backlog: skim headlines only, archive the rest\n- Update website bio: move to schedule only if a pitch needs it\n\n**First attention:** the client escalation, because losing one of your two big clients would undo the retainer goal.",
+      "notes": "Defining urgent and important in the prompt stops the model from treating every request as urgent. Add your top goal so 'important' has something to measure against.",
+      "useCase": "analyze",
+      "tags": [
+        "decision-making",
+        "planning",
+        "productivity"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-meeting-notes-to-action-items",
+      "title": "Meeting notes to decisions and action items",
+      "description": "Convert raw notes or a transcript into a clean recap with decisions, owners, deadlines and open questions.",
+      "body": "Turn the raw meeting material below into a recap I can send to attendees.\n\nMeeting: {{meeting_title}}\nAttendees: {{attendees}}\nDate of meeting: {{meeting_date}}\n\nRaw notes or transcript:\n{{notes}}\n\nRules:\n- Use only what is in the material. Never invent owners, dates or decisions.\n- If an action has no clear owner or deadline, write \"Owner: unassigned\" or \"Due: not set\" and list it under Open questions as well.\n- Separate decisions (things agreed) from discussion (things only talked about).\n- Convert relative dates such as \"next Friday\" into calendar dates based on the meeting date.\n- Keep the tone {{tone}}.\n\nOutput format:\n**Summary** (3 sentences max)\n**Decisions** (bullets)\n**Action items** (table: Action | Owner | Due)\n**Open questions** (bullets)\n**Parked topics** (bullets, only if any)",
+      "variables": [
+        {
+          "key": "meeting_title",
+          "label": "Meeting title",
+          "type": "text",
+          "required": true,
+          "default": "Product launch sync"
+        },
+        {
+          "key": "attendees",
+          "label": "Attendees",
+          "type": "text",
+          "required": true,
+          "default": "Maria (PM), Ken (Eng), Sofia (Marketing), Dev (Support)"
+        },
+        {
+          "key": "meeting_date",
+          "label": "Meeting date",
+          "type": "text",
+          "required": true,
+          "default": "2025-03-12"
+        },
+        {
+          "key": "notes",
+          "label": "Notes or transcript",
+          "type": "long",
+          "required": true,
+          "default": "Maria: launch still Mar 28? Ken: backend ready but payments webhook flaky, needs two more days of testing. Sofia: email announcement draft by next Wed, need final pricing. Maria: pricing stays at 19/mo, decided. Dev: support docs not started, someone should own. Ken will test webhook by Mar 18. Talked about adding annual plan, not now.",
+          "help": "Paste raw notes, chat log or transcript"
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "required": true,
+          "options": [
+            "neutral and concise",
+            "friendly",
+            "formal"
+          ],
+          "default": "neutral and concise"
+        }
+      ],
+      "exampleOutput": "**Summary**\nThe team confirmed a March 28 launch target, contingent on the payments webhook passing tests. Pricing is settled at $19/month. Support documentation has no owner yet.\n\n**Decisions**\n- Launch target remains March 28\n- Pricing stays at $19/month\n\n**Action items**\n| Action | Owner | Due |\n|---|---|---|\n| Test and stabilize payments webhook | Ken | 2025-03-18 |\n| Draft launch email announcement | Sofia | 2025-03-19 |\n| Write support documentation | Unassigned | Not set |\n\n**Open questions**\n- Who owns support documentation?\n- Is the March 28 date still safe if webhook testing slips past March 18?\n\n**Parked topics**\n- Annual subscription plan (revisit after launch)",
+      "notes": "The 'never invent owners or dates' rule plus an Open questions list surfaces gaps instead of hiding them. Paste the result into your email or Slack as is.",
+      "useCase": "extract",
+      "tags": [
+        "meetings",
+        "summarization"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-inbox-triage-rules",
+      "title": "Design inbox triage rules and labels",
+      "description": "Get a simple email system: folders, filters, a daily routine and sample rules based on the mail you actually receive.",
+      "body": "Help me design an email triage system for {{email_client}}.\n\nMy role: {{role}}\nTypical daily volume: {{volume}} emails\nWhat fills my inbox:\n{{email_types}}\n\nMy biggest pain point: {{pain_point}}\n\nDesign a system with:\n1. No more than 6 labels or folders, with a clear one-line rule for what goes in each.\n2. Five to eight concrete filter or rule definitions I can set up today. For each, give the condition (sender, subject, keywords), the action, and what could go wrong.\n3. A daily routine with specific check times and a time limit for each pass.\n4. A short \"when in doubt\" decision flow, at most 4 steps.\n5. A template for two canned replies I would use most (short, human, no filler).\n\nKeep everything compatible with {{email_client}}'s real features. If a feature does not exist there, offer the closest alternative instead of pretending.\nOutput as numbered sections with headings.",
+      "variables": [
+        {
+          "key": "email_client",
+          "label": "Email app",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Gmail",
+            "Outlook",
+            "Apple Mail",
+            "Superhuman"
+          ],
+          "default": "Gmail"
+        },
+        {
+          "key": "role",
+          "label": "Your role",
+          "type": "text",
+          "required": true,
+          "default": "Operations manager at a 40-person logistics company"
+        },
+        {
+          "key": "volume",
+          "label": "Emails per day",
+          "type": "number",
+          "required": true,
+          "default": "120"
+        },
+        {
+          "key": "email_types",
+          "label": "What you receive",
+          "type": "long",
+          "required": true,
+          "default": "Customer escalations, vendor invoices, internal threads where I am cc'd, calendar invites, newsletters, automated alerts from the shipping system"
+        },
+        {
+          "key": "pain_point",
+          "label": "Biggest pain point",
+          "type": "text",
+          "required": true,
+          "default": "I check email every 10 minutes and still miss invoices and urgent customer issues"
+        }
+      ],
+      "exampleOutput": "**1. Labels**\n- Action: needs a reply or task from me today\n- Waiting: I replied, awaiting someone else\n- Finance: invoices and receipts\n- Read later: newsletters and FYIs\n- Alerts: automated shipping messages\n- Reference: archived threads I may need\n\n**2. Filters (Gmail)**\n- From shipping-system domain -> skip inbox, label Alerts, star if subject contains \"FAILED\". Risk: a real failure buried; the star rule covers it.\n- Subject contains invoice or from billing@ addresses -> label Finance, keep in inbox.\n- Header List-Unsubscribe present -> label Read later, skip inbox. Risk: a useful vendor update is hidden; skim weekly.\n- Messages where you are only cc'd -> label Read later, skip inbox.\n\n**3. Routine**\n- 9:00, 13:00, 16:30: 20 minutes each. Pass 1 handles Action only, the rest wait.\n\n**4. When in doubt**\n1. Two minutes or less? Do it now.\n2. Needs thought? Label Action, schedule time.\n3. Only informational? Archive.\n4. Not mine? Forward in one line, label Waiting.\n\n**5. Canned replies**\n\"Got it. I will get back to you by [day].\" / \"Thanks for flagging. Looping in [name], who owns this.\"",
+      "notes": "Providing what actually fills the inbox lets the model write rules that fit rather than generic advice. Build the filters one at a time and review for a week before adding more.",
+      "useCase": "plan",
+      "tags": [
+        "email",
+        "productivity",
+        "project-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-sop-writer",
+      "title": "Write a clear standard operating procedure",
+      "description": "Turn a rough description of how you do a task into a step-by-step SOP anyone on the team can follow.",
+      "body": "Write a standard operating procedure (SOP) for the process below.\n\nProcess name: {{process_name}}\nWho will follow it: {{audience}} (experience level: {{experience}})\nHow it works today, in rough form:\n{{rough_steps}}\n\nTools and systems involved: {{tools}}\n\nRequirements:\n- Use numbered steps, each starting with a verb and containing one action only.\n- Add a \"Done when\" check after any step where success is not obvious.\n- Call out common mistakes and what to do when something goes wrong, using the details I gave. Do not invent systems or policies I did not mention; mark anything uncertain as [CONFIRM].\n- Include who owns each step if it changes hands.\n- Keep the whole SOP under 600 words.\n\nOutput format:\n**Purpose** (1 sentence)\n**When to use it / Trigger**\n**Before you start** (checklist: access, inputs)\n**Steps**\n**Troubleshooting** (problem -> fix)\n**Owner and review date**\n\nAfter the SOP, list up to 3 questions whose answers would make it more precise.",
+      "variables": [
+        {
+          "key": "process_name",
+          "label": "Process name",
+          "type": "text",
+          "required": true,
+          "default": "Onboarding a new freelance contractor"
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "required": true,
+          "default": "Operations coordinator"
+        },
+        {
+          "key": "experience",
+          "label": "Experience level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "new to the task",
+            "some experience",
+            "expert"
+          ],
+          "default": "new to the task"
+        },
+        {
+          "key": "rough_steps",
+          "label": "Rough steps",
+          "type": "long",
+          "required": true,
+          "default": "get signed contract from legal, make them an account in Notion and Slack, add to invoicing sheet with rate, send welcome email with project brief, schedule kickoff call, if they dont reply in 2 days ping them, add to payment calendar"
+        },
+        {
+          "key": "tools",
+          "label": "Tools",
+          "type": "text",
+          "required": true,
+          "default": "Notion, Slack, Google Sheets, DocuSign"
+        }
+      ],
+      "exampleOutput": "**Purpose**\nGet a new freelancer set up, paid correctly and ready to start within two business days.\n\n**Trigger**\nA contract is approved and a start date is set.\n\n**Before you start**\n- [ ] Access to DocuSign, Notion and Slack admin\n- [ ] Contractor's rate and project brief\n\n**Steps**\n1. Confirm the contract is signed in DocuSign. Done when the status reads Completed.\n2. Create the contractor's Notion account and add them to the project workspace.\n3. Invite them to Slack, guest access, relevant channels only.\n4. Add them to the invoicing sheet with name, rate and start date.\n5. Add their first payment date to the payment calendar.\n6. Send the welcome email with the project brief attached.\n7. Schedule a kickoff call and send the invite.\n8. If no reply to the welcome email within 2 days, send a Slack or email nudge.\n\n**Troubleshooting**\n- Contract unsigned after 3 days -> ask legal to resend [CONFIRM escalation path]\n- No Slack acceptance -> resend invite and check the email address\n\n**Owner and review date**\nOperations coordinator, review every 6 months.\n\n**Questions:** What is the standard payment cycle? Are guests limited to certain Slack channels?",
+      "notes": "The [CONFIRM] rule stops invented policy from slipping into an official document. For best results, describe the process the way you would explain it to a colleague, even if messy.",
+      "useCase": "generate",
+      "tags": [
+        "templates",
+        "documentation",
+        "project-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-checklist-generator",
+      "title": "Generate a reusable checklist for any recurring task",
+      "description": "Create a tight, ordered checklist with time estimates and common failure points for a task you repeat.",
+      "body": "Create a reusable checklist for: {{task}}\n\nContext: {{context}}\nWho does it and how often: {{frequency}}\nLevel of rigor needed: {{rigor}}\n\nBuild the checklist with these rules:\n- Group items into phases: Before, During, After. Use only the phases that apply.\n- Order items by the sequence they should happen in real life.\n- Each item must be a single, observable action (\"Verify X\", not \"Think about X\").\n- Mark the 3 to 5 items most often forgotten or most costly to miss with a warning symbol.\n- Add a rough time estimate at the end of each phase.\n- Keep to {{max_items}} items. Cut anything a competent person would do automatically.\n\nAfter the checklist, add a short section \"How to improve this list\" with 2 or 3 questions I should answer after the next time I use it.\n\nOutput as a markdown checklist with [ ] boxes so I can paste it into a notes app.",
+      "variables": [
+        {
+          "key": "task",
+          "label": "Task",
+          "type": "text",
+          "required": true,
+          "default": "Preparing and publishing a weekly newsletter"
+        },
+        {
+          "key": "context",
+          "label": "Context",
+          "type": "long",
+          "required": true,
+          "default": "Solo creator, uses Substack, includes a sponsor slot and 3 curated links"
+        },
+        {
+          "key": "frequency",
+          "label": "Who and how often",
+          "type": "text",
+          "required": true,
+          "default": "Me, every Thursday"
+        },
+        {
+          "key": "rigor",
+          "label": "Rigor",
+          "type": "select",
+          "required": true,
+          "options": [
+            "light",
+            "standard",
+            "high stakes"
+          ],
+          "default": "light"
+        },
+        {
+          "key": "max_items",
+          "label": "Max items",
+          "type": "number",
+          "required": true,
+          "default": "15"
+        }
+      ],
+      "exampleOutput": "**Before (about 60 min)**\n- [ ] Collect 3 links and write a one-line take on each\n- [ ] Confirm the sponsor copy and link are the latest version ⚠\n- [ ] Draft the intro in under 100 words\n- [ ] Choose a subject line and one backup\n\n**During (about 25 min)**\n- [ ] Paste content into the Substack editor and apply the template\n- [ ] Click every link, including the sponsor link ⚠\n- [ ] Add alt text to images\n- [ ] Check the preview on mobile\n- [ ] Send a test email to yourself ⚠\n\n**After (about 10 min)**\n- [ ] Schedule or publish at the usual time\n- [ ] Share on one social channel\n- [ ] Record open rate and clicks in your tracking sheet\n- [ ] Send sponsor the live link and screenshot ⚠\n\n**How to improve this list**\n1. Which step took longest, and can it be templated?\n2. Did any link or detail fail after sending?\n3. What did you do that is not on the list?",
+      "notes": "Limiting the item count and flagging the costly-to-miss steps keeps the list usable rather than exhaustive. Reuse it and revise after each run using the improvement questions.",
+      "useCase": "generate",
+      "tags": [
+        "templates",
+        "project-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-time-blocking-schedule",
+      "title": "Build a time-blocked schedule for tomorrow",
+      "description": "Turn tasks, meetings and your energy pattern into an hour-by-hour day with breaks and a realistic buffer.",
+      "body": "Create a time-blocked schedule for {{day}}.\n\nFixed events (cannot move):\n{{fixed_events}}\n\nTasks I want to do, with estimates if known:\n{{tasks}}\n\nMy day runs from {{start_time}} to {{end_time}}. My energy pattern: {{energy_pattern}}\n\nScheduling rules:\n- Place the single most important task first in my best energy window.\n- Group shallow work (email, admin, quick replies) into one or two batches.\n- Add a 10-minute break after every 90 minutes of focused work and a proper lunch break.\n- Leave at least 30 minutes of unallocated buffer.\n- Add 25% to my time estimates when they look optimistic, and tell me which ones you changed.\n- If everything does not fit, list what is cut and why instead of cramming it in.\n\nOutput format: a table with columns Time | Block | Type (deep, shallow, meeting, break, buffer). After the table, give a 3-line \"If the day goes off track\" fallback plan.",
+      "variables": [
+        {
+          "key": "day",
+          "label": "Day",
+          "type": "text",
+          "required": true,
+          "default": "Tomorrow (Tuesday)"
+        },
+        {
+          "key": "fixed_events",
+          "label": "Fixed events",
+          "type": "long",
+          "required": true,
+          "default": "10:00-10:30 standup\n14:00-15:00 client call"
+        },
+        {
+          "key": "tasks",
+          "label": "Tasks",
+          "type": "long",
+          "required": true,
+          "default": "Write project proposal (2h)\nReview two pull requests (45m)\nInvoice follow-ups (30m)\nPlan next sprint (1h)\nReply to emails"
+        },
+        {
+          "key": "start_time",
+          "label": "Start",
+          "type": "text",
+          "required": true,
+          "default": "08:30"
+        },
+        {
+          "key": "end_time",
+          "label": "End",
+          "type": "text",
+          "required": true,
+          "default": "17:30"
+        },
+        {
+          "key": "energy_pattern",
+          "label": "Energy pattern",
+          "type": "text",
+          "required": true,
+          "default": "Sharp until noon, slump after lunch, partial recovery around 16:00"
+        }
+      ],
+      "exampleOutput": "| Time | Block | Type |\n|---|---|---|\n| 08:30-10:00 | Write project proposal (first 90 min; your most important task) | Deep |\n| 10:00-10:30 | Standup | Meeting |\n| 10:30-10:40 | Break | Break |\n| 10:40-11:30 | Finish proposal (estimate raised to 2.5h) | Deep |\n| 11:30-12:15 | Review two pull requests | Deep |\n| 12:15-13:00 | Lunch | Break |\n| 13:00-13:45 | Email and invoice follow-ups | Shallow |\n| 13:45-14:00 | Prep for client call | Buffer |\n| 14:00-15:00 | Client call | Meeting |\n| 15:00-15:30 | Buffer | Buffer |\n| 15:30-16:30 | Plan next sprint | Deep |\n| 16:30-17:30 | Overflow, email catch-up, wrap-up | Shallow |\n\n**Changed estimates:** proposal from 2h to 2.5h.\n\n**If the day goes off track**\n1. Protect the proposal; move sprint planning to tomorrow.\n2. Shrink email to a 15-minute scan for urgent items.\n3. Use the 15:00 buffer for whatever is left.",
+      "notes": "Telling the model your energy pattern lets it place deep work where you are sharpest, and the estimate adjustment counters the usual optimism about how long tasks take.",
+      "useCase": "plan",
+      "tags": [
+        "time-management",
+        "productivity"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-project-kickoff-plan",
+      "title": "Create a project kickoff plan",
+      "description": "Get a one-page kickoff plan covering goals, scope, roles, milestones, risks and the agenda for the kickoff meeting.",
+      "body": "Act as an experienced project manager. Draft a kickoff plan for this project.\n\nProject: {{project_name}}\nWhat it is and why it matters: {{project_summary}}\nDeadline or target date: {{deadline}}\nTeam and roles: {{team}}\nBudget or resource limits: {{constraints}}\nProject size: {{size}}\n\nProduce:\n1. **Goal and success criteria**: one goal sentence, then 3 measurable outcomes.\n2. **Scope**: in scope, explicitly out of scope, and 2 assumptions to confirm.\n3. **Roles**: a simple table of who is responsible for what, and who decides.\n4. **Milestones**: 4 to 7 milestones with target dates working backward from the deadline. Use relative dates if I did not supply a start date.\n5. **Top 5 risks**: each with likelihood (low, medium, high), impact, and one mitigation.\n6. **Communication rhythm**: meetings, updates and channels, sized for a {{size}} project.\n7. **Kickoff meeting agenda**: 45 minutes, with time per item.\n\nDo not invent facts about the team or constraints I gave. If something critical is missing, list it under \"Information needed before kickoff\" at the end.",
+      "variables": [
+        {
+          "key": "project_name",
+          "label": "Project name",
+          "type": "text",
+          "required": true,
+          "default": "Customer portal redesign"
+        },
+        {
+          "key": "project_summary",
+          "label": "Summary",
+          "type": "long",
+          "required": true,
+          "default": "Replace the outdated customer portal so users can self-serve invoices and support tickets, cutting support emails by 30%."
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "required": true,
+          "default": "Launch by 15 June"
+        },
+        {
+          "key": "team",
+          "label": "Team",
+          "type": "text",
+          "required": true,
+          "default": "PM (me), 2 engineers, 1 designer, part-time QA, support lead as stakeholder"
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "required": true,
+          "default": "No new hires; design vendor budget capped at 10k"
+        },
+        {
+          "key": "size",
+          "label": "Size",
+          "type": "select",
+          "required": true,
+          "options": [
+            "small",
+            "medium",
+            "large"
+          ],
+          "default": "small"
+        }
+      ],
+      "exampleOutput": "**1. Goal and success criteria**\nLaunch a self-service customer portal by 15 June that reduces support email volume.\n- Support emails drop 30% within 60 days of launch\n- 70% of active customers log in at least once in the first month\n- Invoice download works without support help in usability tests\n\n**2. Scope**\nIn: invoice access, ticket submission and tracking, login. Out: billing changes, mobile app. Assumptions to confirm: existing login system is reused; invoice data is available through an API.\n\n**3. Roles**\n| Area | Owner | Decides |\n|---|---|---|\n| Delivery and timeline | PM | PM |\n| Design | Designer | Designer with support lead input |\n| Build | Engineers | Lead engineer on technical choices |\n| Quality | QA | PM on go/no-go |\n\n**4. Milestones**\nRequirements locked (week 2), designs approved (week 5), core build done (week 10), QA complete (week 13), launch 15 June.\n\n**5. Risks**\n1. Invoice API gaps (medium/high): spike in week 1.\n2. Vendor spend overrun (low/medium): fixed-scope contract.\n3. QA availability (high/medium): schedule tests early.\n\n**6. Communication**\nWeekly 30-min sync, written update every Friday, shared channel for daily questions.\n\n**7. Kickoff agenda (45 min)**\nGoals 10, scope 10, roles 5, milestones 10, risks 5, next steps 5.\n\n**Information needed:** start date, API owner.",
+      "notes": "The explicit 'do not invent' line plus a final missing-information list keeps the plan honest. Run it again once the open items are answered.",
+      "useCase": "plan",
+      "tags": [
+        "project-management",
+        "planning",
+        "meetings"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-sprint-retro-facilitator",
+      "title": "Plan and run a team retrospective",
+      "description": "Get a facilitation plan with a format, timed agenda, prompts and a way to turn feedback into owned actions.",
+      "body": "Be my facilitator for a team retrospective.\n\nTeam: {{team_description}}\nPeriod being reviewed: {{period}}\nMeeting length: {{length}} minutes\nWhat happened (highlights, incidents, tensions): {{what_happened}}\nTeam mood: {{mood}}\nRetro format preference: {{format}}\n\nProvide:\n1. A timed agenda that adds up to the meeting length, with the purpose of each segment.\n2. A short opening activity that suits the team's mood.\n3. The exact prompts or questions to use for each phase. Make them specific to what happened, not generic.\n4. Facilitation tips for the 2 most likely difficulties given the context (for example, one person dominating or blame creeping in).\n5. A method to cluster feedback and choose at most 3 items to act on.\n6. An action-item template with: action, owner, due date, how we will know it worked.\n7. A short follow-up message I can send after the retro.\n\nIf the format preference is \"you choose\", pick the best one for this team and explain why in two sentences.",
+      "variables": [
+        {
+          "key": "team_description",
+          "label": "Team",
+          "type": "text",
+          "required": true,
+          "default": "Six-person product squad, two remote"
+        },
+        {
+          "key": "period",
+          "label": "Period",
+          "type": "text",
+          "required": true,
+          "default": "Last 2-week sprint"
+        },
+        {
+          "key": "length",
+          "label": "Length (minutes)",
+          "type": "number",
+          "required": true,
+          "default": "60"
+        },
+        {
+          "key": "what_happened",
+          "label": "What happened",
+          "type": "long",
+          "required": true,
+          "default": "We shipped the billing update but had a production bug on day 3. Two stories carried over. Some frustration about unclear acceptance criteria."
+        },
+        {
+          "key": "mood",
+          "label": "Mood",
+          "type": "select",
+          "required": true,
+          "options": [
+            "energized",
+            "tired",
+            "tense",
+            "neutral"
+          ],
+          "default": "energized"
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Start/Stop/Continue",
+            "4Ls",
+            "Mad/Sad/Glad",
+            "you choose"
+          ],
+          "default": "Start/Stop/Continue"
+        }
+      ],
+      "exampleOutput": "**Format chosen:** Start/Stop/Continue, since the team is tired and needs a simple structure.\n\n**1. Agenda (60 min)**\n- 0-5 Opening check-in\n- 5-10 Review last retro's actions\n- 10-25 Silent writing of cards\n- 25-40 Cluster and vote\n- 40-55 Actions\n- 55-60 Close\n\n**2. Opening**\nOne-word weather report: \"Describe this sprint as weather.\"\n\n**3. Prompts**\n- Start: What would have prevented the day-3 bug?\n- Stop: What made acceptance criteria unclear?\n- Continue: What helped us ship billing?\n\n**4. Facilitation tips**\n- Blame creeping in on the bug: reframe to \"what in our process allowed this?\"\n- Remote people quiet: use a shared board with silent writing first.\n\n**5. Choosing**\nGroup similar cards, dot-vote with 3 votes each, take top 3.\n\n**6. Action template**\nAction | Owner | Due | Success signal\n\n**7. Follow-up**\n\"Thanks for a candid retro. Three actions are in the board with owners. We will review them first thing next retro.\"",
+      "notes": "Feeding in what actually happened makes prompts specific rather than generic. Ask for a second format as a backup if you facilitate often.",
+      "useCase": "plan",
+      "tags": [
+        "meetings"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-voice-memo-to-document",
+      "title": "Turn a voice memo transcript into a clean document",
+      "description": "Convert a rambling spoken transcript into a structured doc, keeping your ideas and voice while removing the noise.",
+      "body": "Below is a raw transcript of a voice memo I recorded. Turn it into a {{doc_type}}.\n\nTranscript:\n{{transcript}}\n\nAudience: {{audience}}\nVoice: {{voice}}\nTarget length: about {{length}} words\n\nRules:\n- Keep my ideas, examples and opinions. Remove filler words, false starts, repetition and tangents unrelated to the main point.\n- Reorder content into a logical structure, with headings if the length warrants them.\n- Do not add facts, statistics or claims I did not say. If something seems missing or unclear, mark it [CHECK: reason] inline.\n- Fix obvious transcription errors only where the meaning is clear.\n- Preserve numbers, names and dates exactly as spoken.\n\nOutput the document first. Then add \"Loose ends\": a short list of things I mentioned but did not finish, and 2 questions that would strengthen the piece.",
+      "variables": [
+        {
+          "key": "doc_type",
+          "label": "Document type",
+          "type": "select",
+          "required": true,
+          "options": [
+            "one-page brief",
+            "blog post draft",
+            "project update",
+            "process document"
+          ],
+          "default": "one-page brief"
+        },
+        {
+          "key": "transcript",
+          "label": "Transcript",
+          "type": "long",
+          "required": true,
+          "default": "so um I was thinking about our onboarding, like new customers keep dropping off after the first week, I think its because we never tell them what to do after they sign up, we send one welcome email and that's it. Sarah said maybe a checklist inside the app. I also think we should call the top 20 accounts, thats like, maybe a day of work. Oh and the pricing page needs fixing but that's separate."
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "required": true,
+          "default": "Leadership team"
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "select",
+          "required": true,
+          "options": [
+            "plain and direct",
+            "warm",
+            "formal"
+          ],
+          "default": "plain and direct"
+        },
+        {
+          "key": "length",
+          "label": "Length (words)",
+          "type": "number",
+          "required": true,
+          "default": "300"
+        }
+      ],
+      "exampleOutput": "**Onboarding: Reducing First-Week Drop-Off**\n\n**The problem**\nNew customers are dropping off after their first week. I believe the cause is that we give them no guidance after sign-up: today they receive a single welcome email and nothing more. [CHECK: drop-off rate not stated]\n\n**What I propose**\n1. **In-app checklist.** Sarah suggested a checklist inside the product that walks new users through their first key actions.\n2. **Personal outreach.** Call our top 20 accounts directly. I estimate this takes about one day of work.\n\n**Why this should work**\nCustomers who know what to do next are more likely to reach value before they lose interest.\n\n**Out of scope for now**\nThe pricing page needs fixing, but that is a separate project.\n\n**Loose ends**\n- Which actions should the checklist include?\n- How is \"top 20 accounts\" defined?\n\n**Questions to strengthen this piece**\n1. What is the current week-one drop-off percentage?\n2. What does a successful first week look like?",
+      "notes": "The [CHECK] marker keeps the model from filling gaps with plausible-sounding inventions. Paste transcripts straight from your dictation tool without cleaning them first.",
+      "useCase": "rewrite",
+      "tags": [
+        "note-taking",
+        "writing",
+        "documentation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-note-taking-templates",
+      "title": "Design note templates for a personal knowledge base",
+      "description": "Create a small set of reusable note templates, with fields and linking rules, for your note-taking app.",
+      "body": "Design a set of note templates for my personal knowledge base in {{app}}.\n\nWhat I use notes for: {{purpose}}\nWhat I mostly capture: {{sources}}\nHow I want to retrieve notes later: {{retrieval}}\nMaturity: {{maturity}}\n\nCreate 4 to 6 templates, no more. For each template give:\n- Name and when to use it (one line)\n- The exact template text I can paste, with field names and short prompts in brackets\n- Suggested properties, tags or links I should always fill in\n- One filled-in example of 3 or 4 lines\n\nAlso provide:\n1. A folder, tag or link scheme that fits {{app}} and stays simple (no more than 8 top-level tags or folders).\n2. A 5-minute weekly habit to keep the system tidy.\n3. A list of 3 mistakes to avoid at my maturity level.\n\nFavor fewer fields over more. If a field is rarely useful, leave it out and tell me.",
+      "variables": [
+        {
+          "key": "app",
+          "label": "Notes app",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Obsidian",
+            "Notion",
+            "Apple Notes",
+            "Evernote",
+            "plain markdown files"
+          ],
+          "default": "Obsidian"
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "long",
+          "required": true,
+          "default": "Keeping track of what I learn as a self-taught data analyst, and drafting blog posts from it."
+        },
+        {
+          "key": "sources",
+          "label": "Sources",
+          "type": "text",
+          "required": true,
+          "default": "Online courses, books, articles, work problems and solutions"
+        },
+        {
+          "key": "retrieval",
+          "label": "Retrieval",
+          "type": "text",
+          "required": true,
+          "default": "Find by topic, and quickly find 'how did I solve this before'"
+        },
+        {
+          "key": "maturity",
+          "label": "Experience with note-taking",
+          "type": "select",
+          "required": true,
+          "options": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ],
+          "default": "beginner"
+        }
+      ],
+      "exampleOutput": "**Templates (Obsidian)**\n\n**1. Concept note**: use for one idea in your own words.\n```\n# [Concept]\n**In one sentence:** \n**Why it matters:** \n**Example:** \n**Related:** [[ ]]\nSource: \n```\nAlways fill: tag #concept, one link to a related note.\nExample: \"Window functions: compute across rows related to the current row. Example: running total of sales.\"\n\n**2. Problem and solution**: for work problems.\n```\n# [Problem in plain words]\n**Context:** \n**What I tried:** \n**What worked:** \n**Code or steps:** \n```\nAlways fill: tool tag, date.\n\n**3. Source note**: for books, courses and articles (title, link, 3 key takeaways, my reaction).\n**4. Blog seed**: a rough idea with audience and a one-line angle.\n\n**Scheme**\nTags: #concept, #problem, #source, #blog-seed, plus tool tags (#sql, #python). Link, do not file.\n\n**Weekly habit (5 min)**\nReview notes created this week, add at least one link to each.\n\n**Mistakes to avoid**\n1. Copying quotes instead of rewriting them.\n2. Adding too many tags.\n3. Perfecting templates instead of writing notes.",
+      "notes": "Capping the template count and asking for an example per template prevents an over-engineered system. Try each template for two weeks before asking for changes.",
+      "useCase": "generate",
+      "tags": [
+        "note-taking",
+        "templates"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-decision-matrix",
+      "title": "Weighted decision matrix for a tough choice",
+      "description": "Compare options against criteria that matter to you, with weights, scores, and a sensitivity check on the result.",
+      "body": "Help me make a decision using a weighted decision matrix.\n\nDecision: {{decision}}\nOptions: {{options}}\nContext and constraints: {{context}}\nThings that matter most to me: {{priorities}}\n\nSteps:\n1. Propose 5 to 7 criteria based on what I said matters, and add any critical one I missed (flag it as added).\n2. Assign weights that sum to 100 and justify the top 2 in one line each.\n3. Score each option from 1 to 5 per criterion with a one-phrase reason. Where scores depend on facts I did not give, mark them as \"assumed\" and state the assumption.\n4. Show a table with weighted totals and rank the options.\n5. Sensitivity check: show which single weight or score change would flip the ranking.\n6. Give your recommendation in two sentences, plus what to verify before committing.\n\nBe honest if the result is close. Do not pretend precision the inputs do not support. Present the table in plain markdown.",
+      "variables": [
+        {
+          "key": "decision",
+          "label": "Decision",
+          "type": "text",
+          "required": true,
+          "default": "Which project management tool should our 8-person team adopt?"
+        },
+        {
+          "key": "options",
+          "label": "Options",
+          "type": "text",
+          "required": true,
+          "default": "Asana, Trello, Linear, ClickUp"
+        },
+        {
+          "key": "context",
+          "label": "Context",
+          "type": "long",
+          "required": true,
+          "default": "Team is mixed: engineers and marketers. Budget about 12 dollars per seat per month. Currently using spreadsheets."
+        },
+        {
+          "key": "priorities",
+          "label": "What matters most",
+          "type": "text",
+          "required": true,
+          "default": "Easy adoption by non-technical people, timeline views, low cost"
+        }
+      ],
+      "exampleOutput": "**Criteria and weights**\nEase of adoption 30, Timeline/planning views 20, Cost 20, Engineering workflow fit 15, Integrations 10, Reporting 5 (added: reporting).\nAdoption is highest because the team is mixed and currently on spreadsheets.\n\n| Criterion (weight) | Asana | Trello | Linear | ClickUp |\n|---|---|---|---|---|\n| Adoption (30) | 4 | 5 | 3 | 3 |\n| Timelines (20) | 5 | 2 | 3 | 4 |\n| Cost (20) | 3 | 5 | 4 | 4 |\n| Eng fit (15) | 3 | 2 | 5 | 4 |\n| Integrations (10) | 5 | 4 | 4 | 4 |\n| Reporting (5) | 4 | 2 | 3 | 4 |\n| **Total** | **3.95** | **3.75** | **3.55** | **3.60** |\n\nScores are assumed from general product positioning; pricing tiers should be verified.\n\n**Sensitivity:** Trello overtakes Asana if timelines weight drops below about 12 or Asana's cost score is 2.\n\n**Recommendation**\nAsana narrowly leads, with Trello a close second. Run a two-week trial with one real project in each, and confirm current pricing for 8 seats.",
+      "notes": "Telling the model to flag assumptions and show a sensitivity check prevents false precision. Edit the weights yourself, then ask it to recalculate.",
+      "useCase": "analyze",
+      "tags": [
+        "decision-making",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-goal-breakdown-roadmap",
+      "title": "Break a big goal into milestones and weekly actions",
+      "description": "Turn a goal you keep putting off into a dated roadmap with milestones, first actions and a way to track progress.",
+      "body": "Help me turn a big goal into an executable plan.\n\nGoal: {{goal}}\nDeadline: {{deadline}}\nTime I can realistically give it: {{weekly_hours}} hours per week\nWhere I am today: {{starting_point}}\nObstacles or past failures: {{obstacles}}\n\nBuild the plan as follows:\n1. Restate the goal as a specific, measurable outcome. If mine is vague, propose a sharper version and tell me what you changed.\n2. Define 3 to 5 milestones, each with a target date and a \"proof of completion\" (something observable).\n3. For the first milestone, list weekly actions for each week, sized to my available hours.\n4. Give me a \"first 15 minutes\" action I can start today.\n5. For each obstacle I listed, give one prevention tactic and one recovery tactic if I fall behind.\n6. Define a 10-minute weekly check-in with three questions and a rule for when to adjust the plan.\n\nBe honest if the deadline and hours do not match the goal, and offer a scoped-down option. Output as headed sections and a short table for milestones.",
+      "variables": [
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "required": true,
+          "default": "Run a half marathon"
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "required": true,
+          "default": "In 16 weeks"
+        },
+        {
+          "key": "weekly_hours",
+          "label": "Hours per week",
+          "type": "number",
+          "required": true,
+          "default": "4"
+        },
+        {
+          "key": "starting_point",
+          "label": "Starting point",
+          "type": "long",
+          "required": true,
+          "default": "I can run about 5km without stopping, twice a week, slow pace."
+        },
+        {
+          "key": "obstacles",
+          "label": "Obstacles",
+          "type": "long",
+          "required": true,
+          "default": "Skipping runs when work gets busy, mild knee soreness, no plan"
+        }
+      ],
+      "exampleOutput": "**1. Sharper goal**\nComplete a 21.1 km race in 16 weeks at a comfortable pace, finishing without injury. (Changed: added \"without injury\" and a pace-free finishing criterion.)\n\n**2. Milestones**\n| # | Target | Date | Proof |\n|---|---|---|---|\n| 1 | 8 km continuous | Week 4 | Logged run |\n| 2 | 12 km | Week 8 | Logged run |\n| 3 | 16 km | Week 12 | Logged run |\n| 4 | 19 km, then taper | Week 14 | Logged run |\n| 5 | Race day | Week 16 | Official time |\n\n**3. Milestone 1 weekly actions (4 hours available)**\n- Week 1: 3 runs (4, 4, 6 km), one 20-minute strength session\n- Week 2: 3 runs (4, 5, 6 km), strength\n- Week 3: 3 runs (5, 5, 7 km), strength\n- Week 4: 3 runs (4, 5, 8 km), lighter strength\n\n**4. First 15 minutes**\nPut three run slots in your calendar this week and lay out your shoes.\n\n**5. Obstacles**\n- Skipped runs: prevention, calendar-block the slots; recovery, do a 20-minute run instead of nothing.\n- Knee soreness: prevention, strength work; recovery, rest 2 days, then see a physio if it persists.\n\n**6. Weekly check-in**\nDid I hit 3 runs? How did my knee feel? What gets in the way next week? Adjust if you miss 2 weeks in a row.",
+      "notes": "The plan asks for a proof of completion per milestone and a tactic per obstacle, which turns a wish into something checkable. Run the check-in questions weekly and paste your answers back to re-plan.",
+      "useCase": "plan",
+      "tags": [
+        "habits",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-delegation-brief",
+      "title": "Write a delegation brief that avoids rework",
+      "description": "Turn a task in your head into a clear brief covering outcome, boundaries, deadline and how you want updates.",
+      "body": "Write a delegation brief I can send to the person taking over a task.\n\nTask: {{task}}\nWho I am delegating to: {{person}} (their experience with this: {{experience}})\nWhy it matters: {{why}}\nWhat a good result looks like to me: {{success}}\nDeadline: {{deadline}}\nDecisions they can make alone vs. check with me: {{authority}}\nDelegation style: {{style}}\n\nWrite the brief in the first person, as me, in a warm and direct tone. Include:\n- The outcome I want (not just the steps) and why it matters\n- Definition of done, in 3 bullets or fewer\n- Resources, examples or context they should read first (use placeholders like [link] where I did not provide them)\n- Boundaries: what they can decide alone and when to check in\n- Checkpoints and how I would like updates (frequency and format)\n- An invitation to ask questions and to propose a better approach\n\nKeep it under 250 words. After the brief, add a short list titled \"Before you send\" with 3 things I should confirm so the task does not come back to me.",
+      "variables": [
+        {
+          "key": "task",
+          "label": "Task",
+          "type": "long",
+          "required": true,
+          "default": "Create the monthly customer metrics report and present highlights in the Monday leadership meeting."
+        },
+        {
+          "key": "person",
+          "label": "Person",
+          "type": "text",
+          "required": true,
+          "default": "Jordan, analyst"
+        },
+        {
+          "key": "experience",
+          "label": "Experience",
+          "type": "select",
+          "required": true,
+          "options": [
+            "new to it",
+            "has done similar",
+            "experienced"
+          ],
+          "default": "new to it"
+        },
+        {
+          "key": "why",
+          "label": "Why it matters",
+          "type": "text",
+          "required": true,
+          "default": "Leadership uses it to decide where to invest next quarter."
+        },
+        {
+          "key": "success",
+          "label": "What good looks like",
+          "type": "text",
+          "required": true,
+          "default": "Accurate numbers, one page, three insights with a recommended action each"
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "required": true,
+          "default": "Draft by Thursday noon; present Monday"
+        },
+        {
+          "key": "authority",
+          "label": "Decision rights",
+          "type": "text",
+          "required": true,
+          "default": "Can choose layout and charts alone; check with me before changing metric definitions"
+        },
+        {
+          "key": "style",
+          "label": "Style",
+          "type": "select",
+          "required": true,
+          "options": [
+            "hands-off",
+            "regular check-ins",
+            "close guidance"
+          ],
+          "default": "hands-off"
+        }
+      ],
+      "exampleOutput": "Subject: Handing over the monthly customer metrics report\n\nHi Jordan,\n\nI would like you to own the monthly customer metrics report from now on, including presenting the highlights at Monday's leadership meeting. Leadership uses it to decide where to invest next quarter, so clarity matters more than volume.\n\n**What good looks like**\n- Accurate numbers\n- One page\n- Three insights, each with a recommended action\n\n**Before you start**\nRead last month's report [link] and the metric definitions [link].\n\n**Your call vs. mine**\nYou can choose layout and charts on your own. Please check with me before changing how any metric is defined.\n\n**Timing**\nI need a draft by Thursday noon. We will do a 15-minute check on Wednesday so nothing surprises us.\n\nPlease ask questions early, and if you see a better way to do any of this, tell me.\n\nThanks,\n[Your name]\n\n**Before you send**\n1. Is the Wednesday check-in in both calendars?\n2. Does Jordan have access to the data sources?\n3. Have you told the leadership meeting owner that Jordan will present?",
+      "notes": "Separating the decisions someone can make alone from those they must check with you is the part that prevents both micromanagement and surprises. Edit the brief in your voice before sending.",
+      "useCase": "generate",
+      "tags": [
+        "project-management",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-weekly-review-reflection",
+      "title": "Guided weekly review and reflection",
+      "description": "Paste your week's wins, misses and loose ends to get a short review, lessons learned and next week's top priorities.",
+      "body": "Guide me through a weekly review and then summarize it.\n\nMy notes from this week:\n{{week_notes}}\n\nMy current main priorities: {{priorities}}\nAreas of life or work I care about balancing: {{areas}}\nReview depth: {{depth}}\n\nStep 1: Read my notes and ask me up to 3 pointed questions only if essential information is missing. If nothing is missing, skip straight to the review.\nStep 2: Produce the review:\n- **Wins** (what went well and why it worked)\n- **Misses** (what did not happen and the real cause, not an excuse; tell me if you spot a pattern)\n- **Open loops** (anything unfinished or mentioned vaguely, each turned into a next action or a decision to drop it)\n- **Balance check** (one line per area I named: attention given, and a flag if neglected)\n- **Lesson** (one insight I should carry forward)\n- **Next week: top 3 priorities**, each tied to my main priorities, plus one thing to stop doing\n\nBe candid but kind. Avoid generic motivation. Keep the \"{{depth}}\" level: quick means under 200 words, standard under 400, deep under 700.",
+      "variables": [
+        {
+          "key": "week_notes",
+          "label": "Notes from your week",
+          "type": "long",
+          "required": true,
+          "default": "Shipped the pricing page. Missed two gym sessions. Spent half of Wednesday on a surprise customer call. Still haven't started the Q2 plan. Drafted 3 of 5 blog posts. Didn't call my parents."
+        },
+        {
+          "key": "priorities",
+          "label": "Main priorities",
+          "type": "text",
+          "required": true,
+          "default": "Launch pricing page, plan Q2, publish blog series"
+        },
+        {
+          "key": "areas",
+          "label": "Areas to balance",
+          "type": "text",
+          "required": true,
+          "default": "Work, health, relationships"
+        },
+        {
+          "key": "depth",
+          "label": "Depth",
+          "type": "select",
+          "required": true,
+          "options": [
+            "quick",
+            "standard",
+            "deep"
+          ],
+          "default": "quick"
+        }
+      ],
+      "exampleOutput": "**Wins**\n- Pricing page shipped, your top priority. It worked because you protected focused time early in the week.\n- Three of five blog posts drafted.\n\n**Misses**\n- Q2 plan not started. Cause: it is large and has no first step, so it kept losing to smaller tasks. Pattern: big vague items slip while visible ones get done.\n- Two gym sessions skipped after the Wednesday disruption.\n\n**Open loops**\n- Q2 plan: next action, spend 30 minutes Monday listing three goals.\n- Remaining two blog posts: decide whether to finish this week or reduce the series to three.\n- Call parents: schedule Sunday afternoon.\n\n**Balance check**\n- Work: heavy, overweight.\n- Health: neglected, two misses.\n- Relationships: neglected, one missed call.\n\n**Lesson**\nUnplanned interruptions erased the habits that were not time-blocked.\n\n**Next week**\n1. Q2 plan outline (30 min Monday, 2 hours Wednesday)\n2. Publish blog posts 1 to 3\n3. Three workouts, calendar-blocked\n\n**Stop:** letting small tasks fill the morning before the big task starts.",
+      "notes": "Naming your priorities lets the model judge the week against them, and the 'real cause' prompt gets past excuses. Keep the notes in one running doc and paste the latest week each Friday.",
+      "useCase": "analyze",
+      "tags": [
+        "time-management",
+        "habits",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "productivity-status-update-writer",
+      "title": "Write a crisp project status update",
+      "description": "Turn scattered progress notes into a status update with RAG status, risks, asks and next steps that leaders actually read.",
+      "body": "Write a project status update from the notes below.\n\nProject: {{project}}\nAudience: {{audience}}\nReporting period: {{period}}\nNotes (progress, issues, blockers, anything relevant):\n{{notes}}\n\nFormat and rules:\n- Start with a one-sentence headline and an overall status: Green, Yellow or Red, with a one-line reason. Pick the status honestly from the notes; if notes suggest slippage, do not default to Green.\n- **Done this period**: up to 4 bullets, outcomes not activities.\n- **Next period**: up to 4 bullets.\n- **Risks and blockers**: each with impact and what is being done. Add an explicit \"Ask\" for each one that needs a decision or help from the audience, naming who and by when.\n- **Metrics or dates**: only if the notes include them. Never invent numbers or dates.\n- Length limit: {{max_words}} words. Plain language, no jargon the audience would not know, no filler like \"we are excited\".\n\nIf the notes contradict each other, point it out in a note at the end instead of choosing silently.",
+      "variables": [
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "required": true,
+          "default": "Mobile app v2"
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "required": true,
+          "default": "Executive sponsor and department heads"
+        },
+        {
+          "key": "period",
+          "label": "Period",
+          "type": "text",
+          "required": true,
+          "default": "Week ending 14 March"
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "long",
+          "required": true,
+          "default": "Login redesign finished and in QA. Payments integration 3 days behind because vendor sandbox was down for 2 days. Android crashes on older devices found, fix in progress. Design for settings screen approved. Need decision on whether to drop support for Android 8. Launch date still April 22 but tight. Hired a second QA contractor starting Monday."
+        },
+        {
+          "key": "max_words",
+          "label": "Max words",
+          "type": "number",
+          "required": true,
+          "default": "200"
+        }
+      ],
+      "exampleOutput": "**Mobile app v2: login redesign complete; payments integration slipped by 3 days. Status: Yellow, launch April 22 remains possible but has little slack.**\n\n**Done**\n- Login redesign finished and in QA\n- Settings screen design approved\n- Second QA contractor hired, starting Monday\n\n**Next**\n- Complete payments integration\n- Fix Android crashes on older devices\n- Begin QA on login flow\n\n**Risks and blockers**\n- Payments is 3 days behind because the vendor sandbox was unavailable for 2 days. The extra QA contractor offsets some risk.\n- Android crashes on older devices. A fix is in progress.\n- **Ask:** Decide whether to drop Android 8 support. Owner: executive sponsor. Needed by next Friday, as it shapes the crash fix scope.\n\n**Note:** The launch date is stated as firm in the notes but described as tight; confirm whether a one-week buffer is acceptable.",
+      "notes": "Telling the model to choose status honestly and to attach an explicit ask to each blocker makes the update actionable rather than decorative. Keep the notes in one doc and paste the new week each time.",
+      "useCase": "summarize",
+      "tags": [
+        "reporting",
+        "project-management",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

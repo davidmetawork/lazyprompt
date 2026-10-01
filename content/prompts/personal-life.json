@@ -1,0 +1,963 @@
+{
+  "category": "personal-life",
+  "prompts": [
+    {
+      "key": "personal-life-pantry-meal-plan",
+      "title": "Meal plan from what's in my pantry",
+      "description": "Turn the food you already have into a realistic multi-day meal plan with a short shopping list for the gaps.",
+      "body": "Create a {{days}}-day meal plan for {{people}} people using mostly the ingredients I already have.\n\nWhat I have on hand:\n{{pantry}}\n\nDietary needs, allergies or dislikes: {{restrictions}}\nCooking time available on a typical weeknight: {{time}}\nKitchen equipment: {{equipment}}\n\nRequirements:\n- Build around the ingredients I listed first, and use perishables early in the plan.\n- Plan breakfast, lunch and dinner each day, but let leftovers and repeat components cover some meals so I am not cooking three times a day.\n- Respect every restriction strictly. If an ingredient I listed conflicts with a restriction, flag it instead of using it.\n- Keep recipes simple. Give each meal a name and a one-sentence method, not a full recipe, unless I ask for one.\n- Finish with a shopping list of only the items I still need, grouped by store section, and keep it as short as you can.\n\nOutput format: a table with Day, Breakfast, Lunch, Dinner; then \"Use-it-up notes\" (which perishables go where); then the shopping list. If something important is missing from my inputs, ask up to 3 questions before you plan, otherwise proceed with sensible assumptions and state them.\n\nThis is general meal-planning help, not medical or dietary advice. For a medical condition, check with a registered dietitian.",
+      "variables": [
+        {
+          "key": "days",
+          "label": "Number of days",
+          "type": "number",
+          "default": "5",
+          "required": false
+        },
+        {
+          "key": "people",
+          "label": "People eating",
+          "type": "number",
+          "default": "2",
+          "required": false
+        },
+        {
+          "key": "pantry",
+          "label": "Pantry, fridge and freezer contents",
+          "type": "long",
+          "default": "Rice, canned chickpeas, canned tomatoes, pasta, eggs, spinach (wilting), 1 lb chicken thighs, onions, garlic, cheddar, frozen peas, oats, peanut butter, tortillas",
+          "required": false,
+          "help": "List what you have, rough quantities help."
+        },
+        {
+          "key": "restrictions",
+          "label": "Restrictions or dislikes",
+          "type": "text",
+          "default": "No shellfish; one person dislikes mushrooms",
+          "required": false
+        },
+        {
+          "key": "time",
+          "label": "Weeknight cooking time",
+          "type": "select",
+          "options": [
+            "15 minutes",
+            "30 minutes",
+            "45 minutes",
+            "60+ minutes"
+          ],
+          "default": "30 minutes",
+          "required": false
+        },
+        {
+          "key": "equipment",
+          "label": "Equipment",
+          "type": "text",
+          "default": "Stove, oven, microwave, one slow cooker",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**5-day plan for 2 (uses spinach and chicken first)**\n\n| Day | Breakfast | Lunch | Dinner |\n|---|---|---|---|\n| 1 | Spinach and cheddar scramble | Chickpea tomato stew with tortillas | Baked garlic chicken thighs, rice, frozen peas |\n| 2 | Oats with peanut butter | Leftover chicken in a tortilla wrap with spinach | Pasta with tomato, garlic and chickpeas |\n| 3 | Egg and cheddar tortilla fold | Leftover pasta, reheated with a fried egg | Slow-cooker chicken and rice soup (thighs, onion, peas) |\n| 4 | Oats with banana (see list) | Soup leftovers | Chickpea and spinach curry-style skillet over rice |\n| 5 | Scrambled eggs on toasted tortilla | Quesadillas with cheddar and peas | Tomato-garlic pasta with a fried egg on top |\n\n**Use-it-up notes**\n- Spinach is wilting: eat it on days 1-2 (scramble, wrap) and stir the last handful into the day 4 skillet.\n- Cook the 1 lb of chicken on day 1 and again in the slow cooker on day 3 by splitting it, so it is used before it spoils.\n\n**Shopping list (gaps only)**\n- Produce: 2 bananas, 1 lemon\n- Pantry: ground cumin, vegetable or chicken stock (1 carton)\n\nAssumptions: you have oil, salt and pepper. This is general meal-planning help, not dietary advice.",
+      "notes": "It front-loads perishables and builds in leftovers, which is what makes pantry plans actually get cooked. Tell the model your real weeknight energy level and it will plan lazier meals accordingly.",
+      "useCase": "plan",
+      "tags": [
+        "cooking"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-travel-itinerary",
+      "title": "Day-by-day travel itinerary",
+      "description": "Get a paced, realistic trip itinerary built around your interests, budget and travel style instead of a tourist checklist.",
+      "body": "Plan a {{days}}-day trip to {{destination}} for {{travelers}}.\n\nAbout the trip:\n- Travel style: {{style}}\n- Pace: {{pace}}\n- Budget level: {{budget}}\n- Interests: {{interests}}\n- Constraints (mobility, kids, dietary, fixed bookings, dates or season): {{constraints}}\n\nInstructions:\n- Group each day's activities by neighborhood so I am not crossing the city repeatedly, and account for realistic travel time between stops.\n- Give each day a morning, afternoon and evening block, with one flexible \"if you have energy\" option and one rainy-day swap.\n- Mix a few well-known highlights with lesser-known local picks, and say why each is worth the time.\n- Suggest where to eat at each meal in terms of style and neighborhood. Only name specific venues you are confident exist, and tell me to verify opening hours, prices and availability before booking.\n- Do not invent specific prices, schedules or booking details. Use ranges and mark them as estimates.\n\nOutput format: a one-paragraph trip overview, then Day 1 to Day {{days}} with the three blocks, then a short list of \"book ahead\" items and a short \"local tips\" list (transport, etiquette, tipping, safety basics). Ask at most 3 clarifying questions first only if my inputs make a good plan impossible.",
+      "variables": [
+        {
+          "key": "destination",
+          "label": "Destination",
+          "type": "text",
+          "default": "Lisbon, Portugal",
+          "required": false
+        },
+        {
+          "key": "days",
+          "label": "Number of days",
+          "type": "number",
+          "default": "4",
+          "required": false
+        },
+        {
+          "key": "travelers",
+          "label": "Who is traveling",
+          "type": "text",
+          "default": "two adults in their 30s",
+          "required": false
+        },
+        {
+          "key": "style",
+          "label": "Travel style",
+          "type": "select",
+          "options": [
+            "Culture and food",
+            "Outdoors and adventure",
+            "Relaxation",
+            "Nightlife and social",
+            "Family-friendly",
+            "Budget backpacking"
+          ],
+          "default": "Culture and food",
+          "required": false
+        },
+        {
+          "key": "pace",
+          "label": "Pace",
+          "type": "select",
+          "options": [
+            "Slow",
+            "Balanced",
+            "Packed"
+          ],
+          "default": "Balanced",
+          "required": false
+        },
+        {
+          "key": "budget",
+          "label": "Budget level",
+          "type": "select",
+          "options": [
+            "Budget",
+            "Mid-range",
+            "Splurge"
+          ],
+          "default": "Mid-range",
+          "required": false
+        },
+        {
+          "key": "interests",
+          "label": "Interests",
+          "type": "text",
+          "default": "Local food, history, viewpoints, small museums",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "Late-October trip, lots of hills so comfortable walking shoes, no car",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Overview:** Four unhurried days in Lisbon, clustered by neighborhood to keep hills manageable and use trams or metro for the long hops. Expect mild, occasionally rainy late-October weather.\n\n**Day 1: Alfama and Baixa**\n- Morning: Wander Alfama's lanes down from the castle area; viewpoint stop at a miradouro for orientation.\n- Afternoon: Lunch at a traditional tasca in Baixa (grilled fish or a prato do dia). Stroll the riverfront square.\n- Evening: Easy dinner and a fado house if you want live music (reserve ahead).\n- Energy left? Sunset at a viewpoint. Rainy swap: a tile museum.\n\n**Day 2: Belem** (morning pastry stop, monastery, river walk) then **LX Factory** for browsing and coffee.\n\n**Day 3: Day trip to Sintra** (go early; use a train and a local bus rather than driving).\n\n**Day 4: Chiado, Bairro Alto, small museums** and a relaxed food-hall dinner.\n\n**Book ahead:** Sintra palace tickets, any fado evening. Estimates only; verify hours and prices.\n**Local tips:** Wear shoes with grip on polished stones, validate transit cards, and expect late dinners.",
+      "notes": "Neighborhood grouping and a built-in rainy-day swap are what separate a usable itinerary from a list of sights. Paste your fixed bookings into the constraints field so nothing collides.",
+      "useCase": "plan",
+      "tags": [
+        "travel",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-monthly-budget",
+      "title": "Monthly budget breakdown",
+      "description": "Build a clear monthly spending plan from your income and expenses, with realistic category targets and trade-offs.",
+      "body": "Help me build a monthly budget. I want practical budgeting, not investment advice.\n\nMy situation:\n- Monthly take-home income: {{income}}\n- Currency and region: {{currency}}\n- Fixed monthly costs (rent, utilities, insurance, debt payments, subscriptions): {{fixed}}\n- Typical variable spending (food, transport, fun, shopping, etc.): {{variable}}\n- Goal for the next 6 months: {{goal}}\n- Preferred method: {{method}}\n\nDo the following:\n1. Total my spending, show the monthly surplus or shortfall, and say clearly if the numbers I gave do not add up or look incomplete.\n2. Propose a category-by-category monthly plan with amounts and percentage of income, following my preferred method where it fits my situation.\n3. Point out the three categories where trimming would hurt least, with a specific amount to cut for each.\n4. Show how fast I would reach my goal under the plan, and one faster and one slower scenario.\n5. Give me a simple weekly check-in routine that takes under 10 minutes.\n\nFormat: a markdown table for the plan, then short bullet lists for the rest. Show your arithmetic so I can verify it. Do not recommend specific investments, financial products or tax strategies. Add one line reminding me this is general budgeting guidance, not financial advice, and that a licensed professional can help with debt, tax or investing decisions.",
+      "variables": [
+        {
+          "key": "income",
+          "label": "Monthly take-home income",
+          "type": "text",
+          "default": "$4,200",
+          "required": false
+        },
+        {
+          "key": "currency",
+          "label": "Currency and region",
+          "type": "text",
+          "default": "USD, United States",
+          "required": false
+        },
+        {
+          "key": "fixed",
+          "label": "Fixed monthly costs",
+          "type": "long",
+          "default": "Rent $1,500; utilities $180; car insurance $110; phone $55; student loan $240; streaming and apps $45",
+          "required": false
+        },
+        {
+          "key": "variable",
+          "label": "Typical variable spending",
+          "type": "long",
+          "default": "Groceries about $450; eating out about $300; gas $120; shopping $150; misc $100",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Build a $5,000 emergency fund",
+          "required": false
+        },
+        {
+          "key": "method",
+          "label": "Budget method",
+          "type": "select",
+          "options": [
+            "50/30/20",
+            "Zero-based",
+            "Pay-yourself-first",
+            "Envelope-style",
+            "No preference"
+          ],
+          "default": "50/30/20",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Check the numbers:** Fixed costs total $2,130. Variable spending totals $1,120. Combined $3,250 against $4,200 income, so you have a $950 monthly surplus, which suggests some spending is untracked (annual fees, gifts, medical) so I added a buffer.\n\n| Category | Amount | % of income |\n|---|---|---|\n| Needs (rent, utilities, insurance, phone, loan, groceries, gas) | $2,655 | 63% |\n| Wants (eating out, shopping, subscriptions) | $595 | 14% |\n| Irregular costs buffer | $150 | 4% |\n| Emergency fund | $800 | 19% |\n\n**Easiest trims:** eating out -$75, shopping -$40, subscriptions -$15 (audit what you use).\n\n**Goal timeline:** $800/month reaches $5,000 in about 6.3 months. Faster: $1,000/month, 5 months. Slower: $600/month, 8.3 months.\n\n**Weekly check-in (10 min):** compare spending to the plan, move leftover money to savings, adjust one category.\n\nThis is general budgeting guidance, not financial advice.",
+      "notes": "Asking the model to sanity-check your numbers first catches the untracked spending that sinks most budgets. Paste a month of bank transactions as the variable spending for sharper categories.",
+      "useCase": "plan",
+      "tags": [
+        "personal-finance",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-workout-plan",
+      "title": "Personalized weekly workout plan",
+      "description": "Get a safe, progressive weekly training plan matched to your goal, schedule, equipment and experience level.",
+      "body": "Act as an experienced, safety-minded fitness coach and design a {{weeks}}-week workout plan for me.\n\nAbout me:\n- Main goal: {{goal}}\n- Experience level: {{level}}\n- Days per week I can train: {{days}}\n- Time per session: {{minutes}} minutes\n- Equipment and location: {{equipment}}\n- Injuries, limitations or health conditions: {{limitations}}\n\nCreate:\n1. A weekly schedule showing each training day, its focus and rest days.\n2. For each session: a short warm-up, the exercises with sets x reps (or time) and rest periods, and a cool-down. Prefer simple, well-known exercises that fit my equipment.\n3. A progression rule for adding difficulty each week, plus a lighter \"deload\" week if the plan is 4 weeks or longer.\n4. Form cues for the two or three most technical exercises, and an easier substitute for each exercise.\n5. Clear stop signals (for example sharp pain, dizziness, chest pain) and what to do.\n\nWork around anything I listed under limitations, and when something is unclear or potentially risky, choose the more conservative option and say so. Keep the tone encouraging and practical. Output as one table per week or a single table if the weeks repeat with a progression note.\n\nImportant: include a short note that this is general fitness information, not medical advice, and that I should check with a doctor before starting, especially with a health condition, an injury, pregnancy or a long break from exercise.",
+      "variables": [
+        {
+          "key": "goal",
+          "label": "Main goal",
+          "type": "select",
+          "options": [
+            "Build strength",
+            "Lose fat",
+            "Build muscle",
+            "Improve endurance",
+            "General fitness",
+            "Get back into exercise"
+          ],
+          "default": "Build strength",
+          "required": false
+        },
+        {
+          "key": "level",
+          "label": "Experience level",
+          "type": "select",
+          "options": [
+            "Beginner",
+            "Returning after a break",
+            "Intermediate",
+            "Advanced"
+          ],
+          "default": "Beginner",
+          "required": false
+        },
+        {
+          "key": "weeks",
+          "label": "Plan length in weeks",
+          "type": "number",
+          "default": "4",
+          "required": false
+        },
+        {
+          "key": "days",
+          "label": "Training days per week",
+          "type": "number",
+          "default": "3",
+          "required": false
+        },
+        {
+          "key": "minutes",
+          "label": "Minutes per session",
+          "type": "number",
+          "default": "45",
+          "required": false
+        },
+        {
+          "key": "equipment",
+          "label": "Equipment and location",
+          "type": "text",
+          "default": "Home, a pair of adjustable dumbbells and a yoga mat",
+          "required": false
+        },
+        {
+          "key": "limitations",
+          "label": "Injuries or limitations",
+          "type": "text",
+          "default": "Mild lower-back stiffness; no jumping",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Weeks 1-4, 3 days/week (Mon, Wed, Fri), 45 min**\n\n**Session A: Lower body and core**\nWarm-up (5 min): marching in place, hip hinges with no weight, cat-cow.\n- Goblet squat 3 x 10, rest 60-90 s\n- Dumbbell Romanian deadlift 3 x 10 (light, flat back, hinge at the hips)\n- Glute bridge 3 x 12\n- Dead bug 3 x 8 per side\n- Side plank 2 x 20 s per side\nCool-down: hamstring and hip flexor stretch, 5 min.\n\n**Session B: Upper body** (push, pull, shoulders) and **Session C: Full body circuit**, built the same way.\n\n**Progression:** when you hit the top of the rep range with good form on every set, add 2.5-5 lb or 2 reps next week. Week 4 is a deload: same exercises, 2 sets, lighter weight.\n\n**Form cues:** hinge from hips, keep ribs down, brace your core.\n**Substitutes:** squat to a box if knees complain; bridge for the deadlift if your back is sore.\n**Stop if** you feel sharp pain, dizziness or chest pain.\n\nGeneral fitness information, not medical advice. Check with a doctor first, especially with your back stiffness.",
+      "notes": "Giving real limitations and equipment lets the model choose exercises that fit instead of generic gym routines. Re-run it after week 4 with notes on what felt too easy or hard.",
+      "useCase": "plan",
+      "tags": [
+        "health-fitness"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-gift-ideas",
+      "title": "Thoughtful gift ideas for anyone",
+      "description": "Generate personal, non-generic gift ideas across price points, with the reasoning behind each so you can pick with confidence.",
+      "body": "I need a gift for {{recipient}}.\n\nAbout them:\n- Occasion: {{occasion}}\n- Their interests, hobbies and things they talk about: {{interests}}\n- Things they already have or dislike: {{avoid}}\n- Budget: {{budget}}\n- Delivery or time constraints: {{timing}}\n\nGive me 10 gift ideas, avoiding generic choices like gift cards, candles or mugs unless there is a specific reason. Spread them across these groups:\n- 3 practical gifts they would actually use\n- 3 experiences or memories\n- 2 personal or handmade ideas (low cost, high thought)\n- 2 wildcard ideas that show I really know them\n\nFor each idea give: the gift, a rough price range inside my budget, one sentence on why it fits this person, and where to look (type of shop or search terms, not made-up product names or links).\n\nThen pick your top 3 and explain which is the safest choice, which is the most memorable and which is the best value. Finish with one short, sincere note idea I could write in the card. Output as a numbered list followed by the top-3 summary. If my details are thin, ask me up to 3 quick questions first.",
+      "variables": [
+        {
+          "key": "recipient",
+          "label": "Who it's for",
+          "type": "text",
+          "default": "my sister, 34",
+          "required": false
+        },
+        {
+          "key": "occasion",
+          "label": "Occasion",
+          "type": "text",
+          "default": "Birthday",
+          "required": false
+        },
+        {
+          "key": "interests",
+          "label": "Their interests",
+          "type": "long",
+          "default": "Trail running, cozy mysteries, learning to bake sourdough, plants, hates clutter",
+          "required": false
+        },
+        {
+          "key": "avoid",
+          "label": "Already has or dislikes",
+          "type": "text",
+          "default": "Already has a good water bottle and running watch; doesn't like scented products",
+          "required": false
+        },
+        {
+          "key": "budget",
+          "label": "Budget",
+          "type": "text",
+          "default": "$40-80",
+          "required": false
+        },
+        {
+          "key": "timing",
+          "label": "Timing",
+          "type": "text",
+          "default": "Birthday is in 10 days, shipping needs to be quick",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Practical**\n1. Trail-running gloves or a lightweight windproof vest ($40-70): she runs outdoors year-round and they get used. Look in running shops for packable vests.\n2. Banneton proofing basket and bench scraper set ($30-45): supports the sourdough habit she is building.\n3. Cordless handheld milk frother or small kitchen scale ($25-40): a quiet daily upgrade.\n\n**Experiences**\n4. A local trail-running or bread-baking class ($50-80).\n5. A planned \"mystery day\": a new trail, a bakery and her favorite takeout, all arranged by you (about $40).\n6. A one-year subscription to a trail map app ($30-40).\n\n**Personal**\n7. A framed photo of a trail you ran together ($25).\n8. A \"sourdough starter kit\" with a jar of your own starter and a handwritten feeding guide ($10).\n\n**Wildcard**\n9. A reading-and-tea basket themed around a cozy mystery series (unscented tea).\n10. A small terrarium kit for the plant fan.\n\n**Top 3:** safest is #2, most memorable is #5, best value is #8.\nCard idea: \"Thanks for being the person who always makes the ordinary days better.\"\n",
+      "notes": "The groups force variety, and the 'already has or dislikes' field is what keeps suggestions off the obvious list. Add a line about how your relationship feels, such as close or new, to tune how personal the ideas get.",
+      "useCase": "brainstorm",
+      "tags": [
+        "home-organization",
+        "brainstorming"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-hard-conversation-rehearsal",
+      "title": "Difficult conversation rehearsal partner",
+      "description": "Practice a hard conversation with a realistic role-play, then get honest feedback and better phrasing before the real thing.",
+      "body": "Be my practice partner for a difficult conversation. You will play the other person and then act as a communication coach.\n\nThe situation:\n- Who I need to talk to and our relationship: {{person}}\n- What happened or what I need to say: {{situation}}\n- What I want from the conversation: {{goal}}\n- How I expect them to react: {{reaction}}\n- My biggest worry: {{worry}}\n\nRun it in three stages:\n1. Briefing: in under 150 words, summarize the situation, restate my goal, and suggest a calm opening line, three key points, and one thing to avoid saying.\n2. Role-play: play the other person realistically, with the reaction I described, not a convenient or overly agreeable one. Respond to me in short turns of 1-4 sentences and wait for my reply each time. Do not break character until I type \"pause\" or \"feedback\".\n3. Feedback: when I ask, step out of character and tell me what worked, where I escalated or went vague, and give two stronger rewrites of my weakest lines. Offer to run another round at a harder difficulty.\n\nKeep the tone respectful and the scenario realistic but not abusive. If my situation involves safety concerns, threats or abuse, pause the role-play and encourage me to contact appropriate support. This is practice and communication coaching, not therapy or legal advice. Start with the briefing, then ask if I am ready to begin.",
+      "variables": [
+        {
+          "key": "person",
+          "label": "Who you're talking to",
+          "type": "text",
+          "default": "my manager",
+          "required": false
+        },
+        {
+          "key": "situation",
+          "label": "What you need to say",
+          "type": "long",
+          "default": "I have been given extra projects for six months with no change in title or pay, and I want to ask for a promotion discussion.",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "What you want from it",
+          "type": "text",
+          "default": "Agree on a timeline and criteria for a promotion review",
+          "required": false
+        },
+        {
+          "key": "reaction",
+          "label": "How you expect them to react",
+          "type": "text",
+          "default": "Friendly but evasive; likely to say budgets are tight",
+          "required": false
+        },
+        {
+          "key": "worry",
+          "label": "Your biggest worry",
+          "type": "text",
+          "default": "Coming across as ungrateful or entitled",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Briefing**\nSituation: for six months you have carried extra projects with no change in title or pay, and you want to open a promotion discussion with your manager. Goal: leave with an agreed timeline and clear criteria for a promotion review.\n\nSuggested opening: \"I have enjoyed taking on the new projects, and I would like to talk about how my role should grow to match them.\"\nKey points: (1) the concrete scope you added since the spring, (2) the results so far, (3) a specific request: agree on promotion criteria and a review within 90 days.\nAvoid: comparing yourself to coworkers or hinting that you might leave.\n\nAre you ready to begin? I will play your manager.\n\n**Role-play**\nManager: \"Hey, thanks for making time. What is on your mind?\"\nYou: \"I wanted to talk about my role. Over the last six months I have taken on the reporting project and two client handoffs, and I would like to discuss a promotion.\"\nManager: \"I really appreciate everything you have done, honestly. The timing is tricky though, budgets are tight this year.\"\nYou: \"I understand. I am not asking for a decision today, just to agree on what promotion looks like and when we review it.\"\nManager: \"Sure, sure. Let's keep talking about it as the year goes on.\"\n\n**Feedback** (after you type \"feedback\")\nWorked: you opened with specifics and separated the budget from the criteria question. Weak spot: \"Let's keep talking\" went unchallenged, so the vague answer stood. You also said \"I just feel like maybe I deserve it,\" which sounds hesitant and slightly entitled.\n\nStronger rewrites:\n1. Instead of \"I just feel like maybe I deserve it\": \"The extra scope is now a regular part of my job, and I would like my title to reflect that.\"\n2. Instead of accepting \"let's keep talking\": \"Can we put a 30-minute review on the calendar for the end of next month and agree on the criteria before then?\"\n\nWant another round with a more defensive manager?",
+      "notes": "Telling the model exactly how the other person will react prevents it from playing a pushover, which is where most rehearsal prompts fail. Ask for a second round with a more defensive version of the person.",
+      "useCase": "roleplay",
+      "tags": [
+        "communication",
+        "roleplay",
+        "relationships"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-habit-plan",
+      "title": "Build a habit that sticks",
+      "description": "Turn a vague goal into a small, specific habit plan with cues, a minimum version, obstacle fixes and a 30-day tracker.",
+      "body": "Help me build a new habit that I can actually keep. Be practical and kind, not preachy.\n\nThe habit I want: {{habit}}\nWhy it matters to me: {{why}}\nMy typical day and schedule: {{schedule}}\nWhat has gotten in the way before: {{obstacles}}\nTime I can realistically give it daily: {{time}}\n\nPlease produce:\n1. A tiny version of the habit that takes under 2 minutes, a standard version that fits my available time, and a stretch version for good days.\n2. The best cue for each version, anchored to something I already do each day, with exact wording such as \"After I pour my morning coffee, I will...\"\n3. An environment setup list: 3 changes that make the habit easier and 3 that remove friction from the old behavior.\n4. An if-then plan for each obstacle I listed, plus a rule for what to do after missing a day, with the aim of never missing twice.\n5. A 30-day ramp in four weekly steps, a simple way to track it (one line per day), and a short weekly review with 3 questions.\n6. A way to celebrate small wins that is not food- or money-based unless I say so.\n\nFormat with clear headings and short bullets. Be specific to my schedule and avoid generic motivation. If the habit relates to mental or physical health conditions, remind me that this is general guidance and not medical advice. Ask no more than two questions before starting, and only if you truly cannot proceed.",
+      "variables": [
+        {
+          "key": "habit",
+          "label": "Habit you want",
+          "type": "text",
+          "default": "Walk for 20 minutes after dinner",
+          "required": false
+        },
+        {
+          "key": "why",
+          "label": "Why it matters",
+          "type": "text",
+          "default": "More energy and better sleep",
+          "required": false
+        },
+        {
+          "key": "schedule",
+          "label": "Your typical day",
+          "type": "long",
+          "default": "Work 9-5 from home, dinner around 7, kids to bed at 8:30, usually on the couch by 9",
+          "required": false
+        },
+        {
+          "key": "obstacles",
+          "label": "What got in the way before",
+          "type": "text",
+          "default": "Tired after work, bad weather, forgetting",
+          "required": false
+        },
+        {
+          "key": "time",
+          "label": "Time per day",
+          "type": "text",
+          "default": "20 minutes",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Three sizes**\n- Tiny: put on shoes and walk to the end of the street and back (2 min).\n- Standard: 20-minute walk after dinner.\n- Stretch: 30 minutes with a call to a friend.\n\n**Cues**\n\"After I clear the dinner plates, I will put on my walking shoes.\" Keep the shoes by the door.\n\n**Environment**\nEasier: shoes and a light jacket by the door, a loop route saved in your phone, a rainy-day indoor video queued. Less friction with the couch: do not sit down until after the walk.\n\n**If-then**\n- If I am tired, then I do the tiny version only.\n- If it rains, then 15 minutes of indoor stepping or stairs.\n- If I forget, then a 6:45 pm phone alarm labeled \"shoes\".\n- If I miss a day, I do the tiny version the next day: never miss twice.\n\n**30-day ramp**\nWeek 1: tiny every day. Week 2: 10 minutes. Week 3: 15 minutes. Week 4: 20 minutes.\nTrack: one line per day with a tick and a mood word.\nWeekly review: what made it easy, what blocked it, what will I change?",
+      "notes": "Defining a two-minute version and a never-miss-twice rule is what keeps habits alive on bad days. Make the cue an existing routine, not a time of day, for the best results.",
+      "useCase": "plan",
+      "tags": [
+        "habits",
+        "productivity"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-decision-journal",
+      "title": "Structured decision journal and analysis",
+      "description": "Think through a big personal decision with clear options, trade-offs, risks and a written record you can revisit later.",
+      "body": "Be a calm, fair-minded thinking partner and help me work through a decision. Do not make the decision for me and do not simply tell me what I want to hear.\n\nThe decision: {{decision}}\nOptions I am considering (include \"do nothing\" if relevant): {{options}}\nWhat matters most to me (values, priorities, deal-breakers): {{priorities}}\nKey facts and constraints: {{facts}}\nMy current gut feeling: {{gut}}\nDeadline: {{deadline}}\n\nWork through this in order:\n1. Restate the decision in one sentence and list any missing information that would change the answer. Ask for it only if it matters.\n2. Compare each option against my priorities in a table, with a 1-5 score and a short reason per cell, and note which scores are uncertain.\n3. For each option write the best realistic case, the worst realistic case, and the most likely case, plus what I would regret in 1 year, 5 years.\n4. Challenge my gut feeling: what bias might be at work (sunk cost, status quo, fear, wishful thinking), and what evidence would change my mind?\n5. Suggest a small, cheap test or conversation that could reduce uncertainty before the deadline.\n6. Write a decision journal entry I can save: date, decision, chosen option (leave blank), reasoning, predictions with confidence levels, and a date to review how it went.\n\nFor medical, legal or financial decisions, add a reminder that this is a thinking aid, not professional advice. Format with headings and one table.",
+      "variables": [
+        {
+          "key": "decision",
+          "label": "The decision",
+          "type": "text",
+          "default": "Whether to accept a job offer in another city or stay in my current role",
+          "required": false
+        },
+        {
+          "key": "options",
+          "label": "Options",
+          "type": "long",
+          "default": "1) Take the new job and move; 2) Stay and ask for a raise; 3) Stay and keep looking",
+          "required": false
+        },
+        {
+          "key": "priorities",
+          "label": "What matters most",
+          "type": "long",
+          "default": "Growth, being close to family, savings, not feeling stuck. Deal-breaker: a pay cut.",
+          "required": false
+        },
+        {
+          "key": "facts",
+          "label": "Key facts and constraints",
+          "type": "long",
+          "default": "Offer is 15% higher, but the cost of living is about 10% higher. Lease ends in 3 months. Partner can work remotely.",
+          "required": false
+        },
+        {
+          "key": "gut",
+          "label": "Your gut feeling",
+          "type": "text",
+          "default": "Excited but anxious about leaving friends",
+          "required": false
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "default": "Reply to the offer by Friday",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Decision in one line:** Whether to relocate for a 15% higher offer or stay and pursue growth in the current role.\n\n**Missing information:** equity or bonus structure, growth path in each role, and what leaving would cost in social support.\n\n| Option | Growth | Family | Savings | Not stuck |\n|---|---|---|---|---|\n| Take new job | 4 | 2 | 3 (offset by cost of living) | 5 |\n| Stay, ask for raise | 2 | 5 | 3 | 2 |\n| Stay, keep looking | 3 | 5 | 2 | 3 |\n\n**Scenarios, new job:** Best: faster growth and a partner who thrives. Worst: lonely first year. Likely: a hard six months, then a routine.\n**Gut check:** your excitement may be partly escape from feeling stuck, which could be solved by a conversation at your current job. Anxiety about friends is real but usually fades.\n**Small test:** ask your manager what a path to the next level looks like this week.\n\n**Journal entry:** Date: ___. Decision: ___. Prediction (70%): I will be glad I moved within 12 months. Review on: ___.",
+      "notes": "The regret questions and the bias check surface what a pros-and-cons list hides. Save the journal entry and revisit it on the review date to learn how good your predictions are.",
+      "useCase": "analyze",
+      "tags": [
+        "decision-making",
+        "habits",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-party-plan",
+      "title": "Party planning timeline and checklist",
+      "description": "Plan a party from first idea to cleanup, with a countdown timeline, shopping list, schedule and budget check.",
+      "body": "Help me plan a {{occasion}} for about {{guests}} guests.\n\nDetails:\n- Date and start time: {{when}}\n- Location and space: {{venue}}\n- Budget: {{budget}}\n- Vibe I want: {{vibe}}\n- Dietary needs, kids, accessibility or other must-knows: {{notes}}\n- How much I want to DIY versus buy or order: {{effort}}\n\nProduce a plan with these sections:\n1. Concept: a short theme and atmosphere idea, plus 3 simple decor ideas that fit my budget.\n2. Countdown timeline: tasks grouped by \"4 weeks out\", \"2 weeks out\", \"1 week out\", \"day before\" and \"day of\", adjusted to my actual date. If my date is closer, compress the schedule and say what to drop.\n3. Menu and drinks: quantities per guest, with a mix of easy make-ahead items and the dietary needs covered. Include a rule of thumb for how much to buy.\n4. Run of show: an hour-by-hour schedule for the party itself including one activity or icebreaker that suits the vibe.\n5. Budget: a table with estimated spending by category that adds up to my budget, flagging where I can save.\n6. Shopping and rental list, and a short \"things people forget\" list.\n\nUse realistic estimates and label them as such. Keep the plan relaxed and doable for one organizer. Ask up to three questions first only if the missing information would change the plan significantly.",
+      "variables": [
+        {
+          "key": "occasion",
+          "label": "Type of party",
+          "type": "text",
+          "default": "40th birthday dinner party",
+          "required": false
+        },
+        {
+          "key": "guests",
+          "label": "Number of guests",
+          "type": "number",
+          "default": "20",
+          "required": false
+        },
+        {
+          "key": "when",
+          "label": "Date and time",
+          "type": "text",
+          "default": "Saturday in 5 weeks, 6 pm",
+          "required": false
+        },
+        {
+          "key": "venue",
+          "label": "Location and space",
+          "type": "text",
+          "default": "My backyard with a patio, seating for about 12, 15 ft by 20 ft",
+          "required": false
+        },
+        {
+          "key": "budget",
+          "label": "Budget",
+          "type": "text",
+          "default": "$600",
+          "required": false
+        },
+        {
+          "key": "vibe",
+          "label": "Vibe",
+          "type": "text",
+          "default": "Relaxed, warm, string lights, good music",
+          "required": false
+        },
+        {
+          "key": "notes",
+          "label": "Must-knows",
+          "type": "text",
+          "default": "Two vegetarians, one guest with a nut allergy, a few kids",
+          "required": false
+        },
+        {
+          "key": "effort",
+          "label": "DIY level",
+          "type": "select",
+          "options": [
+            "Mostly DIY",
+            "Mix of DIY and store-bought",
+            "Mostly ordered or catered"
+          ],
+          "default": "Mix of DIY and store-bought",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Concept:** \"Golden hour garden dinner\": string lights, mismatched candles, and a long table with shared platters. Decor: one lighting upgrade, a herb-in-pot centerpiece, a printed menu card.\n\n**Countdown**\n- 4 weeks: confirm guest list, invite, choose menu, check outdoor seating and borrow chairs.\n- 2 weeks: order drinks and nonperishables, plan playlist, test lights.\n- 1 week: confirm allergy needs, buy decor, plan a rain backup (patio cover or indoor corner).\n- Day before: cook make-ahead dishes, chill drinks, set the table.\n- Day of: lights, music, final food, one cleanup helper.\n\n**Menu (20 guests):** two shared mains (one vegetarian), 3 sides, a nut-free dessert, about 3 drinks per guest in the first 2 hours. Label everything with nut-allergy notes.\n\n**Run of show:** 6:00 arrivals and drinks, 7:00 dinner, 8:15 toast and cake, 9:00 music and chat.\n\n**Budget (estimate):** food $330, drinks $120, decor $70, rentals $50, spare $30 = $600.",
+      "notes": "Working backward from the date turns a vague event into specific tasks, and the budget table keeps the plan honest. Add your guest mix, such as kids or older relatives, to adjust timing and seating.",
+      "useCase": "plan",
+      "tags": [
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-moving-checklist",
+      "title": "Moving checklist and timeline",
+      "description": "Get a personalized moving plan with a countdown timeline, packing order and admin to-dos so nothing slips through.",
+      "body": "Create a personalized moving plan for me.\n\nMy move:\n- Moving from: {{from}}\n- Moving to: {{to}}\n- Move date: {{date}}\n- Household: {{household}}\n- Home size and belongings: {{size}}\n- Moving method: {{method}}\n- Special items or concerns (pets, plants, fragile or large items, kids, work-from-home setup, storage): {{special}}\n\nPlease provide:\n1. A countdown timeline from now to the move date, grouped as 8 weeks, 4 weeks, 2 weeks, 1 week, 2 days, moving day and the first week after. If I have less time than that, compress it and tell me what to prioritize.\n2. A room-by-room packing order and tips for packing fragile items, books, kitchen items and clothes, plus an \"open first\" box list.\n3. Admin to-dos: address changes, utilities and internet (start and stop dates), mail forwarding, records and registrations, deposits and cleaning. Say that the exact rules vary by country or region and that I should confirm them with the relevant offices.\n4. A cost-saving list covering supplies, decluttering and selling items.\n5. A short moving-day plan: what to keep with me, an hour-by-hour sequence and what to photograph or check before leaving.\n\nFormat with checklists using checkbox markers, and keep each item short and actionable. Ask no more than three questions before starting, only if essential.",
+      "variables": [
+        {
+          "key": "from",
+          "label": "Moving from",
+          "type": "text",
+          "default": "a 2-bedroom apartment in Chicago, IL",
+          "required": false
+        },
+        {
+          "key": "to",
+          "label": "Moving to",
+          "type": "text",
+          "default": "a rented house in Denver, CO",
+          "required": false
+        },
+        {
+          "key": "date",
+          "label": "Move date",
+          "type": "text",
+          "default": "in 8 weeks, on a Saturday",
+          "required": false
+        },
+        {
+          "key": "household",
+          "label": "Household",
+          "type": "text",
+          "default": "two adults and a cat",
+          "required": false
+        },
+        {
+          "key": "size",
+          "label": "Home size and belongings",
+          "type": "text",
+          "default": "Furnished 2-bedroom, about 60 boxes, one sofa, a bed, a desk, a bookcase",
+          "required": false
+        },
+        {
+          "key": "method",
+          "label": "Moving method",
+          "type": "select",
+          "options": [
+            "Hire movers",
+            "Rent a truck and DIY",
+            "Container service",
+            "Car or van only"
+          ],
+          "default": "Hire movers",
+          "required": false
+        },
+        {
+          "key": "special",
+          "label": "Special items or concerns",
+          "type": "long",
+          "default": "Cat needs a calm travel plan, two monitors for work-from-home, a houseplant collection",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Timeline**\n- [ ] 8 weeks: set a budget, get 3 mover quotes, begin decluttering one room per week.\n- [ ] 4 weeks: book movers, notify your landlord in writing if required by your lease, order supplies.\n- [ ] 2 weeks: arrange utilities and internet for the new house, start packing non-essentials, schedule a vet visit for travel advice for the cat.\n- [ ] 1 week: confirm movers, pack a suitcase for 3 days, change your mailing address.\n- [ ] 2 days: defrost the freezer, pack the \"open first\" box.\n- [ ] Moving day: photograph the empty apartment, do a final walkthrough.\n- [ ] First week: unpack the bedroom and kitchen, update registrations, locate the nearest vet.\n\n**Packing order:** books and decor, then guest items, kitchen, then bedroom last. Pack monitors in original boxes if you still have them.\n\n**Admin:** rules vary by state, so check local offices for address and registration changes.\n**Pet plan:** keep the cat in a quiet bathroom during loading, then travel in a carrier with a familiar blanket.",
+      "notes": "Compressing the schedule to your real timeline is what makes this useful when a move gets sudden. Paste your lease end date or any hard deadlines in the special field.",
+      "useCase": "plan",
+      "tags": [
+        "home-organization",
+        "templates",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-kid-activities",
+      "title": "Kid-friendly activity ideas",
+      "description": "Get age-appropriate, low-prep activity ideas that match your space, supplies, time and what your kids already love.",
+      "body": "Suggest activities for my kids to do. I want ideas that are realistic for a busy parent.\n\nMy kids:\n- Ages: {{ages}}\n- What they love or are curious about: {{interests}}\n- Setting: {{setting}}\n- Time available: {{time}}\n- Supplies on hand: {{supplies}}\n- Energy and mess level I can handle: {{mess}}\n- Anything to avoid (allergies, screens, expense, sensitivities): {{avoid}}\n\nGive me 10 activities as a numbered list. For each include:\n- The name and a one-line description\n- Prep time and activity time\n- What you need, using mostly my supplies\n- How to adjust it for the younger and the older child if their ages differ\n- One question or prompt to extend the learning or conversation\n\nInclude a mix: at least 2 active or outdoor, 2 creative, 2 calm or quiet, 1 simple science or building activity and 1 that kids can do mostly independently while I get something done. Keep safety in mind: flag small parts, water, heat, or the need for adult supervision, and do not suggest anything unsafe for the youngest age. End with a \"rescue idea\" that takes under five minutes to set up and needs nothing special. Use plain, friendly language.",
+      "variables": [
+        {
+          "key": "ages",
+          "label": "Kids' ages",
+          "type": "text",
+          "default": "4 and 8",
+          "required": false
+        },
+        {
+          "key": "interests",
+          "label": "What they love",
+          "type": "text",
+          "default": "Dinosaurs, drawing, building with blocks, anything with water",
+          "required": false
+        },
+        {
+          "key": "setting",
+          "label": "Setting",
+          "type": "select",
+          "options": [
+            "Indoors at home",
+            "Backyard or garden",
+            "Park or outdoors",
+            "Rainy day indoors",
+            "Car or travel",
+            "Restaurant or waiting room"
+          ],
+          "default": "Indoors at home",
+          "required": false
+        },
+        {
+          "key": "time",
+          "label": "Time available",
+          "type": "text",
+          "default": "About an hour",
+          "required": false
+        },
+        {
+          "key": "supplies",
+          "label": "Supplies on hand",
+          "type": "long",
+          "default": "Paper, crayons, tape, cardboard boxes, blocks, kitchen items, a bathtub",
+          "required": false
+        },
+        {
+          "key": "mess",
+          "label": "Mess level",
+          "type": "select",
+          "options": [
+            "Keep it clean",
+            "Some mess is fine",
+            "Bring on the mess"
+          ],
+          "default": "Some mess is fine",
+          "required": false
+        },
+        {
+          "key": "avoid",
+          "label": "Avoid",
+          "type": "text",
+          "default": "No screens, no expensive supplies",
+          "required": false
+        }
+      ],
+      "exampleOutput": "1. **Dino dig in the bath** (prep 5 min / play 25 min): hide plastic dinos under bubbles in a baking tray. Younger: scoop with a cup; older: sort by size and make a fossil label.\n2. **Cardboard dino habitat** (prep 10 / play 40): decorate boxes as caves and volcano. Prompt: \"What would a dinosaur eat here?\"\n3. **Tape-line obstacle course** (prep 5 / play 20): stomp, tiptoe, hop between lines on the floor.\n4. **Draw a dinosaur from a description**: older reads clues, younger draws.\n5. **Block bridge challenge**: build a bridge strong enough to carry a toy; test and improve.\n6. **Sink or float** with kitchen items; predict first, then test.\n7. **Quiet picture-book corner** with a flashlight tent.\n8. **Roar and freeze dance** (active).\n9. **Sticky-note scavenger hunt** for the older child to run, younger to follow.\n10. **Independent play**: a \"design a dino zoo\" worksheet drawn on paper, for 20 minutes while you work.\n\n**Rescue idea (2 min):** a \"mystery box\" with five household objects, and kids invent a story that uses them. Supervise water and small parts with the 4-year-old.",
+      "notes": "Listing the supplies and the allowed mess level prevents ideas that require a shopping trip. Swap in new ages and interests each time and you get a fresh batch.",
+      "useCase": "brainstorm",
+      "tags": [
+        "parenting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-weekly-reset",
+      "title": "Weekly planning and reset",
+      "description": "Sort the week ahead and reset your home and head: a realistic plan from your tasks, commitments and energy.",
+      "body": "Act as a practical personal organizer and help me plan the coming week.\n\nHere is what is going on:\n- Fixed commitments (work hours, appointments, school runs, events): {{commitments}}\n- Tasks and errands floating around in my head: {{tasks}}\n- My top priorities this week: {{priorities}}\n- My energy pattern (best and worst times of day, any tough days): {{energy}}\n- Household or family responsibilities: {{household}}\n- Things I want to make time for (rest, exercise, friends, hobbies): {{personal}}\n\nBuild my week:\n1. Sort the tasks into: must do this week, nice to do, delegate or drop, and next week. Explain any that you moved and why, briefly.\n2. Choose my top three outcomes for the week and one small \"win\" for each day.\n3. Create a day-by-day plan in a table with time blocks that respect my fixed commitments and energy pattern. Place demanding work in high-energy times and leave buffer blocks (at least 20% of the open time) for things that overrun.\n4. Flag overcommitment honestly: if the plan does not fit, tell me which items to cut or push.\n5. Give me a 10-minute Sunday reset routine and a 5-minute end-of-day shutdown routine.\n\nBe realistic rather than optimistic, and keep it to one page. If something is ambiguous (a deadline or duration), state your assumption in brackets instead of asking.",
+      "variables": [
+        {
+          "key": "commitments",
+          "label": "Fixed commitments",
+          "type": "long",
+          "default": "Work Mon-Fri 9-5; dentist Tue 4 pm; kid pickup at 3:15 on Wed and Fri; dinner with friends Sat 7 pm",
+          "required": false
+        },
+        {
+          "key": "tasks",
+          "label": "Tasks and errands",
+          "type": "long",
+          "default": "Renew car registration, call the plumber, grocery shop, submit expense report, birthday card for Mom, laundry, start taxes folder, return package",
+          "required": false
+        },
+        {
+          "key": "priorities",
+          "label": "Top priorities",
+          "type": "text",
+          "default": "Expense report and the plumber",
+          "required": false
+        },
+        {
+          "key": "energy",
+          "label": "Energy pattern",
+          "type": "text",
+          "default": "Sharp in the mornings, drained after 3 pm, Thursdays are worst",
+          "required": false
+        },
+        {
+          "key": "household",
+          "label": "Household duties",
+          "type": "text",
+          "default": "Cooking most dinners, laundry, weekly grocery run",
+          "required": false
+        },
+        {
+          "key": "personal",
+          "label": "Make time for",
+          "type": "text",
+          "default": "Two runs, one quiet evening, 30 minutes of reading",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Sorted**\n- Must do: expense report, call plumber, car registration, grocery shop, Mom's card (to mail by Wed).\n- Nice to do: start taxes folder, return the package.\n- Drop or delegate: laundry can run in the background Sunday and Thursday.\n\n**Top 3 outcomes:** expense report submitted, plumber booked, registration renewed.\n\n| Day | Plan |\n|---|---|\n| Mon | 8:30 expense report (win: submitted), run at 6 pm |\n| Tue | Call plumber at 8:30, dentist 4 pm, buffer |\n| Wed | Mail the card, registration online at lunch, pickup 3:15 |\n| Thu | Light: grocery order online, quiet evening |\n| Fri | Pickup 3:15, return package, short run |\n| Sat | Taxes folder (30 min), dinner at 7 |\n| Sun | Reset: calendar, laundry, meal ideas |\n\n**Sunday reset (10 min):** review calendar, list top three, set out clothes. **Shutdown (5 min):** write tomorrow's first task.\nThursday is intentionally light given your energy.",
+      "notes": "Building in buffers and flagging overcommitment is what keeps the plan from collapsing by Wednesday. Paste the same inputs each Sunday and tweak just the lists.",
+      "useCase": "plan",
+      "tags": [
+        "productivity",
+        "planning",
+        "time-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-home-cleaning-schedule",
+      "title": "Home cleaning schedule that fits your life",
+      "description": "Create a realistic daily, weekly and seasonal cleaning routine for your home, household and available time.",
+      "body": "Create a cleaning and home-maintenance schedule that suits my household.\n\nMy home and life:\n- Home type and rooms: {{home}}\n- Who lives here: {{household}}\n- Time I can spend on cleaning per day: {{minutes}} minutes\n- Cleaning days I prefer: {{days}}\n- The jobs I hate most or struggle to keep up with: {{struggles}}\n- Special factors (pets, allergies, kids, hard floors, rental rules): {{factors}}\n\nBuild:\n1. A daily 10-15 minute reset routine of the few tasks that make the biggest visible difference.\n2. A weekly schedule laid out by day, with specific tasks per day, never exceeding my time budget. Spread heavier jobs out and assign tasks to people in the household where it makes sense.\n3. A monthly list and a seasonal or quarterly list, including often-forgotten tasks such as vents, mattress, oven, and fridge.\n4. A \"30-minute emergency clean\" order of operations for unexpected guests.\n5. Simple supply and product guidance: the short list of cleaners and tools needed, with a warning not to mix bleach with ammonia or other chemicals and to follow the label directions.\n\nFormat: a weekly table, then bulleted lists. Keep tasks specific, like \"wipe bathroom counters and mirror\", and not \"clean bathroom\". Keep it lighter if my time budget is small, and say what can wait.",
+      "variables": [
+        {
+          "key": "home",
+          "label": "Home type and rooms",
+          "type": "text",
+          "default": "2-bedroom apartment, 1 bathroom, open kitchen and living room",
+          "required": false
+        },
+        {
+          "key": "household",
+          "label": "Who lives here",
+          "type": "text",
+          "default": "two adults and a dog",
+          "required": false
+        },
+        {
+          "key": "minutes",
+          "label": "Minutes per day",
+          "type": "number",
+          "default": "25",
+          "required": false
+        },
+        {
+          "key": "days",
+          "label": "Preferred cleaning days",
+          "type": "text",
+          "default": "Weekday evenings, with a longer session on Saturday",
+          "required": false
+        },
+        {
+          "key": "struggles",
+          "label": "Hated or neglected jobs",
+          "type": "text",
+          "default": "Bathroom, floors, laundry piles",
+          "required": false
+        },
+        {
+          "key": "factors",
+          "label": "Special factors",
+          "type": "text",
+          "default": "Dog hair, hard floors, a landlord who inspects twice a year",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Daily reset (12 min):** dishes and counters, quick floor sweep of the kitchen, 5-minute tidy of the living room, load laundry if the hamper is full.\n\n**Weekly schedule (25 min on weekdays)**\n| Day | Tasks |\n|---|---|\n| Mon | Vacuum dog hair in the living room; wipe the kitchen stove |\n| Tue | Bathroom: toilet, sink and mirror |\n| Wed | Wash and fold one load of laundry |\n| Thu | Mop kitchen and hallway |\n| Fri | Change the bed linens; empty bins |\n| Sat (60 min) | Shower, floors throughout, dust, and dog bedding |\n| Sun | Off |\n\n**Monthly:** wipe baseboards, clean the fridge shelves, wash the dog's bed cover.\n**Quarterly:** vacuum vents, flip the mattress, clean the oven, check smoke alarm batteries before inspections.\n\n**30-minute emergency clean:** clear clutter into a basket, bathroom, kitchen counters, floors, quick lamp-lit ambience.\n\n**Supplies:** all-purpose cleaner, glass cleaner, a vacuum with pet attachment. Never mix bleach with ammonia or other cleaners.",
+      "notes": "Capping tasks to your real minutes per day is why people actually follow it. Mention rental inspection dates so the schedule can front-load what the landlord will notice.",
+      "useCase": "plan",
+      "tags": [
+        "home-organization"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "personal-life-heartfelt-toast",
+      "title": "Heartfelt toast or speech for a special occasion",
+      "description": "Write a warm, personal speech or toast from your own stories, tuned to the occasion, the room and how long you will speak.",
+      "body": "Write a speech for me to give. It should sound like me speaking, not like a greeting card.\n\nThe occasion and person:\n- Occasion: {{occasion}}\n- Who the speech is about and my relationship to them: {{person}}\n- Audience: {{audience}}\n- Length: about {{minutes}} minutes when spoken aloud (roughly 130 words per minute)\n- Tone: {{tone}}\n\nMy raw material:\n{{stories}}\n\nThings to avoid (private topics, exes, inside jokes outsiders will not get, etc.): {{avoid}}\n\nPlease:\n1. Write the speech with a strong, specific opening line, one or two short stories that show the person's character instead of listing traits, a pivot to what they mean to the people in the room, and a clean closing line that leads naturally into a toast.\n2. Use only the facts, names and stories I supplied. Do not invent events. If something is missing, put a clear bracketed placeholder.\n3. Keep the sentences short and speakable, with natural pauses marked with line breaks, and no tongue twisters.\n4. Match the tone I requested. Any humor should be kind and aimed at situations, not at embarrassing the person.\n5. After the speech add a 3-point delivery coach note (pacing, where to pause or smile, how to calm nerves) and offer a shorter 60-second version.\n\nOutput the speech first, then the coach notes.",
+      "variables": [
+        {
+          "key": "occasion",
+          "label": "Occasion",
+          "type": "text",
+          "default": "Best man speech at my brother's wedding",
+          "required": false
+        },
+        {
+          "key": "person",
+          "label": "Who it's about and your relationship",
+          "type": "text",
+          "default": "My older brother Daniel and his partner Priya; Daniel is my best friend",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Mixed ages, family and friends, about 100 people",
+          "required": false
+        },
+        {
+          "key": "minutes",
+          "label": "Minutes",
+          "type": "number",
+          "default": "3",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Funny and heartfelt",
+            "Warm and sincere",
+            "Light and playful",
+            "Formal and elegant",
+            "Emotional"
+          ],
+          "default": "Funny and heartfelt",
+          "required": false
+        },
+        {
+          "key": "stories",
+          "label": "Stories, facts and memories",
+          "type": "long",
+          "default": "Daniel once drove 5 hours to bring me a forgotten laptop charger before my exam. He is always late but never misses what matters. He met Priya when she corrected his map-reading on a hike, and he has not been lost since.",
+          "required": false
+        },
+        {
+          "key": "avoid",
+          "label": "Things to avoid",
+          "type": "text",
+          "default": "His ex, money jokes",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Good evening, everyone. I am Daniel's younger brother, which means I have been following him around for 28 years and he has been arriving late for most of it.\n\nBut here is the thing about my brother. Late to dinner, yes. Late to what matters, never.\n\nWhen I was nineteen, I left my laptop charger at home the night before an exam. I called Daniel. He did not say much. Five hours later he was standing at my door, charger in hand. That is Daniel. He does not make speeches. He just shows up.\n\nSo when he told me about Priya, I was curious. When I learned they met on a hike, and she corrected his reading of the map, I thought: finally. Someone who can steer him.\n\nPriya, thank you for making my brother happier, and for being the one person who gets him somewhere on time.\n\nEveryone, please raise a glass. To Daniel and Priya: may you always find your way, together.\n\n**Coach notes:** pause after \"never\"; smile before the map line; breathe out slowly before you start. A 60-second version is available.",
+      "notes": "Supplying real stories and banning invented facts makes the result sound personal and keeps it honest. Read it aloud once and replace any line you would not naturally say.",
+      "useCase": "generate",
+      "tags": [
+        "writing",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

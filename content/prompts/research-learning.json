@@ -1,0 +1,916 @@
+{
+  "category": "research-learning",
+  "prompts": [
+    {
+      "key": "research-learning-socratic-tutor",
+      "title": "Socratic tutor that guides you to the answer",
+      "description": "A patient tutor that asks one question at a time, adapts to your level and only explains once you have tried.",
+      "body": "Act as a Socratic tutor. I want to understand: {{topic}}.\nMy level: {{level}}. My goal: {{goal}}.\n\nHow to run the session:\n1. Start by asking me two quick questions to find out what I already know. Wait for my answers.\n2. Then teach through questions. Ask exactly one question per turn, each building on my last answer.\n3. If I am stuck or wrong, give a small hint, not the answer. Offer a bigger hint only if I ask or fail twice.\n4. When I get something right, say why it is right in one sentence, then raise the difficulty a little.\n5. Every five turns, summarize what I have figured out so far in three bullets and ask what I want to explore next.\n6. If I type \"explain\", give a clear direct explanation of the current point and then resume questioning.\n\nKeep every turn under 120 words and avoid jargon unless I have already used it. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "required": true,
+          "default": "how vaccines train the immune system",
+          "help": "What you want to understand"
+        },
+        {
+          "key": "level",
+          "label": "Your level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "High school"
+        },
+        {
+          "key": "goal",
+          "label": "Your goal",
+          "type": "text",
+          "required": true,
+          "default": "explain it confidently to a friend",
+          "help": "Pass an exam, explain it to someone, apply it at work..."
+        }
+      ],
+      "exampleOutput": "Great, let's begin. Two quick questions so I can pitch this right:\n\n1. In your own words, what do you think the immune system does when a germ gets into your body?\n2. Have you heard terms like \"antibody\" or \"white blood cell\"? What do you remember about them?\n\nAnswer as loosely as you like. There are no wrong answers at this stage, and I will not move on until you reply.\n\n(Next turn, I will pick one thread from your answers and ask a single question that nudges you toward the idea that the body learns from a harmless preview of a germ, which is the core of how vaccines work.)\n\nTo keep you in the driver's seat, I will always ask before giving you any answer, and I will keep each turn short.",
+      "notes": "It works because the model is told to wait, ask one question at a time and hold back answers, which forces active recall. Type \"explain\" any time you want a straight answer.",
+      "useCase": "tutor",
+      "tags": [
+        "learning",
+        "study"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-explain-from-scratch",
+      "title": "Explain anything from scratch with analogies",
+      "description": "Get a clear, jargon-free explanation built from everyday analogies, with the places where each analogy breaks down.",
+      "body": "Explain {{concept}} to someone who is new to it. My level: {{level}}. Tone: {{tone}}.\n\nStructure your answer like this:\n1. One-sentence plain-language definition.\n2. The big picture: why this exists and what problem it solves (3 to 4 sentences).\n3. Two analogies from everyday life. For each, say where it fits and where it breaks down, so I do not walk away with a wrong mental model.\n4. A small worked example with concrete numbers or a concrete scenario.\n5. Three common misconceptions, each with the correction.\n6. A \"check yourself\" question I can answer to test my understanding, with the answer hidden at the end.\n7. What to learn next, in order.\n\nDefine any technical term the first time you use it. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "concept",
+          "label": "Concept",
+          "type": "text",
+          "required": true,
+          "default": "compound interest",
+          "help": "Anything you want explained"
+        },
+        {
+          "key": "level",
+          "label": "Your level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Complete beginner"
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Friendly and conversational",
+            "Neutral and precise",
+            "Playful"
+          ],
+          "default": "Friendly and conversational"
+        }
+      ],
+      "exampleOutput": "**Definition.** Compound interest is interest that earns interest: each period, you are paid on your original money plus everything you have already earned.\n\n**Big picture.** Saving or borrowing at a fixed rate sounds simple, but the interest is added back to the balance, so the base keeps growing. Over short periods the effect is tiny; over decades it dominates.\n\n**Analogy 1: a snowball.** A snowball rolling downhill picks up more snow the bigger it is. Fits: growth speeds up. Breaks down: a snowball can stop; interest keeps going as long as the account does.\n\n**Analogy 2: a rabbit colony.** Each rabbit has babies, and the babies have babies. Fits: growth is on top of growth. Breaks down: real accounts grow at a steady rate per period, not randomly.\n\n**Worked example.** 1,000 dollars at 5% a year: after year 1 you have 1,050; after year 2, 1,102.50 (not 1,100); after 30 years, about 4,322.\n\n**Misconceptions.** (1) \"5% for 10 years is 50%.\" It is about 63%. (2) \"Only big rates matter.\" Time matters as much. (3) \"It only helps savers.\" It also makes debts grow.\n\n**Check yourself.** Roughly how long does money take to double at 7% a year? (Answer: about 10 years, via the rule of 72.)\n\n**Next:** simple vs compound interest, the rule of 72, inflation, then index funds.",
+      "notes": "The analogy-limits step is what stops shallow understanding. Add your own background in the concept field, such as \"coming from a cooking background\", to get analogies from your world.",
+      "useCase": "tutor",
+      "tags": [
+        "learning"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-study-plan",
+      "title": "Personalized study plan with weekly milestones",
+      "description": "Turn a subject, a deadline and your available hours into a realistic week-by-week plan with review built in.",
+      "body": "Create a study plan for me.\n\nSubject or exam: {{subject}}\nDeadline: {{deadline}}\nHours I can study per week: {{hours}}\nMy current level: {{level}}\nWeak spots or topics I fear: {{weak_spots}}\nLearning materials I already have: {{materials}}\n\nBuild the plan with these rules:\n- Work backwards from the deadline and give a week-by-week table with columns: week, focus topics, tasks, hours, milestone check.\n- Put hard or weak topics early and reserve the last 15 percent of the time for full practice and review.\n- Use spaced review: every week must revisit something from earlier weeks.\n- Mix reading with active recall such as self-quizzing, practice problems and explaining aloud.\n- Give a sample daily schedule for one typical week.\n- Finish with three signs I am falling behind and what to cut first if that happens.\n\nIf the deadline or hours make the goal unrealistic, say so and offer a smaller scope. Ask me at most two questions before planning, and only if essential. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject or exam",
+          "type": "text",
+          "required": true,
+          "default": "Introductory statistics final exam"
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "required": true,
+          "default": "8 weeks from today"
+        },
+        {
+          "key": "hours",
+          "label": "Hours per week",
+          "type": "number",
+          "required": true,
+          "default": "6"
+        },
+        {
+          "key": "level",
+          "label": "Current level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Complete beginner"
+        },
+        {
+          "key": "weak_spots",
+          "label": "Weak spots",
+          "type": "long",
+          "required": false,
+          "default": "Probability and hypothesis testing",
+          "help": "Optional"
+        },
+        {
+          "key": "materials",
+          "label": "Materials you have",
+          "type": "text",
+          "required": false,
+          "default": "Course textbook, lecture slides, past exam"
+        }
+      ],
+      "exampleOutput": "**Reality check:** 8 weeks at 6 hours a week is 48 hours, enough for an intro statistics final if you practice steadily.\n\n| Week | Focus | Tasks | Hours | Milestone |\n|---|---|---|---|---|\n| 1 | Descriptive statistics | Read ch. 1-2, 20 practice problems | 6 | Explain mean vs median aloud |\n| 2 | Probability basics | Ch. 3, tree diagrams, recall quiz on week 1 | 6 | 15/20 on probability set |\n| 3 | Distributions | Normal and binomial, z-scores | 6 | Solve 5 z-score problems unaided |\n| 4 | Sampling and CIs | Ch. 5-6 | 6 | Build a CI by hand |\n| 5 | Hypothesis testing (weak spot) | Ch. 7, two worked examples per day | 6 | Explain p-value in one minute |\n| 6 | Hypothesis testing II, regression | t-tests, ch. 8 | 6 | Past exam section, timed |\n| 7 | Full review | Mixed problem sets | 6 | Full past exam |\n| 8 | Polish | Fix errors, formula sheet | 5 | Second past exam |\n\n**Typical week:** Mon and Wed 1.5 h new material; Thu 1 h review of last week; Sat 2 h practice problems.\n\n**Falling behind if:** you skip two sessions in a row, score under 60% on weekly checks, or still cannot explain p-values in week 6. Cut regression depth first.",
+      "notes": "Working backwards from the deadline and reserving time for review gives a plan you can actually follow. Re-run it mid-way with your real progress to get an updated plan.",
+      "useCase": "plan",
+      "tags": [
+        "study",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-flashcards",
+      "title": "Flashcards from your notes, built for recall",
+      "description": "Convert notes or a text into clear question-and-answer flashcards you can paste into Anki or Quizlet.",
+      "body": "Turn the material below into flashcards for {{subject}}.\n\nRules:\n- Make about {{count}} cards. Each card tests exactly one idea.\n- Use a mix: definitions, why/how questions, cause and effect, compare-and-contrast, and a few application scenarios. Prefer questions that need recall of meaning over verbatim phrases.\n- Write fronts as clear questions. Keep answers to 1 to 3 sentences.\n- Add cloze-style cards (a sentence with a [...] gap) for key terms where useful.\n- Skip trivia that is unlikely to matter. Do not add facts that are not in my material; if a card needs outside knowledge, mark it \"(outside source)\".\n- Output as a table with the columns {{format}}, and nothing else, so I can copy it.\n\nMy material:\n{{material}}",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": true,
+          "default": "cell biology"
+        },
+        {
+          "key": "count",
+          "label": "Number of cards",
+          "type": "number",
+          "required": true,
+          "default": "12"
+        },
+        {
+          "key": "format",
+          "label": "Output columns",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Front | Back | Tag",
+            "Front | Back",
+            "Cloze text | Extra"
+          ],
+          "default": "Front | Back | Tag"
+        },
+        {
+          "key": "material",
+          "label": "Notes or text",
+          "type": "long",
+          "required": true,
+          "default": "Mitochondria produce ATP through oxidative phosphorylation. The inner membrane is folded into cristae, which increase surface area. The matrix contains enzymes of the Krebs cycle and mitochondrial DNA.",
+          "help": "Paste your notes or an excerpt"
+        }
+      ],
+      "exampleOutput": "| Front | Back | Tag |\n|---|---|---|\n| What process do mitochondria use to produce most of the cell's ATP? | Oxidative phosphorylation | energy |\n| Why is the inner mitochondrial membrane folded into cristae? | The folds increase surface area, so more ATP-producing machinery fits | structure |\n| Where are the enzymes of the Krebs cycle located? | In the mitochondrial matrix | location |\n| The inner membrane folds are called [...] | cristae | cloze |\n| Mitochondria contain their own [...], separate from nuclear DNA. | DNA (mitochondrial DNA) | cloze |\n| How would fewer cristae affect ATP output, and why? | Output would likely drop, since less membrane surface means less ATP-producing machinery | application |\n| Which part of the mitochondrion holds the Krebs cycle enzymes: matrix or inner membrane? | The matrix | compare |\n| What does \"ATP\" stand for, and what is it used for? (outside source) | Adenosine triphosphate; the cell's usable energy currency | basics |",
+      "notes": "Single-idea cards and a ban on outside facts keep the deck accurate and easy to review. Paste the output straight into a spreadsheet or Anki import.",
+      "useCase": "generate",
+      "tags": [
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-paper-summary-critique",
+      "title": "Research paper summary with a critical review",
+      "description": "Summarize a paper in plain English, then assess its methods, evidence and limits without overstating anything.",
+      "body": "You are helping me read a research paper critically. Audience level: {{level}}. My field: {{field}}.\n\nUsing only the text I paste below, produce:\n1. **One-paragraph summary** in plain language: question, method, main finding.\n2. **Key claims** as a numbered list, each tagged \"strongly supported\", \"partly supported\" or \"weakly supported\" with one line of reasoning.\n3. **Methods check**: design, sample, measures, comparison group, statistics. Note anything that limits what the results can show (bias, confounds, small samples, multiple comparisons, generalizability).\n4. **What the authors could not conclude** but a casual reader might.\n5. **Questions I should ask** (three) before relying on this paper.\n6. **Verdict**: how much weight to give it, in two sentences.\n\nDo not use outside knowledge about the paper or its authors, and do not cite other studies unless they appear in the text. If something is not stated in the text, write \"not reported\". If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.\n\nPaper text:\n{{paper}}",
+      "variables": [
+        {
+          "key": "level",
+          "label": "Audience level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Undergraduate"
+        },
+        {
+          "key": "field",
+          "label": "Your field",
+          "type": "text",
+          "required": true,
+          "default": "public health"
+        },
+        {
+          "key": "paper",
+          "label": "Paper text",
+          "type": "long",
+          "required": true,
+          "default": "Abstract: In a randomized trial of 120 adults, a 10-minute daily breathing exercise reduced self-reported stress scores by 18% over four weeks compared with a waitlist control (p = 0.03). Stress was measured with a 10-item questionnaire. Participants were university employees recruited by email.",
+          "help": "Paste the abstract or full text"
+        }
+      ],
+      "exampleOutput": "**Summary.** The authors tested whether a short daily breathing exercise lowers stress. 120 university employees were randomized to the exercise or a waitlist, and the exercise group reported about 18% lower stress after four weeks.\n\n**Key claims**\n1. The exercise reduced stress: *partly supported*. Randomization helps, but the outcome is self-reported and the control group knew they were waiting.\n2. The effect is meaningful: *weakly supported*. Only a p-value is given; effect size and confidence interval are not reported.\n\n**Methods check.** Randomized design is a strength. Limits: no active control, so expectation effects are possible; self-report only; a single, narrow population; four-week follow-up; blinding \"not reported\".\n\n**Cannot conclude:** that it works for other populations, that effects last, or that it beats other relaxation methods.\n\n**Questions:** Was the analysis pre-registered? How many dropped out? What is the effect size?\n\n**Verdict:** Encouraging but preliminary. Treat it as a reason to run a better-controlled study, not as proof.",
+      "notes": "Restricting the model to the pasted text prevents invented context, and the \"not reported\" rule exposes gaps. Paste the methods section as well as the abstract for a sharper critique.",
+      "useCase": "summarize",
+      "tags": [
+        "research",
+        "summarization",
+        "decision-making"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-compare-sources",
+      "title": "Compare two sources and find where they disagree",
+      "description": "Line up two articles or reports side by side, separate facts from interpretation and judge which is more reliable.",
+      "body": "Compare these two sources on the topic: {{topic}}.\n\nFor the comparison, produce:\n1. **Core claims** of each source, in two or three bullets each.\n2. **Agreement**: points where both say essentially the same thing.\n3. **Disagreement**: a table with columns: issue, Source A says, Source B says, likely reason for the difference (different data, definitions, time period, framing, or bias).\n4. **Evidence quality**: for each source, what kind of evidence it gives (primary data, expert opinion, anecdote, undisclosed), and anything missing.\n5. **Framing and tone**: loaded words, what is emphasized or omitted.\n6. **Bottom line**: which claims I can rely on, which I should check elsewhere, and what specific evidence would settle the disagreements.\n\nUse only the texts below. Do not guess about the publishers beyond what the text shows. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.\n\nSource A ({{label_a}}):\n{{source_a}}\n\nSource B ({{label_b}}):\n{{source_b}}",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "required": true,
+          "default": "effects of remote work on productivity"
+        },
+        {
+          "key": "label_a",
+          "label": "Source A name",
+          "type": "text",
+          "required": true,
+          "default": "Company survey report"
+        },
+        {
+          "key": "source_a",
+          "label": "Source A text",
+          "type": "long",
+          "required": true,
+          "default": "Our survey of 800 managers found productivity rose 12% after moving to remote work, with fewer interruptions cited as the main reason.",
+          "help": "Paste the text or key excerpts"
+        },
+        {
+          "key": "label_b",
+          "label": "Source B name",
+          "type": "text",
+          "required": true,
+          "default": "Academic working paper"
+        },
+        {
+          "key": "source_b",
+          "label": "Source B text",
+          "type": "long",
+          "required": true,
+          "default": "Using output data from 1,500 call-center workers, we find no significant productivity change from remote work, but a 9% increase in attrition for new hires.",
+          "help": "Paste the text or key excerpts"
+        }
+      ],
+      "exampleOutput": "**Core claims.** A: productivity rose 12% after going remote, driven by fewer interruptions. B: no significant productivity change, but higher attrition among new hires.\n\n**Agreement.** Both examine remote work's effect on output and both treat interruptions and onboarding as relevant context.\n\n| Issue | Source A | Source B | Likely reason |\n|---|---|---|---|\n| Productivity | +12% | No significant change | Perception vs measured output; different workforces |\n| Retention | Not mentioned | +9% attrition for new hires | Omitted in A |\n\n**Evidence quality.** A relies on manager opinion (survey of 800), which reflects perception. B uses output data from 1,500 workers, but only one job type; sampling method not stated for either.\n\n**Framing.** A stresses benefits; B reports both a null result and a cost.\n\n**Bottom line.** Trust B more on measured productivity in call centers; treat A as a signal of manager perception. To settle it: objective output data across several job types, and attrition data from A's firms.",
+      "notes": "Separating what each source claims from why they differ avoids picking a winner too early. Add a third source and ask for a three-way table to triangulate.",
+      "useCase": "analyze",
+      "tags": [
+        "research",
+        "decision-making"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-search-query-builder",
+      "title": "Literature search query builder",
+      "description": "Turn a research question into keyword sets, Boolean strings and database tips for finding relevant papers.",
+      "body": "Help me build a literature search for this research question: {{question}}\n\nDatabases I will use: {{databases}}. Time window: {{years}}. Study types I prefer: {{study_types}}.\n\nProvide:\n1. **Concept breakdown**: split the question into 3 to 4 core concepts (e.g. population, intervention or factor, outcome, context).\n2. **Term table**: for each concept, list synonyms, related terms, alternative spellings, abbreviations and broader/narrower terms.\n3. **Boolean search strings**: one broad string (high recall) and one narrow string (high precision), written in generic syntax with AND, OR, quotation marks and truncation (*). Note how to adapt it for the databases I named, including controlled vocabulary like MeSH where it applies.\n4. **Filters and limits** I should apply, and which to avoid because they hide good results.\n5. **Screening criteria**: a short inclusion and exclusion list I can use to triage titles and abstracts.\n6. **Gaps**: terms or perspectives I may be missing, plus two backup strategies (citation chaining, key authors to check).\n\nDo not list specific papers or authors unless you are certain they exist; if you mention any, tell me to verify them. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "question",
+          "label": "Research question",
+          "type": "text",
+          "required": true,
+          "default": "Does mindfulness training reduce burnout in nurses?"
+        },
+        {
+          "key": "databases",
+          "label": "Databases",
+          "type": "text",
+          "required": true,
+          "default": "PubMed, PsycINFO, Google Scholar"
+        },
+        {
+          "key": "years",
+          "label": "Time window",
+          "type": "text",
+          "required": true,
+          "default": "last 10 years"
+        },
+        {
+          "key": "study_types",
+          "label": "Study types",
+          "type": "text",
+          "required": false,
+          "default": "randomized trials and systematic reviews"
+        }
+      ],
+      "exampleOutput": "**Concepts:** (1) population: nurses; (2) intervention: mindfulness training; (3) outcome: burnout.\n\n| Concept | Terms |\n|---|---|\n| Nurses | nurse*, \"nursing staff\", \"registered nurse*\", \"healthcare worker*\" |\n| Mindfulness | mindful*, MBSR, \"mindfulness-based stress reduction\", meditation, \"MBCT\" |\n| Burnout | burnout, \"burn-out\", \"emotional exhaustion\", \"compassion fatigue\", \"occupational stress\" |\n\n**Broad string:** (nurse* OR \"nursing staff\" OR \"healthcare worker*\") AND (mindful* OR MBSR OR meditation) AND (burnout OR \"emotional exhaustion\" OR \"compassion fatigue\")\n\n**Narrow string:** (nurse* OR \"registered nurse*\") AND (mindful* OR MBSR) AND (burnout OR \"emotional exhaustion\") AND (randomi* OR \"systematic review\")\n\n**Database notes:** In PubMed add MeSH: \"Burnout, Professional\"[Mesh] and \"Mindfulness\"[Mesh]. In PsycINFO use the thesaurus term for burnout. Google Scholar: use only the narrow string and scan the first 100 hits.\n\n**Filters:** date 2016 onward; avoid language filters until the end.\n\n**Screening:** include nurses as main population and a burnout measure; exclude students-only samples and non-mindfulness relaxation only.\n\n**Gaps and backups:** check \"resilience\" and \"well-being\" as outcomes; citation-chain from the best two reviews you find.",
+      "notes": "Running a broad and a narrow string lets you balance coverage and precision. Test the strings, check hit counts, then ask the model to adjust them based on what you see.",
+      "useCase": "generate",
+      "tags": [
+        "research"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-practice-quiz",
+      "title": "Practice quiz with answers and explanations",
+      "description": "Get a mixed-format quiz on any topic, with a hidden answer key that explains why each answer is right or wrong.",
+      "body": "Write a practice quiz on {{topic}} for a {{level}} learner.\n\nDetails:\n- {{count}} questions in total, in this mix: multiple choice, true/false with a short justification, short answer, and two application questions that need reasoning.\n- Difficulty: {{difficulty}}. Order questions from easier to harder.\n- For multiple choice, write plausible wrong options based on common misconceptions, and avoid \"all of the above\".\n- After all the questions, add a clearly separated **Answer key** with the correct answer and a 1 to 2 sentence explanation for every question, including why the most tempting wrong answer is wrong.\n- End with a scoring guide and what to review for each score band.\n\nCover the topic broadly and do not repeat the same idea twice. If a question depends on a fact you are not sure of, drop it rather than guess. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "required": true,
+          "default": "the causes of World War I"
+        },
+        {
+          "key": "level",
+          "label": "Learner level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "High school"
+        },
+        {
+          "key": "count",
+          "label": "Number of questions",
+          "type": "number",
+          "required": true,
+          "default": "8"
+        },
+        {
+          "key": "difficulty",
+          "label": "Difficulty",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Easy",
+            "Medium",
+            "Hard",
+            "Mixed"
+          ],
+          "default": "Medium"
+        }
+      ],
+      "exampleOutput": "**Practice Quiz: The Causes of World War I** (High school, medium difficulty)\n\n1. (Multiple choice) Which event directly triggered the July Crisis of 1914?\nA) The sinking of the Lusitania\nB) The assassination of Archduke Franz Ferdinand in Sarajevo\nC) Germany's invasion of Belgium\nD) The Russian Revolution\n\n2. (True/false) The alliance system helped keep conflicts local because each power only fought its own enemies. Justify your answer.\n\n3. (Multiple choice) Which best describes \"militarism\" as a cause of the war?\nA) A belief that diplomacy should always replace force\nB) A build-up of armed forces and the idea that military strength should shape policy\nC) A treaty limiting the size of national armies\nD) A shared European army under joint command\n\n4. (Short answer) Explain how imperial rivalry outside Europe added to tension between the great powers.\n\n5. (True/false) Nationalism in the Balkans made Austria-Hungary's position more fragile. Justify your answer.\n\n6. (Short answer) Why did the \"blank cheque\" Germany gave Austria-Hungary make a compromise less likely?\n\n7. (Application) A mobilization plan depends on moving millions of troops quickly. Why might that make diplomacy harder in a crisis?\n\n8. (Application) Historians disagree on whether the war was caused mainly by long-term structures or by short-term decisions. Which evidence from this topic would you use for each side?\n\n---\n\n**Answer key**\n\n1. B. Franz Ferdinand, heir to the Austro-Hungarian throne, was killed in June 1914, and Austria-Hungary's response set the crisis in motion. A is tempting but the Lusitania sinking happened in 1915, after the war began.\n2. False. Treaties linked Austria-Hungary and Germany against Russia, France and Britain, so a Balkan dispute could pull in many powers. The tempting \"True\" ignores how obligations chained the powers together.\n3. B. Militarism meant large armies, arms races and military leaders with real influence. C is tempting but it describes arms limitation, the opposite idea.\n4. Competition over colonies and trade, for example in Africa and Asia, fed distrust and naval rivalry, especially between Britain and Germany.\n5. True. Slavic nationalist movements, backed by Serbia, threatened the multi-ethnic empire, so Austria-Hungary treated Serbia as an existential danger.\n6. Germany's promise of support removed pressure on Vienna to negotiate, so a harsh ultimatum to Serbia looked safe and compromise lost its appeal.\n7. Fixed timetables leave little room to pause, so leaders feel they must mobilize first, and mobilizing can look like an act of war to rivals.\n8. Structural: alliances, arms races, imperial rivalry. Short-term: the assassination, the blank cheque, the ultimatum and the mobilizations. A strong answer links the two.\n\n**Scoring guide**\n- 7-8 correct: solid grasp; try a source-analysis exercise next.\n- 4-6 correct: review the alliance system and the July Crisis timeline.\n- 0-3 correct: re-read a short overview of the war's origins, then retake the quiz.",
+      "notes": "Asking for misconception-based distractors and explanations for wrong answers makes the quiz teach, not just test. Answer first, then check the key.",
+      "useCase": "generate",
+      "tags": [
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-concept-map",
+      "title": "Concept map as an outline and diagram code",
+      "description": "Map how the ideas in a topic connect, as a text outline plus Mermaid code you can paste into a diagram tool.",
+      "body": "Build a concept map of {{topic}} for a {{level}} learner.\n\nDeliver:\n1. **Central idea** and 5 to 8 main concepts around it, each with a one-line definition.\n2. **Relationships**: a list of links written as \"Concept A -> relation -> Concept B\" (for example \"supply -> sets price with -> demand\"). Include at least 10 links and at least two cross-links between different branches.\n3. **Mermaid diagram**: a valid `graph TD` block using those concepts and labeled edges. Keep node text short.\n4. **Reading path**: the order I should learn the concepts, with a reason for each step.\n5. **Gaps**: two related areas not covered by the map that I might explore next.\n\nFocus on how things connect, not only on definitions. Be accurate and do not stretch the map to fill space. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "required": true,
+          "default": "photosynthesis"
+        },
+        {
+          "key": "level",
+          "label": "Learner level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "High school"
+        }
+      ],
+      "exampleOutput": "**Central idea:** Photosynthesis turns light, water and carbon dioxide into sugar and oxygen.\n\n**Main concepts:** chloroplast (the organelle where it happens), chlorophyll (pigment that captures light), light reactions (make ATP and NADPH), Calvin cycle (builds sugar), stomata (gas entry), glucose (stored energy).\n\n**Links**\n- sunlight -> is absorbed by -> chlorophyll\n- chlorophyll -> powers -> light reactions\n- light reactions -> split -> water\n- light reactions -> supply ATP and NADPH to -> Calvin cycle\n- stomata -> admit -> carbon dioxide\n- Calvin cycle -> uses carbon dioxide to make -> glucose\n- (cross-link) glucose -> fuels -> cellular respiration\n\n```mermaid\ngraph TD\n  A[Sunlight] -->|absorbed by| B[Chlorophyll]\n  B -->|drives| C[Light reactions]\n  C -->|ATP and NADPH| D[Calvin cycle]\n  E[Stomata] -->|admit CO2| D\n  D -->|makes| F[Glucose]\n```\n\n**Reading path:** chloroplast, light, light reactions, Calvin cycle, then respiration.\n**Gaps:** C4 and CAM photosynthesis; how plants regulate stomata.",
+      "notes": "The labeled links force relationships, which is what concept maps are for. Paste the Mermaid block into mermaid.live or a compatible note app.",
+      "useCase": "generate",
+      "tags": [
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-feynman-coach",
+      "title": "Feynman technique coach",
+      "description": "Explain a concept in your own words and get precise feedback on gaps, jargon and shaky logic.",
+      "body": "Coach me using the Feynman technique. The concept: {{concept}}. I am studying at: {{level}}.\n\nProcess:\n1. I will explain the concept in my own words below, as if teaching a beginner.\n2. Review my explanation and report: (a) what is correct and clear, (b) errors or misconceptions, (c) places where I used jargon or hand-waving instead of explaining, (d) steps in the logic I skipped.\n3. Give me a score from 1 to 5 for accuracy and for clarity, each with one sentence.\n4. Ask me three targeted follow-up questions that probe my weakest spots, as a curious beginner would.\n5. Show a tightened model explanation of about 120 words, but only after listing my gaps, so I can fix them first.\n\nBe kind but exact. Do not add facts I did not claim just to be helpful, and flag anything where you are less than sure. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.\n\nMy explanation:\n{{explanation}}",
+      "variables": [
+        {
+          "key": "concept",
+          "label": "Concept",
+          "type": "text",
+          "required": true,
+          "default": "how a blockchain works"
+        },
+        {
+          "key": "level",
+          "label": "Your level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Undergraduate"
+        },
+        {
+          "key": "explanation",
+          "label": "Your explanation",
+          "type": "long",
+          "required": true,
+          "default": "A blockchain is a shared list of transactions. Every few minutes new transactions are grouped into a block, and each block contains a fingerprint of the previous one, so changing an old block would break all the later ones.",
+          "help": "Write it as if teaching a beginner"
+        }
+      ],
+      "exampleOutput": "**Correct and clear:** the \"shared list\" framing and the idea that each block holds a fingerprint (hash) of the previous block. That chaining is exactly why tampering is detectable.\n\n**Errors:** \"every few minutes\" is true of some chains, not all. Block timing varies by design.\n\n**Jargon and hand-waving:** \"fingerprint\" is never explained: what makes it change if one character changes? Also missing: who keeps copies of the list and who agrees a block is valid.\n\n**Skipped steps:** why breaking later blocks is hard in practice (agreement among many participants, cost of rewriting).\n\n**Scores:** accuracy 4/5, clarity 3/5.\n\n**Follow-ups:** (1) Who decides which block is added next? (2) What if two people add a block at the same moment? (3) Why can't someone just recalculate all the later fingerprints?\n\n**Tightened model:** A blockchain is a ledger copied across many computers. Transactions are bundled into blocks, and each block stores a hash of the one before it, so altering history changes every later hash. Because all participants hold copies and follow agreed rules for accepting new blocks, a forged history is quickly rejected.",
+      "notes": "Feedback before the model answer is the point: fix your own gaps first, then compare. Repeat with your revised explanation until the scores reach 5.",
+      "useCase": "tutor",
+      "tags": [
+        "learning",
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-language-partner",
+      "title": "Language conversation partner with gentle corrections",
+      "description": "Practice speaking a new language in realistic scenes, with level-appropriate replies and a short correction after each turn.",
+      "body": "Be my conversation partner for practicing {{language}}. My level: {{level}}. Scenario: {{scenario}}. Native language for explanations: {{native}}.\n\nRules:\n- Stay in {{language}} for the conversation, using vocabulary and grammar suited to my level. Keep each of your turns to 1 to 3 sentences and end with a question so I keep talking.\n- After each of my messages, add a short block labeled \"Feedback\" in {{native}} with: my sentence corrected, a one-line reason for each fix, and one better or more natural alternative. If I made no mistakes, say so and offer a more advanced phrasing.\n- Do not correct more than three things per turn; choose the most important.\n- If I write \"help\", give me two example replies. If I write \"translate\", translate your last message.\n- Every 8 turns, list new words and phrases from the conversation as a mini glossary.\n- Play the scenario realistically, but keep it friendly and patient.\n\nStart now with your opening line in the scenario. If you are unsure whether a phrase is natural or regional, tell me instead of presenting it as certain.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "text",
+          "required": true,
+          "default": "Spanish"
+        },
+        {
+          "key": "level",
+          "label": "Your level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Beginner (A1-A2)",
+            "Intermediate (B1-B2)",
+            "Advanced (C1-C2)"
+          ],
+          "default": "Beginner (A1-A2)"
+        },
+        {
+          "key": "scenario",
+          "label": "Scenario",
+          "type": "text",
+          "required": true,
+          "default": "ordering food at a restaurant",
+          "help": "Travel, job interview, small talk..."
+        },
+        {
+          "key": "native",
+          "label": "Explain in",
+          "type": "text",
+          "required": true,
+          "default": "English"
+        }
+      ],
+      "exampleOutput": "**Waiter:** ¡Buenas noches! Bienvenido. ¿Mesa para cuántas personas?\n\n(Your turn. Try a short reply such as \"Mesa para dos, por favor\". If you get stuck, type \"help\" and I will show you two example replies.)\n\n---\n*Sample of what happens next.*\n**You:** Yo quiero un agua y la paella.\n**Waiter:** Muy bien. ¿El agua con gas o sin gas?\n**Feedback:**\n- Corrected: \"Quiero un agua y la paella, por favor.\"\n- Reason: subject pronouns like \"yo\" are usually dropped in Spanish; adding \"por favor\" is polite.\n- More natural: \"Para mí, una paella y un agua, por favor.\"\n\n(Glossary will appear after eight turns.)",
+      "notes": "Capping corrections at three per turn keeps the conversation flowing. Use \"help\" and \"translate\" shortcuts, and change the scenario once you feel comfortable.",
+      "useCase": "roleplay",
+      "tags": [
+        "translation",
+        "communication",
+        "learning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-research-question-refiner",
+      "title": "Sharpen a vague idea into a researchable question",
+      "description": "Turn a broad topic into a focused research question with scope, variables, methods and feasibility checks.",
+      "body": "I have a broad idea for a {{project_type}}: {{idea}}. My field: {{field}}. Time and resources: {{resources}}.\n\nHelp me turn it into a strong research question:\n1. Ask me up to three clarifying questions ONLY if the idea is too vague to proceed; otherwise proceed with stated assumptions.\n2. Offer five candidate research questions of increasing narrowness, each labeled as descriptive, comparative, relational or causal.\n3. For the best two, spell out: key concepts and how they could be measured, the population or sample, a suitable method, what a good answer would look like, and the main risk.\n4. Run a feasibility check against my time and resources, and a \"so what\" check (who benefits from the answer).\n5. Recommend one question, with a one-sentence version I can put at the top of a proposal.\n6. List the three most important existing-knowledge areas I should read first, as topics, not as specific papers.\n\nDo not cite specific studies unless you are certain they exist. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "project_type",
+          "label": "Project type",
+          "type": "select",
+          "required": true,
+          "options": [
+            "undergraduate thesis",
+            "master's thesis",
+            "class paper",
+            "work report",
+            "personal curiosity"
+          ],
+          "default": "undergraduate thesis"
+        },
+        {
+          "key": "idea",
+          "label": "Your idea",
+          "type": "long",
+          "required": true,
+          "default": "I want to study how social media affects teenagers' sleep."
+        },
+        {
+          "key": "field",
+          "label": "Field",
+          "type": "text",
+          "required": true,
+          "default": "psychology"
+        },
+        {
+          "key": "resources",
+          "label": "Time and resources",
+          "type": "text",
+          "required": false,
+          "default": "6 months, no budget, access to one school"
+        }
+      ],
+      "exampleOutput": "**Assumptions:** 6 months, one school, survey-based methods.\n\n**Candidates**\n1. How do teenagers use social media at night? (descriptive)\n2. How does bedtime phone use differ between weekdays and weekends? (comparative)\n3. Is evening social media time associated with sleep duration in 15-17-year-olds? (relational)\n4. Is the association stronger for passive scrolling than for messaging? (relational)\n5. Does a phone-free hour before bed improve sleep? (causal)\n\n**Best two**\n- Q3: measure time via self-report or screen logs, sleep via a validated questionnaire; sample 150 students; correlational survey. Risk: self-report error.\n- Q5: needs an intervention; too heavy for 6 months and no budget.\n\n**Feasibility:** Q3-Q4 fit; Q5 does not. **So what:** schools and parents.\n\n**Recommendation:** \"Among 15-17-year-olds at one school, is evening passive social media use more strongly associated with shorter sleep than evening messaging?\"\n\n**Read first:** adolescent sleep needs; screen-use measurement; confounds like homework and caffeine.",
+      "notes": "Offering a ladder of questions shows you the trade-off between interesting and doable. Share your supervisor's feedback and ask for a revision.",
+      "useCase": "brainstorm",
+      "tags": [
+        "research",
+        "study",
+        "brainstorming"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-exam-cram-plan",
+      "title": "Last-minute exam cram plan",
+      "description": "A realistic triage plan for the days or hours before an exam, focused on the highest-scoring topics.",
+      "body": "I have an exam in {{time_left}} on {{subject}}. I can study about {{hours}} hours in total. Format of the exam: {{format}}.\n\nTopics and how confident I am (paste list below with ratings if you can): \n{{topics}}\n\nCreate a cram plan:\n1. **Triage**: rank topics into \"must master\", \"should know\" and \"skip if short on time\", using likely exam weight and my confidence. State your assumptions about weighting.\n2. **Schedule**: a time-boxed plan in blocks (include breaks and sleep), using active recall and past-paper style questions rather than rereading.\n3. **For each must-master topic**: the 5 things I need to know cold, a quick self-test question, and a common trap.\n4. **Memory aids**: mnemonics, patterns or one-page summary structure for the facts I need to memorize.\n5. **Exam-day tactics**: how to use the first five minutes, pacing, and what to do when blanking.\n\nBe honest about what can and cannot be learned in this time. If a topic is something you are not sure applies to my exam, mark it. Never invent exam content. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": true,
+          "default": "organic chemistry midterm"
+        },
+        {
+          "key": "time_left",
+          "label": "Time left",
+          "type": "text",
+          "required": true,
+          "default": "2 days"
+        },
+        {
+          "key": "hours",
+          "label": "Total study hours",
+          "type": "number",
+          "required": true,
+          "default": "10"
+        },
+        {
+          "key": "format",
+          "label": "Exam format",
+          "type": "text",
+          "required": false,
+          "default": "50% multiple choice, 50% reaction mechanisms"
+        },
+        {
+          "key": "topics",
+          "label": "Topics and confidence",
+          "type": "long",
+          "required": true,
+          "default": "Nomenclature (confident), SN1/SN2 (shaky), elimination (shaky), alkene reactions (not started)"
+        }
+      ],
+      "exampleOutput": "**Reality check:** 10 hours can raise a shaky grade substantially if you focus on mechanisms, but you will not master everything.\n\n**Triage**\n- Must master: SN1/SN2, elimination (high weight, shaky), alkene reactions (not started, usually heavily tested)\n- Should know: nomenclature refresh (confident; 30 minutes)\n- Skip: rare named reactions\n\n**Schedule (assumes mechanisms carry the most marks)**\nDay 1: 2 h SN1/SN2 with practice problems; 1.5 h elimination; 1 h compare SN vs E; sleep by 11 pm.\nDay 2: 2 h alkene reactions; 1 h mixed problems; 1 h one-page summary; light review in the evening.\n\n**SN1/SN2 cold facts:** rate laws; substrate preference; stereochemistry (inversion vs racemization); solvent effects; leaving groups. *Test:* which pathway does a tertiary bromide in ethanol favor? *Trap:* ignoring solvent.\n\n**Exam-day:** skim all questions first, do the sure marks, leave long mechanisms for last.",
+      "notes": "Triage by weight and weakness is what separates cramming from panic. Tell the model about past exams or the syllabus weights for a sharper ranking.",
+      "useCase": "plan",
+      "tags": [
+        "study",
+        "time-management"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-lecture-notes-cornell",
+      "title": "Turn lecture notes into Cornell-style study notes",
+      "description": "Restructure messy notes or a transcript into cue questions, clean notes and a summary you can revise from.",
+      "body": "Reorganize my raw notes into Cornell-style study notes for {{subject}}.\n\nOutput sections:\n1. **Cue column**: 6 to 12 questions or keywords that prompt recall of each main point.\n2. **Notes column**: tidy, concise notes grouped under the cues, using bullets and keeping my wording where possible. Fix obvious typos and unclear shorthand, but mark any guesses with [?].\n3. **Summary**: 4 to 5 sentences capturing the whole lesson in my own terms.\n4. **Gaps and confusions**: things in my notes that look incomplete, contradictory or likely mistaken, and what to check.\n5. **Self-test**: five questions that cover the material, answers at the end.\n\nDo not add facts that are absent from my notes. If you want to add context from general knowledge, label it clearly as \"(added)\". If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.\n\nLevel: {{level}}\n\nMy raw notes:\n{{notes}}",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": true,
+          "default": "macroeconomics"
+        },
+        {
+          "key": "level",
+          "label": "Level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Undergraduate"
+        },
+        {
+          "key": "notes",
+          "label": "Raw notes",
+          "type": "long",
+          "required": true,
+          "default": "gdp = c + i + g + nx. nominal vs real - real adj for inflation. inflation = price level up. cpi basket. unemployment types: frictional, structural, cyclical. fed raises rates -> less borrowing -> slows econ?",
+          "help": "Paste messy notes or a transcript"
+        }
+      ],
+      "exampleOutput": "| Cue | Notes |\n|---|---|\n| What are the components of GDP? | GDP = C + I + G + NX (consumption, investment, government spending, net exports) |\n| Nominal vs real GDP? | Real GDP is adjusted for inflation; nominal is not |\n| What is inflation? | A rise in the general price level |\n| How is inflation measured? | CPI, which tracks the price of a basket of typical goods |\n| What are the types of unemployment? | Frictional, structural, cyclical |\n| What happens when the Fed raises rates? | Borrowing becomes more expensive, so borrowing falls and the economy may slow [?] |\n\n**Summary.** GDP adds up total spending in an economy as consumption, investment, government spending and net exports. Real GDP removes the effect of price changes, so it allows fair comparison across years. Inflation is a rising price level, tracked with the CPI basket. Unemployment comes in three kinds: frictional, structural and cyclical. Raising interest rates is a tool the Fed can use to reduce borrowing and slow the economy.\n\n**Gaps and confusions**\n- Your note on the Fed ends with a question mark; confirm how rate changes affect inflation, not only growth.\n- \"Net exports\" is not defined; check whether it means exports minus imports.\n- The three unemployment types are listed without definitions (added: frictional is between jobs, structural is a skills or location mismatch, cyclical follows downturns).\n- It is unclear how the CPI basket is chosen or updated.\n\n**Self-test**\n1. Write the GDP formula and name each term.\n2. Why use real GDP rather than nominal GDP to compare two years?\n3. What does the CPI measure?\n4. Which type of unemployment rises most in a recession?\n5. How might a rate rise slow the economy?\n\n**Answers**\n1. GDP = C + I + G + NX: consumption, investment, government spending, net exports.\n2. Real GDP strips out inflation, so changes reflect output rather than prices.\n3. The cost of a basket of typical goods over time, a measure of inflation.\n4. Cyclical unemployment.\n5. Higher rates make borrowing costlier, so spending and investment fall [?].",
+      "notes": "Marking guesses with [?] and labeling additions keeps your notes trustworthy. Run it right after class while the lecture is still fresh.",
+      "useCase": "summarize",
+      "tags": [
+        "note-taking",
+        "study",
+        "summarization"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-fact-check-claim",
+      "title": "Fact-check a claim and rate the evidence",
+      "description": "Break a claim into checkable parts, say what evidence would support it and rate confidence honestly.",
+      "body": "Help me fact-check this claim: \"{{claim}}\"\nWhere I saw it: {{source}}. What matters to me: {{context}}.\n\nPlease:\n1. **Restate the claim** precisely, and split it into separate checkable sub-claims. Point out vague words (\"many\", \"studies show\") that hide what is really being claimed.\n2. For each sub-claim give a verdict: Supported, Partly supported, Unsupported, Misleading, or Cannot determine, plus a one-line reason.\n3. **What the evidence would look like**: what kind of sources (original data, systematic reviews, official statistics, expert consensus) would confirm or refute it, and how to find them.\n4. **How it may have gone wrong**: outdated facts, context removed, correlation presented as cause, cherry-picked numbers, etc.\n5. **Confidence**: high, medium or low, and what would change it.\n6. **A fair one-sentence version** of the claim.\n\nYou may not have access to current information. State the limits of your knowledge and date range, do not cite specific studies, links or numbers unless you are sure, and tell me to verify with primary sources. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "claim",
+          "label": "Claim",
+          "type": "long",
+          "required": true,
+          "default": "Humans only use 10% of their brains."
+        },
+        {
+          "key": "source",
+          "label": "Where you saw it",
+          "type": "text",
+          "required": false,
+          "default": "a social media post"
+        },
+        {
+          "key": "context",
+          "label": "What matters to you",
+          "type": "text",
+          "required": false,
+          "default": "I want to know if it is true before sharing it"
+        }
+      ],
+      "exampleOutput": "**Restated claim:** At any given time, only about a tenth of the human brain is active or functional.\n**Sub-claims**\n1. Most of the brain is unused at any moment: *Unsupported*. Imaging shows activity across essentially the whole brain over a day.\n2. Only 10% is \"functional\": *Misleading*. Damage to almost any region causes measurable deficits, which would not happen if most of it were idle.\n3. Training could unlock the rest: *Unsupported*.\n\n**Evidence to look for:** neuroimaging reviews (fMRI/PET), neurology textbooks, clinical lesion studies.\n\n**How it went wrong:** the myth is an old, often misattributed popular belief; \"using\" is confused with \"active at one instant\".\n\n**Confidence:** high that it is false. A single new body of evidence from neuroscience would be needed to change it.\n\n**Fair version:** \"We use virtually all of our brain, though not every region is equally active at once.\"\n\nVerify with a neuroscience textbook or a reputable science outlet.",
+      "notes": "Splitting the claim into parts stops a \"mostly true\" label from hiding a false detail. Ask the model to draft search terms to verify each sub-claim with primary sources.",
+      "useCase": "analyze",
+      "tags": [
+        "fact-checking",
+        "decision-making",
+        "research"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-explain-my-mistake",
+      "title": "Diagnose why your answer was wrong",
+      "description": "Paste a problem, your attempt and the right answer to find the exact misunderstanding behind the mistake.",
+      "body": "I got a problem wrong and want to understand why, not just see the solution.\n\nSubject: {{subject}}. Level: {{level}}.\nThe problem: {{problem}}\nMy answer and working: {{attempt}}\nThe correct answer (if I have it): {{correct}}\n\nPlease:\n1. Walk through my working line by line and point to the first place it went wrong.\n2. Name the underlying misunderstanding (concept, rule, careless slip or misread question) in one sentence, with the reason I might have made it.\n3. Teach the missing idea briefly using one simple example that is different from this problem.\n4. Show the correct solution in clear steps.\n5. Give me two new practice problems targeting the same weak point, one easy and one harder, with answers hidden at the end.\n6. Give me a quick rule, check or habit to catch this mistake next time.\n\nIf my working is ambiguous, tell me what you assumed. If the \"correct answer\" I gave appears to be wrong, say so. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "required": true,
+          "default": "algebra"
+        },
+        {
+          "key": "level",
+          "label": "Level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "High school"
+        },
+        {
+          "key": "problem",
+          "label": "The problem",
+          "type": "long",
+          "required": true,
+          "default": "Solve 2(x - 3) = 10"
+        },
+        {
+          "key": "attempt",
+          "label": "Your answer and working",
+          "type": "long",
+          "required": true,
+          "default": "2x - 3 = 10, so 2x = 13, x = 6.5"
+        },
+        {
+          "key": "correct",
+          "label": "Correct answer",
+          "type": "text",
+          "required": false,
+          "default": "x = 8"
+        }
+      ],
+      "exampleOutput": "**Where it went wrong:** line 1. You wrote 2x - 3 but the bracket should give 2x - 6. The 2 was multiplied by x only.\n\n**Misunderstanding:** the distributive property: a number outside brackets multiplies every term inside. This is a very common slip when the second term is a subtraction.\n\n**Mini lesson:** 3(y + 4) = 3y + 12, because 3 times y is 3y and 3 times 4 is 12. The same applies to 3(y - 4) = 3y - 12.\n\n**Correct solution:** 2(x - 3) = 10, so 2x - 6 = 10, 2x = 16, x = 8. Check: 2(8 - 3) = 10.\n\n**Practice**\n- Easy: 3(x + 2) = 15\n- Harder: 4(2x - 5) + 3 = 27\n\n**Habit:** after solving, substitute your answer back into the original equation. With x = 6.5, 2(3.5) = 7, not 10, so the mistake would show.\n\n*Answers (try first): x = 3; x = 5.5.*",
+      "notes": "Naming the first wrong step and the underlying misconception is far more useful than a model solution. Include your full working, even if messy.",
+      "useCase": "tutor",
+      "tags": [
+        "learning",
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-reading-list",
+      "title": "Build a reading list in the right order",
+      "description": "Get a staged learning path of book and article types, from first intro to advanced, with what to look for in each.",
+      "body": "Design a reading and learning path for {{topic}}. My background: {{background}}. Goal: {{goal}}. Time available: {{time}}.\n\nGive me:\n1. **Stages**: 3 to 5 stages from orientation to advanced, each with a purpose, what I should be able to do at the end, and an estimated time.\n2. **For each stage**: 2 to 3 recommended resource types and, where you are highly confident they exist, well-known titles and authors. Mark any title you are less than certain about with \"(verify)\". Never invent titles, authors or links; describe the kind of resource instead when unsure (e.g. \"a recent introductory textbook with worked exercises\").\n3. **How to read each**: what to skim, what to read deeply and which exercises to do.\n4. **Criteria** for judging whether a resource is good: authorship, date, evidence, reviews.\n5. **Checkpoints**: a short project or self-test at the end of every stage.\n6. **Search tips**: where to look (libraries, open courses, review articles) and good search phrases.\n\nKeep the plan realistic for my time. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "required": true,
+          "default": "behavioral economics"
+        },
+        {
+          "key": "background",
+          "label": "Your background",
+          "type": "text",
+          "required": true,
+          "default": "I have a business degree but no economics beyond the basics"
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "required": true,
+          "default": "understand the field well enough to apply it at work"
+        },
+        {
+          "key": "time",
+          "label": "Time available",
+          "type": "text",
+          "required": true,
+          "default": "3 months, 4 hours a week"
+        }
+      ],
+      "exampleOutput": "**Stage 1: Orientation (weeks 1-2).** Purpose: get the core ideas and vocabulary. Outcome: explain loss aversion, anchoring and nudges in plain terms. Resources: a popular, well-reviewed introduction (Daniel Kahneman's *Thinking, Fast and Slow* is widely recommended; verify the edition) plus a short open course. Read fully for ideas; skip long anecdotes.\n*Checkpoint:* write a one-page summary of five key biases.\n\n**Stage 2: Foundations (weeks 3-6).** Outcome: understand how experiments test these effects. Resource type: an introductory textbook with worked exercises. Do the problem sets; skim the math boxes at first.\n*Checkpoint:* design a small experiment on a workplace decision.\n\n**Stage 3: Application (weeks 7-10).** Outcome: apply the ideas to pricing, defaults and choice design. Resource type: review articles and case collections from respected journals.\n*Checkpoint:* analyze one of your company's decisions.\n\n**Stage 4: Critique (weeks 11-12).** Read about replication debates to see which effects are robust.\n\n**Judge resources by:** author expertise, date (some findings failed to replicate), evidence, not just stories.\n**Search phrases:** \"behavioral economics introduction\", \"replication\", \"choice architecture\".",
+      "notes": "Admitting uncertainty through \"(verify)\" tags keeps the list honest, and staged outcomes make the path measurable. Ask for a follow-up covering one stage in more detail.",
+      "useCase": "plan",
+      "tags": [
+        "research",
+        "learning",
+        "study"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "research-learning-steelman-both-sides",
+      "title": "Understand both sides of a debate fairly",
+      "description": "Get the strongest version of each side of a contested question, with the evidence, values and cruxes that divide them.",
+      "body": "I want to understand the debate over: {{question}}. My current leaning (optional): {{leaning}}. Audience level: {{level}}.\n\nPresent it fairly:\n1. **The question defined**: what is actually disputed, and what is agreed. Separate factual disagreements from disagreements about values.\n2. **Strongest case for each side**: for the main positions (two or more), write the argument as its best advocate would, in 3 to 5 sentences, with the best supporting evidence or reasoning.\n3. **Strongest objections** each side faces, and how each side typically replies.\n4. **Cruxes**: the 3 to 5 specific facts or values that, if resolved, would change minds.\n5. **Common errors**: weak or misleading arguments on each side that careful people avoid.\n6. **How to judge**: what evidence to look for, and where reputable experts disagree.\n7. **Questions for me** that help me clarify my own view.\n\nUse even-handed language and equal effort for every side. Do not tell me what to conclude. Be clear where evidence is mixed or your knowledge may be dated, and do not cite specific studies or figures unless you are certain. If you are unsure about a fact, say so plainly. Never invent citations, quotes, statistics or URLs.",
+      "variables": [
+        {
+          "key": "question",
+          "label": "Debate or question",
+          "type": "text",
+          "required": true,
+          "default": "Should universities require standardized tests for admission?"
+        },
+        {
+          "key": "leaning",
+          "label": "Your current view",
+          "type": "text",
+          "required": false,
+          "default": "Not sure",
+          "help": "Optional, helps spot your blind spots"
+        },
+        {
+          "key": "level",
+          "label": "Audience level",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Complete beginner",
+            "High school",
+            "Undergraduate",
+            "Graduate",
+            "Working professional"
+          ],
+          "default": "Undergraduate"
+        }
+      ],
+      "exampleOutput": "**What is disputed.** Agreed: admissions should identify students likely to succeed. Disputed (factual): how well tests predict outcomes beyond grades, and whether they disadvantage some groups. Disputed (values): how much to weigh predictive accuracy against access.\n\n**Case for requiring tests.** Grades vary across schools, so a common measure gives admissions officers a comparable signal, which can help identify talented students from less-known schools.\n\n**Case against.** Scores correlate with family income, tests narrow the pool, and grades already predict performance well; dropping them may widen access.\n\n**Objections and replies.** Pro-test side: if tests are removed, other measures like essays may be even more biased. Anti-test side: a small predictive gain does not justify the barrier.\n\n**Cruxes:** how much tests add to predictions once grades are known; how score gaps arise; what schools want from admissions.\n\n**Common errors:** treating a correlation as proof of bias or of merit.\n\n**Questions for you:** what outcome do you most want admissions to achieve?",
+      "notes": "Asking for each side \"as its best advocate\" and for cruxes moves the conversation from winning to understanding. Use it before writing an argumentative essay.",
+      "useCase": "analyze",
+      "tags": [
+        "decision-making",
+        "research"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

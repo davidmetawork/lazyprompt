@@ -1,0 +1,874 @@
+{
+  "category": "data-analysis",
+  "prompts": [
+    {
+      "key": "data-analysis-eda-plan",
+      "title": "Exploratory analysis plan for a new dataset",
+      "description": "Turn a dataset description into a step-by-step exploration plan with checks, hypotheses and the first charts to make.",
+      "body": "I'm about to explore a dataset and want a plan before I open any tools.\n\nDataset description:\n{{dataset_description}}\n\nThe business question or goal: {{goal}}\nTools I'll use: {{tool}}\nMy experience level: {{experience}}\n\nCreate an exploratory analysis plan with these sections:\n1. Assumptions: what you are assuming about the data, stated explicitly. If something critical is missing (grain of a row, time range, how it was collected), list it under \"Questions to answer first\" instead of guessing.\n2. Data health checks: 6-8 specific checks in the order I should run them (row grain, duplicates, missing values, impossible values, date coverage, join keys, units), each with what a problem would look like.\n3. Univariate and bivariate exploration: which columns to profile first and which pairs of columns to compare, tied to the goal.\n4. Hypotheses: 4-5 testable hypotheses related to the goal, each with the cut of data that would confirm or refute it.\n5. First five charts: chart type, axes, and what a surprising result would tell me.\n6. Pitfalls: biases or traps specific to this kind of data (survivorship, seasonality, selection effects, etc.).\n7. Stopping point: how I will know the exploration is done and what to hand over.\n\nWhere useful, include a short {{tool}} snippet or command. Keep the whole plan under 700 words and use plain language suited to a {{experience}} analyst.",
+      "variables": [
+        {
+          "key": "dataset_description",
+          "label": "Dataset description",
+          "type": "long",
+          "default": "An e-commerce orders table with about 400k rows from Jan 2023 to Jun 2024. Columns: order_id, customer_id, order_date, country, product_category, quantity, unit_price, discount_pct, shipping_days, returned (yes/no).",
+          "required": false,
+          "help": "Columns, row count, date range, source. Rough is fine."
+        },
+        {
+          "key": "goal",
+          "label": "Goal or question",
+          "type": "text",
+          "default": "Understand why return rates rose in the last two quarters",
+          "required": false
+        },
+        {
+          "key": "tool",
+          "label": "Tool",
+          "type": "select",
+          "options": [
+            "Python (pandas)",
+            "R",
+            "Excel",
+            "Google Sheets",
+            "SQL",
+            "Tableau or Power BI"
+          ],
+          "default": "Python (pandas)",
+          "required": false
+        },
+        {
+          "key": "experience",
+          "label": "Experience level",
+          "type": "select",
+          "options": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ],
+          "default": "intermediate",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Assumptions**\n- One row = one order line, not one order. Return status is recorded at return time.\n- All prices are in one currency.\n**Questions to answer first**: Does order_id repeat? Is the return window fixed? Were categories added or dropped in the period?\n\n**2. Data health checks (in order)**\n1. Row grain: df.order_id.is_unique. If False, decide whether to aggregate to orders.\n2. Duplicates: df.duplicated().sum(). Exact duplicates inflate revenue and returns.\n3. Missing values: df.isna().mean().sort_values(). Flag columns above 5%.\n4. Impossible values: quantity <= 0, unit_price <= 0, discount_pct > 100, shipping_days < 0.\n5. Date coverage: orders per week from Jan 2023 to Jun 2024. Gaps or spikes suggest a logging change.\n6. Return consistency: returned = yes with no shipping_days is suspicious.\n7. Join keys: customer_id nulls or formats that will break a later join.\n\n**3. Exploration**: profile returned, product_category, discount_pct, shipping_days first. Compare returned against each of them, then country and customer_id (repeat returners).\n\n**4. Hypotheses**\n- One category drives the rise (return rate by category by quarter).\n- Heavy discounting attracts low-intent buyers (rate by discount band).\n- Slow shipping drives returns (rate by shipping_days bucket).\n- Country mix shifted, behaviour did not (rate and share by country over time).\n\n**5. First five charts**\n1. Line: weekly return rate. A step points to a process change, a slope to mix.\n2. Stacked bar: orders by category per quarter.\n3. Heatmap: return rate by category x quarter.\n4. Bar: return rate by discount band.\n5. Box plot: shipping_days, returned vs not.\n\n**6. Pitfalls**: recent orders have not had time to be returned (right-censoring), which can hide or fake a trend. Watch seasonality, since Q4 and January returns are always higher.\n\n**7. Stopping point**: one or two segments explain at least 70% of the rise. Hand over a one-page summary with the charts and open questions.",
+      "notes": "It forces assumptions and health checks before analysis, and every hypothesis is tied to a specific cut of data. Add a sample of the first 5 rows to the description for more precise checks.",
+      "useCase": "plan",
+      "tags": [
+        "data-analysis",
+        "analytics"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-spreadsheet-formula",
+      "title": "Spreadsheet formula builder with explanation",
+      "description": "Describe what you want in plain English and get a working Excel or Google Sheets formula, how it works, and edge cases.",
+      "body": "Write a {{app}} formula for this task.\n\nWhat I want to calculate:\n{{task}}\n\nMy sheet layout (columns, headers, example rows):\n{{layout}}\n\nWhere the result goes: {{result_location}}\n\nRequirements:\n- Give the single best formula first, ready to paste, using the exact cell references and ranges from my layout.\n- Prefer approaches that work in the current version of {{app}}. If a modern function is much better but may not be available to everyone, give a fallback version too.\n- Explain how the formula works in 3-5 short bullet points, one per function or step.\n- Test it on 2-3 rows from my example and show the expected result for each.\n- List edge cases (blanks, text in number columns, duplicates, errors) and say how the formula behaves for each. Wrap it in error handling only if that makes sense, and say why.\n- If my layout is ambiguous or you must assume something, say so before the formula and ask one concise question at the end.\n\nFormat: Formula, How it works, Worked check, Edge cases, Alternative (only if meaningfully different).",
+      "variables": [
+        {
+          "key": "app",
+          "label": "Spreadsheet app",
+          "type": "select",
+          "options": [
+            "Excel",
+            "Google Sheets"
+          ],
+          "default": "Excel",
+          "required": false
+        },
+        {
+          "key": "task",
+          "label": "What you need",
+          "type": "long",
+          "default": "Sum the sales amount for each region, but only for orders with status 'Shipped' placed in the last 30 days.",
+          "required": false,
+          "help": "Plain English is fine."
+        },
+        {
+          "key": "layout",
+          "label": "Sheet layout",
+          "type": "long",
+          "default": "Sheet 'Orders': A = Order date, B = Region, C = Status, D = Amount. Headers in row 1, data in rows 2-500.",
+          "required": false,
+          "help": "Which columns hold what, plus a couple of example rows."
+        },
+        {
+          "key": "result_location",
+          "label": "Where the result goes",
+          "type": "text",
+          "default": "A summary table on the 'Summary' sheet, one region per row in column A",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Assumptions**: Dates in column A are real dates (not text). Region names are in Summary!A2:A6.\n\n**Formula** (in Summary!B2, fill down):\n=SUMIFS(Orders!$D$2:$D$500, Orders!$B$2:$B$500, $A2, Orders!$C$2:$C$500, \"Shipped\", Orders!$A$2:$A$500, \">=\"&TODAY()-30)\n\n**How it works**\n- SUMIFS adds column D only for rows meeting every condition.\n- $A2 matches the region on each summary row; the $ locks the column when you fill down.\n- \">=\"&TODAY()-30 builds a date criterion as text, which SUMIFS reads correctly.\n\n**Worked check**\n- Order 12-Mar, East, Shipped, 120, today 20-Mar: counted for East.\n- Order 01-Feb, East, Shipped, 80: excluded, older than 30 days.\n- Order 18-Mar, East, Pending, 60: excluded, wrong status.\n\n**Edge cases**\n- Dates stored as text are silently ignored. Check with =ISNUMBER(Orders!A2).\n- Blank amounts count as 0. Trailing spaces in \"Shipped \" will not match.\n- A region with no matches returns 0, not an error.\n\nQuestion: should the 30 days include today? If you want a fixed window instead, tell me the dates.",
+      "notes": "Giving real column letters and example rows lets the model produce a paste-ready formula and a checkable worked example. Always run the worked check against your own data.",
+      "useCase": "generate",
+      "tags": [
+        "spreadsheets"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-sql-from-question",
+      "title": "Turn a business question into a SQL query",
+      "description": "Describe your tables and the question you need answered and get a correct, commented SQL query with assumptions spelled out.",
+      "body": "Write a {{dialect}} query that answers this question.\n\nQuestion: {{question}}\n\nSchema (tables, columns, types, and how tables join):\n{{schema}}\n\nRules for your answer:\n1. Before the query, list your assumptions in bullets: grain of each table, how you interpret ambiguous words in the question (for example \"active\", \"revenue\", \"last month\"), how you handle NULLs, duplicates and time zones.\n2. If a missing detail would change the result materially, ask me about it at the end rather than burying a guess, but still give your best-effort query first.\n3. Write readable SQL: CTEs with meaningful names, explicit JOIN types with a one-line reason for each, no SELECT *, and comments only where logic is non-obvious.\n4. Guard against common errors: join fan-out that multiplies rows, filtering a LEFT JOIN in WHERE, integer division, and counting rows instead of distinct entities.\n5. After the query, give a quick validation recipe: 2-3 sanity-check queries or checks to confirm the numbers are right (for example row counts before and after a join, or a total I can compare with a known figure).\n6. Mention one way to make it faster if the tables are large.\n\nOutput format: Assumptions, Query, What the output columns mean, Validation checks, Questions.",
+      "variables": [
+        {
+          "key": "dialect",
+          "label": "SQL dialect",
+          "type": "select",
+          "options": [
+            "PostgreSQL",
+            "MySQL",
+            "SQL Server",
+            "BigQuery",
+            "Snowflake",
+            "SQLite"
+          ],
+          "default": "PostgreSQL",
+          "required": false
+        },
+        {
+          "key": "question",
+          "label": "Your question",
+          "type": "text",
+          "default": "What was monthly recurring revenue by plan for each of the last 6 months, and how many customers were on each plan?",
+          "required": false
+        },
+        {
+          "key": "schema",
+          "label": "Schema",
+          "type": "long",
+          "default": "subscriptions(id, customer_id, plan_id, status, started_at, canceled_at, monthly_price_cents)\nplans(id, name)\ncustomers(id, email, created_at, country)",
+          "required": false,
+          "help": "Paste CREATE TABLE statements or a simple list. Note primary and foreign keys."
+        }
+      ],
+      "exampleOutput": "**Assumptions**\n- A subscription counts toward a month if it started on or before the month end and was not canceled before the month start (canceled_at IS NULL or later).\n- MRR uses monthly_price_cents / 100; no discounts or taxes in the schema.\n- \"Last 6 months\" = the 6 complete calendar months before the current month.\n\n**Query**\nWITH months AS (\n  SELECT generate_series(date_trunc('month', CURRENT_DATE) - INTERVAL '6 months',\n         date_trunc('month', CURRENT_DATE) - INTERVAL '1 month', INTERVAL '1 month')::date AS month_start\n)\nSELECT m.month_start, p.name AS plan,\n       COUNT(DISTINCT s.customer_id) AS customers,\n       SUM(s.monthly_price_cents) / 100.0 AS mrr\nFROM months m\nJOIN subscriptions s  -- inner: months with no subs simply drop out\n  ON s.started_at < m.month_start + INTERVAL '1 month'\n AND (s.canceled_at IS NULL OR s.canceled_at >= m.month_start)\nJOIN plans p ON p.id = s.plan_id\nGROUP BY 1, 2 ORDER BY 1, 2;\n\n**Validation**\n- Compare SUM(mrr) for the latest month with your billing system.\n- Check COUNT(*) of subscriptions per month is smooth; jumps suggest bad dates.\n\n**Questions**: Do paused subscriptions have status = 'paused' and should they count?",
+      "notes": "Stating assumptions and validation checks catches the silent errors that make SQL answers look right but be wrong. Include sample values for status columns to remove guesswork.",
+      "useCase": "generate",
+      "tags": [
+        "sql",
+        "data-analysis"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-pandas-code",
+      "title": "Pandas code from a plain-English data task",
+      "description": "Describe the transformation or analysis you need and get clean, commented pandas code that handles messy data and explains each step.",
+      "body": "Write Python pandas code for the following task.\n\nTask: {{task}}\n\nMy DataFrame (name, columns with types, and a few sample rows):\n{{dataframe}}\n\nOutput I want: {{output}}\n\nGuidelines:\n- Start with two or three lines on your approach and any assumptions about the data. If an assumption could change the result, say how, and ask me at the end.\n- Write idiomatic, readable code using method chaining where it stays clear. No loops over rows unless unavoidable. No deprecated functions.\n- Handle the real-world issues likely in this data: missing values, wrong dtypes, duplicate rows, inconsistent text casing, and time zones. Do not silently drop rows; if rows are removed, print how many.\n- Add short comments explaining why, not what.\n- Include a tiny runnable example with 4-6 made-up rows so I can check the logic before I run it on the full data.\n- End with \"How to check it\": 2-3 assertions or quick checks (row counts, totals, null counts) I can add.\n\nFormat: Approach, Code (one block), Example output, How to check it, Questions.",
+      "variables": [
+        {
+          "key": "task",
+          "label": "Task",
+          "type": "long",
+          "default": "For each customer, calculate total spend, number of orders, and days since last order. Then flag customers with no order in 90 days as 'at risk'.",
+          "required": false
+        },
+        {
+          "key": "dataframe",
+          "label": "DataFrame description",
+          "type": "long",
+          "default": "df_orders: order_id (int), customer_id (int), order_date (string like '2024-03-15'), amount (float, some NaN)",
+          "required": false,
+          "help": "Name, columns, types and a few sample rows."
+        },
+        {
+          "key": "output",
+          "label": "Desired output",
+          "type": "text",
+          "default": "A DataFrame with one row per customer, sorted by total spend descending",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Approach**: Parse dates, aggregate per customer, compute recency from the latest order date in the data (not today's date) so results are reproducible. Missing amounts are treated as 0 spend but still count as orders; tell me if that is wrong.\n\n```python\nimport pandas as pd\n\ndf = df_orders.copy()\ndf[\"order_date\"] = pd.to_datetime(df[\"order_date\"], errors=\"coerce\")\nbad = df[\"order_date\"].isna().sum()\nprint(f\"Unparseable dates dropped: {bad}\")\ndf = df.dropna(subset=[\"order_date\"]).drop_duplicates(\"order_id\")\n\nas_of = df[\"order_date\"].max()\ncustomers = (\n    df.groupby(\"customer_id\")\n      .agg(total_spend=(\"amount\", \"sum\"),\n           orders=(\"order_id\", \"count\"),\n           last_order=(\"order_date\", \"max\"))\n      .assign(days_since_last=lambda d: (as_of - d[\"last_order\"]).dt.days)\n      .assign(at_risk=lambda d: d[\"days_since_last\"] > 90)\n      .sort_values(\"total_spend\", ascending=False)\n      .reset_index()\n)\n```\n\n**Example output**: customer 7: spend 240.0, orders 3, days_since_last 12, at_risk False.\n\n**How to check it**\n- assert customers[\"orders\"].sum() == len(df)\n- assert abs(customers[\"total_spend\"].sum() - df[\"amount\"].sum()) < 1e-6\n\n**Questions**: Should recency be measured against today instead of the last date in the data?",
+      "notes": "Asking for a tiny runnable example and assertions makes the output verifiable rather than just plausible. Pasting 3-5 real rows greatly reduces dtype and format mistakes.",
+      "useCase": "generate",
+      "tags": [
+        "code-generation",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-chart-recommendation",
+      "title": "Choose the right chart for your data",
+      "description": "Get a clear recommendation of the best chart type, how to build it, and which popular choices to avoid for your message.",
+      "body": "Help me choose the best chart.\n\nData: {{data}}\nThe one message I want the viewer to take away: {{message}}\nAudience: {{audience}}\nWhere it will appear: {{medium}}\n\nRespond with:\n1. Recommended chart: the single best chart type, and why it fits this data and message better than the alternatives.\n2. Two alternatives and when each would be better.\n3. One tempting chart to avoid for this case, and the specific problem it creates.\n4. Build spec: what goes on each axis, sort order, how to treat colour (what to highlight, what to mute), what to label directly instead of using a legend, axis starting point, and the number format.\n5. Title: write an insight-style title (states the finding) and a subtitle that gives the unit and time period.\n6. Honesty check: how this chart could mislead (truncated axis, dual axes, cherry-picked range, too many categories) and how to prevent that.\n\nIf the data or message is too vague to decide, ask up to two clarifying questions first. Keep the answer under 450 words.",
+      "variables": [
+        {
+          "key": "data",
+          "label": "Your data",
+          "type": "long",
+          "default": "Monthly active users for 4 product tiers (Free, Pro, Team, Enterprise) over the last 24 months",
+          "required": false,
+          "help": "Variables, how many categories, time span, number of data points."
+        },
+        {
+          "key": "message",
+          "label": "Key message",
+          "type": "text",
+          "default": "Team is growing fastest and is about to overtake Pro",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "select",
+          "options": [
+            "Executives",
+            "Customers",
+            "Technical peers",
+            "General public",
+            "Students"
+          ],
+          "default": "Executives",
+          "required": false
+        },
+        {
+          "key": "medium",
+          "label": "Where it will appear",
+          "type": "select",
+          "options": [
+            "Slide in a presentation",
+            "Dashboard",
+            "Printed report",
+            "Social media post",
+            "Academic paper"
+          ],
+          "default": "Slide in a presentation",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Recommended chart: a multi-line chart with Team highlighted**\nTime series with four categories is best shown as lines: the eye follows slope, and the crossing of Team and Pro, your message, becomes visible as a literal intersection. Stacked areas would hide that comparison.\n\n**Alternatives**\n- Small multiples (one panel per tier, shared axis) if lines overlap heavily.\n- Indexed lines (month 0 = 100) if tiers differ greatly in size and you want growth rates.\n\n**Avoid**: Stacked area. Only the bottom series has a common baseline, so the Team vs Pro crossing cannot be judged.\n\n**Build spec**\n- X: month, Y: monthly active users starting at 0.\n- Team in a strong accent colour, others in grey; Pro in a darker grey.\n- Label lines directly at the right end; no legend. Format as 12.4k.\n- Add a light annotation at the crossing point.\n\n**Title**: \"Team plan is on track to pass Pro within two quarters\"\n**Subtitle**: \"Monthly active users by plan, last 24 months\"\n\n**Honesty check**: Do not use a log axis for executives without saying so; if you project the crossing, mark it as a dashed forecast.",
+      "notes": "Tying the chart to one message prevents generic advice, and the avoid and honesty sections catch misleading designs. Describe any existing draft chart to get specific critique.",
+      "useCase": "plan",
+      "tags": [
+        "data-visualization",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-ab-test-results",
+      "title": "Interpret A/B test results with sanity checks",
+      "description": "Paste your experiment numbers and get a plain-language verdict, validity checks, and a clear ship, wait or stop recommendation.",
+      "body": "Act as a careful experimentation analyst. Interpret these A/B test results and tell me what decision they support.\n\nExperiment: {{experiment}}\nPrimary metric: {{metric}}\nControl: {{control_data}}\nVariant: {{variant_data}}\nPlanned duration and sample size, if any: {{plan}}\nOther context (secondary metrics, segments, known issues): {{context}}\n\nWork through these steps and show the arithmetic:\n1. Effect: absolute and relative difference, with a 95% confidence interval. State which test you used and why. If I did not give enough numbers to compute it (sample sizes, conversions or means and standard deviations), say what you need.\n2. Sample ratio mismatch: check whether the traffic split matches the intended split. If it does not, flag that the result is unreliable.\n3. Validity checks: whether the test ran long enough (full weekly cycles), signs of peeking or stopping early, novelty effects, multiple comparisons if several metrics or segments were examined, and any instrumentation concerns.\n4. Practical significance: translate the interval into business terms (for example extra orders per month) using the figures I gave, and say whether the whole interval is worth acting on.\n5. Verdict: ship, keep running, or stop, with the main reason in one sentence and the main risk in one sentence.\n6. Explain the result for a non-technical stakeholder in 3 sentences, without the word \"significant\" unless defined.\n\nDo not call a result a win just because the p-value is below 0.05. State plainly when the data cannot support a decision.",
+      "variables": [
+        {
+          "key": "experiment",
+          "label": "Experiment",
+          "type": "text",
+          "default": "Green vs blue checkout button on the mobile checkout page",
+          "required": false
+        },
+        {
+          "key": "metric",
+          "label": "Primary metric",
+          "type": "text",
+          "default": "Checkout conversion rate (orders / checkout sessions)",
+          "required": false
+        },
+        {
+          "key": "control_data",
+          "label": "Control results",
+          "type": "text",
+          "default": "41,200 sessions, 3,090 orders",
+          "required": false,
+          "help": "Visitors and conversions, or mean and standard deviation."
+        },
+        {
+          "key": "variant_data",
+          "label": "Variant results",
+          "type": "text",
+          "default": "40,300 sessions, 3,230 orders",
+          "required": false
+        },
+        {
+          "key": "plan",
+          "label": "Plan",
+          "type": "text",
+          "default": "Intended 50/50 split, 14 days, about 40,000 sessions per arm",
+          "required": false
+        },
+        {
+          "key": "context",
+          "label": "Extra context",
+          "type": "long",
+          "default": "Ran Mon 3 Mar to Sun 16 Mar. Average order value was unchanged. No segment analysis done.",
+          "required": false,
+          "help": "Secondary metrics, segments, incidents."
+        }
+      ],
+      "exampleOutput": "**1. Effect**\nControl 7.50% (3,090/41,200), variant 8.01% (3,230/40,300). Absolute lift +0.51 pts, relative +6.9%. Two-proportion z-test: z = 2.69, p = 0.007. 95% CI for the difference: +0.14 to +0.88 pts.\n\n**2. Sample ratio mismatch**\nIntended 50/50; observed 41,200 vs 40,300 (50.6% / 49.4%). Chi-square p = 0.04. This is a mild imbalance that is borderline; investigate before trusting the result (bot filtering, redirects, or a slower variant page losing sessions).\n\n**3. Validity**\n- 14 days = two full weekly cycles: good.\n- No segment analysis, so no multiple-comparison problem yet. Do not add one after the fact.\n- Novelty effect possible for a colour change; check lift by week.\n\n**4. Practical significance**\nAt 40,000 mobile sessions per week, +0.14 to +0.88 pts is roughly 56 to 350 extra orders a week.\n\n**5. Verdict**: Keep running, or rerun, until the sample ratio mismatch is explained. Main reason: the imbalance could bias the lift. Main risk: shipping a change whose effect comes from a tracking artifact.\n\n**6. Plain-English summary**\nThe green button looks like it converts a bit better, probably between a small and a decent amount. But the two groups were not split evenly, which can distort results, so we should check that first.",
+      "notes": "Mandatory sample ratio and validity checks stop the common error of declaring wins from p-values alone. Include weekly breakdowns if you have them for a novelty-effect check.",
+      "useCase": "analyze",
+      "tags": [
+        "advertising",
+        "statistics",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-survey-analysis",
+      "title": "Survey results analysis and insights report",
+      "description": "Analyze survey responses, from rating scores to open-text comments, into themes, key findings and recommended actions.",
+      "body": "Analyze the results of this survey and give me findings I can act on.\n\nSurvey purpose: {{purpose}}\nRespondents: {{respondents}}\nQuestions and results (scores, counts, and/or open-text comments):\n{{results}}\n\nDecision this survey should inform: {{decision}}\n\nDo the following:\n1. Data quality first: note sample size, likely response bias, margin of error where I gave enough information, and anything that limits what we can conclude. Do not overstate results from small groups; say \"too few responses to say\" when appropriate.\n2. Quantitative findings: summarize each closed question in one line (use percentages and counts), highlight the 3 strongest patterns, and compare any subgroups I provided. Avoid calling small differences meaningful.\n3. Open-text themes: group comments into 4-6 themes, with a count or rough share, a short description, and one representative quote that I gave you. Do not invent quotes.\n4. Tensions: where the numbers and comments disagree, or where subgroups want opposite things.\n5. Recommendations: 3-5 actions ranked by impact and confidence, each tied to evidence above.\n6. Next time: 3 improvements to the survey itself.\n7. One-paragraph executive summary.\n\nIf a key figure is missing or ambiguous, list the questions at the end rather than assuming.",
+      "variables": [
+        {
+          "key": "purpose",
+          "label": "Survey purpose",
+          "type": "text",
+          "default": "Customer satisfaction survey after a new onboarding flow launched",
+          "required": false
+        },
+        {
+          "key": "respondents",
+          "label": "Who responded",
+          "type": "text",
+          "default": "212 of 1,400 invited new customers (15% response rate), surveyed 14 days after signup",
+          "required": false
+        },
+        {
+          "key": "results",
+          "label": "Results",
+          "type": "long",
+          "default": "Q1 Overall satisfaction (1-5): mean 3.9; 5=38%, 4=31%, 3=15%, 2=9%, 1=7%\nQ2 'Setup was easy' (agree): 62%\nQ3 'I got value in the first week' (agree): 48%\nOpen text 'What was most frustrating?': 'importing contacts took forever', 'couldn't find where to invite my team', 'great support but slow import', 'too many emails'",
+          "required": false,
+          "help": "Paste scores, counts and comments."
+        },
+        {
+          "key": "decision",
+          "label": "Decision to inform",
+          "type": "text",
+          "default": "Which part of onboarding to fix first this quarter",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Data quality**: 212 responses (15%) is a modest, self-selected sample; the margin of error on a 62% result is about +/-6.5 pts, and unhappy or very happy customers respond more. Treat results as directional.\n\n**Quantitative findings**\n- Satisfaction is positive: 69% rated 4-5, but 16% rated 1-2.\n- Setup ease (62%) outperforms first-week value (48%): people finish setup but do not reach value quickly.\n- 14-point gap between ease and value is the strongest pattern.\n\n**Themes (4 comments provided; counts indicative only)**\n1. Slow contact import (2 of 4): \"great support but slow import\".\n2. Team invites hard to find (1 of 4).\n3. Email volume (1 of 4).\n\n**Tension**: Support is praised while import is criticized, suggesting support is compensating for a product problem.\n\n**Recommendations**\n1. Fix import speed or show progress and an estimated time. High impact, medium confidence.\n2. Make team invites visible in the first session. Medium impact, low confidence (one mention).\n3. Review onboarding email cadence.\n\n**Next time**: Add a \"time to first value\" question and segment by plan.\n\n**Executive summary**: Onboarding is liked but slow to deliver value. Import is the likely bottleneck; fix it first, and gather more comments before acting on the other themes.",
+      "notes": "It separates sample limitations from findings and refuses to invent quotes, which keeps the report honest. Paste more raw comments for better theme counts.",
+      "useCase": "analyze",
+      "tags": [
+        "market-research",
+        "research",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-kpi-definition",
+      "title": "Define KPIs and metrics that match your goals",
+      "description": "Turn a business goal into a short set of well-defined KPIs, with formulas, data sources, guardrails and the traps to avoid.",
+      "body": "Help me define the right metrics for this goal.\n\nGoal: {{goal}}\nBusiness or team context: {{context}}\nData I can realistically get: {{data_sources}}\nReporting cadence: {{cadence}}\n\nDeliver:\n1. One north-star metric and why it reflects the goal better than the obvious alternatives.\n2. Three to five supporting KPIs, split into leading indicators (move first, controllable) and lagging indicators (outcomes).\n3. A definition table with these columns: Metric, Precise formula (numerator, denominator, time window), Data source, Owner role, Target-setting approach, Cadence.\n4. Two guardrail metrics that would reveal if we hit the main KPI by harming something else.\n5. Ways each KPI can be gamed or misread (vanity effects, denominator games, Simpson's paradox, seasonality) and how to prevent that.\n6. What I should not measure yet and why.\n7. A suggested first dashboard layout: what goes at the top, what trends, what segments.\n\nBe specific; avoid generic KPIs unless you explain why they apply here. If my goal is fuzzy, ask up to three questions to sharpen it, but still propose a first version.",
+      "variables": [
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Improve customer retention for our subscription meal-kit service this year",
+          "required": false
+        },
+        {
+          "key": "context",
+          "label": "Context",
+          "type": "long",
+          "default": "Direct-to-consumer subscription business, about 30,000 active subscribers, weekly deliveries, customers can skip weeks or pause.",
+          "required": false,
+          "help": "Business model, size, stage."
+        },
+        {
+          "key": "data_sources",
+          "label": "Available data",
+          "type": "text",
+          "default": "Order database, customer support tickets, email platform, post-delivery rating",
+          "required": false
+        },
+        {
+          "key": "cadence",
+          "label": "Reporting cadence",
+          "type": "select",
+          "options": [
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "Quarterly"
+          ],
+          "default": "Weekly",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**North star**: 12-week subscriber retention rate for each signup cohort (share still active, not paused, 12 weeks after the first delivery). It reflects durable value, unlike raw active subscribers, which can rise from heavy acquisition while retention falls.\n\n**Leading indicators**\n- Second-delivery rate: share of new subscribers who receive a second box within 21 days.\n- Skip rate: skipped weeks / eligible weeks, per subscriber.\n**Lagging**: 12-week retention; 6-month customer lifetime.\n\n**Definition (excerpt)**\n| Metric | Formula | Source | Owner | Cadence |\n|---|---|---|---|---|\n| Second-delivery rate | new subs with 2+ delivered boxes by day 21 / new subs with a first delivery 21+ days ago | Orders DB | Lifecycle | Weekly |\n| Skip rate | skipped weeks / (active weeks) | Orders DB | Product | Weekly |\n\n**Guardrails**: Net promoter score of post-delivery rating (4-5 share); gross margin per box, so discounts do not buy retention.\n\n**Gaming and misreading**: Pausing instead of cancelling inflates retention. Report pause share alongside. Compare cohorts of the same age only.\n\n**Do not measure yet**: Recipe-level ratings per customer until volume per recipe is sufficient.\n\n**Dashboard**: Top: retention curve by cohort. Middle: leading indicators trend. Bottom: segments by acquisition channel and plan size.",
+      "notes": "Precise formulas with numerator, denominator and window avoid the metric definition arguments that derail reporting. Add your current numbers to get target suggestions.",
+      "useCase": "plan",
+      "tags": [
+        "analytics",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-data-cleaning-plan",
+      "title": "Data cleaning plan for a messy dataset",
+      "description": "Describe your messy data and get a prioritized cleaning plan with rules, code and a record of every change you make.",
+      "body": "I have a messy dataset to clean before analysis. Build me a cleaning plan.\n\nWhat the data is: {{data_description}}\nProblems I've noticed: {{problems}}\nWhat the cleaned data will be used for: {{purpose}}\nTool: {{tool}}\n\nCreate the plan:\n1. Triage: rank the issues by how much they could distort the analysis, and note issues I may not have spotted that typically appear in this kind of data.\n2. For each issue, give: how to detect it (with a quick query or formula), the recommended fix, the alternative fix, and the risk of each (information lost, bias introduced).\n3. Decisions I must make: choices that depend on the business meaning (for example, is a blank \"zero\" or \"unknown\"? which duplicate record wins?). Ask me these as short questions rather than deciding silently.\n4. A step order that avoids undoing earlier work (for example, standardize text before deduplicating).\n5. Code or steps in {{tool}} for the main steps, with comments.\n6. A change log template: for each step, record rule, rows affected before and after, and who approved it. Never delete the raw data; keep an untouched copy and keep cleaning reproducible.\n7. Final validation checklist to confirm the cleaned data is fit for the stated purpose.\n\nBe concise and practical.",
+      "variables": [
+        {
+          "key": "data_description",
+          "label": "Dataset",
+          "type": "long",
+          "default": "A CSV export from our CRM with 25,000 contact records: name, email, company, country, phone, signup date, lead source, deal value",
+          "required": false,
+          "help": "What it contains, row count, where it came from."
+        },
+        {
+          "key": "problems",
+          "label": "Known problems",
+          "type": "long",
+          "default": "Duplicate contacts with different capitalization, country typed many ways (USA, U.S., United States), dates in two formats, deal value blank for many rows, some emails missing the domain",
+          "required": false,
+          "help": "List whatever you've noticed."
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "Analyze lead source performance and deal value by country",
+          "required": false
+        },
+        {
+          "key": "tool",
+          "label": "Tool",
+          "type": "select",
+          "options": [
+            "Python (pandas)",
+            "R",
+            "Excel",
+            "Google Sheets",
+            "SQL",
+            "OpenRefine"
+          ],
+          "default": "Python (pandas)",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Triage (highest impact first)**\n1. Duplicate contacts: inflates counts and lead-source totals.\n2. Blank deal value: biases averages if blanks are not real zeros.\n3. Country variants: splits one country across several groups, wrecking the by-country analysis.\n4. Mixed date formats: breaks time trends; ambiguous dates like 03/04/24 are risky.\n5. Malformed emails: matters for dedup keys. Likely unspotted: leading/trailing spaces, test records like \"test@test.com\".\n\n**Decisions for you**\n- Is a blank deal value \"no deal yet\" or \"unknown\"? Excluding vs zero changes your averages.\n- When duplicates differ, which record wins: newest, most complete, or one with a deal value?\n- Is 03/04/24 day-first or month-first in the source system?\n\n**Step order**: trim and lowercase text -> standardize country -> parse dates -> flag invalid emails -> deduplicate -> handle blanks.\n\n**Code (pandas)**\ndf[\"email\"] = df[\"email\"].str.strip().str.lower()\ncountry_map = {\"usa\": \"United States\", \"u.s.\": \"United States\", \"united states\": \"United States\"}\ndf[\"country\"] = df[\"country\"].str.strip().str.lower().map(country_map).fillna(df[\"country\"])\n\n**Change log**: Rule 4, \"lowercase emails\", 25,000 in, 25,000 out, 3,112 changed, approved by: ____.\n\n**Validation**: No duplicate emails; every country appears in a reference list; no future signup dates; row count reconciles with log.",
+      "notes": "Surfacing business-meaning decisions as questions stops the model from quietly making choices that bias your analysis. The change log keeps the cleaning auditable and repeatable.",
+      "useCase": "plan",
+      "tags": [
+        "data-cleaning",
+        "data-analysis",
+        "code-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-explain-statistics",
+      "title": "Explain a statistical concept or result plainly",
+      "description": "Get a clear, jargon-free explanation of a statistic, test or model result, with an everyday analogy and how to avoid misreading it.",
+      "body": "Explain this statistical idea so that {{audience}} will truly understand it and not just memorize it.\n\nWhat to explain: {{topic}}\nIf it comes from a real result, here are the numbers: {{numbers}}\n\nStructure your answer:\n1. One-sentence plain-English meaning, with no jargon.\n2. An everyday analogy that is accurate, not just cute, and say where the analogy breaks down.\n3. A small worked example with simple numbers I can follow, showing each step.\n4. How to read it in practice: what a high versus low value means and what decisions it should or should not drive.\n5. The three most common misinterpretations, each stated as a wrong sentence followed by the correct version.\n6. If I supplied numbers, interpret them in two sentences using the same wording a colleague would use in a meeting.\n7. A quick check: two questions for me to answer so I can confirm I understood, with answers hidden at the very end.\n\nAvoid unexplained symbols or terms. If a term is unavoidable, define it the first time. Keep it under 500 words. If the topic is ambiguous, pick the most common meaning and note that.",
+      "variables": [
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "a smart manager with no statistics background",
+          "required": false
+        },
+        {
+          "key": "topic",
+          "label": "Concept or result",
+          "type": "text",
+          "default": "What a p-value of 0.03 means",
+          "required": false
+        },
+        {
+          "key": "numbers",
+          "label": "Your numbers",
+          "type": "long",
+          "default": "We tested a new landing page: conversion 5.2% vs 4.6%, p = 0.03.",
+          "required": false,
+          "help": "Optional: paste the result you want interpreted."
+        }
+      ],
+      "exampleOutput": "**In one sentence**: A p-value of 0.03 says that if the new page made no difference at all, you would see a gap this big or bigger only about 3 times in 100 by luck alone.\n\n**Analogy**: Imagine you suspect a coin is rigged. You flip it 10 times and get 9 heads. A p-value asks: with a fair coin, how often would I get a result this extreme? Rarely, so you doubt the coin is fair. The analogy breaks down because it says nothing about how *much* the coin is rigged.\n\n**Worked example**: Fair coin, 10 flips. Chance of 9 or 10 heads = 11/1024, about 1.1%. That is the p-value (one-sided).\n\n**In practice**: Low p suggests the data is hard to explain by luck alone. It does not tell you the effect is large or worth acting on.\n\n**Common misreadings**\n- Wrong: \"There's a 97% chance the new page is better.\" Right: the p-value is not the probability that the page is better.\n- Wrong: \"p = 0.03 means the effect is important.\" Right: look at the size of the difference too.\n- Wrong: \"p > 0.05 proves there is no effect.\" Right: it may be too little data.\n\n**Your result**: The new page converted 0.6 points better (5.2% vs 4.6%), and a gap this big would be unusual if the pages were equal, so it is worth considering, but check the confidence interval for how large the real gain could be.\n\n**Quick check**: 1) Does p = 0.03 mean a 3% chance the result is wrong? 2) What else would you want to know before acting?",
+      "notes": "The analogy-with-limits and wrong-then-right misreadings are what make statistics explanations stick. Set the audience carefully; it changes the vocabulary and examples most.",
+      "useCase": "tutor",
+      "tags": [
+        "statistics",
+        "learning",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-anomaly-investigation",
+      "title": "Investigate a sudden metric spike or drop",
+      "description": "Systematically diagnose why a metric suddenly changed, ranking likely causes and giving the exact checks to confirm each one.",
+      "body": "A metric changed unexpectedly and I need to find out why. Act as a methodical data investigator.\n\nMetric: {{metric}}\nWhat happened: {{change}}\nWhen it started: {{timing}}\nWhat I know about the business, product, or system around that time: {{context}}\nDimensions I can break the data by: {{dimensions}}\n\nProduce an investigation plan:\n1. Restate the anomaly precisely: size, shape (step, spike, slow drift), and timing, and what it should be compared against (same weekday last week, same period last year).\n2. First, rule out measurement problems: tracking or pipeline changes, delayed or duplicated data, timezone or definition changes, bots. Give the checks in order of cheapness.\n3. Then list 6-8 candidate real causes, ranked by prior likelihood given my context. For each: the evidence that would support it, the evidence that would contradict it, and the exact breakdown or query to run.\n4. A decomposition approach: split the metric into its components (for example volume x rate, or by segment) and show how to find which component explains most of the change.\n5. A decision tree: \"If X is true, go to Y.\"\n6. What to tell stakeholders right now while the investigation is ongoing, in 3 sentences, without claiming a cause I have not confirmed.\n7. Follow-up: an alert or monitor to catch this sooner next time.\n\nSay what extra information would most narrow down the cause.",
+      "variables": [
+        {
+          "key": "metric",
+          "label": "Metric",
+          "type": "text",
+          "default": "Daily signups on the website",
+          "required": false
+        },
+        {
+          "key": "change",
+          "label": "What changed",
+          "type": "text",
+          "default": "Dropped about 35% overnight and has stayed lower for five days",
+          "required": false
+        },
+        {
+          "key": "timing",
+          "label": "When",
+          "type": "text",
+          "default": "Started Tuesday morning, 9 days ago was normal",
+          "required": false
+        },
+        {
+          "key": "context",
+          "label": "Context",
+          "type": "long",
+          "default": "We released a redesigned signup form on Monday evening. Marketing paused one ad campaign last week. No known outages.",
+          "required": false,
+          "help": "Releases, campaigns, outages, holidays, anything that changed."
+        },
+        {
+          "key": "dimensions",
+          "label": "Available breakdowns",
+          "type": "text",
+          "default": "Device, browser, country, traffic source, signup step funnel",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. The anomaly**: A step change (not a spike or drift), about -35%, starting Tuesday morning and persisting five days. Compare with the same weekdays of the previous three weeks, since signups are likely weekly-seasonal.\n\n**2. Measurement checks (cheapest first)**\n- Is the signup event still firing on the new form? Compare front-end events with database user creation counts.\n- Did the dashboard filter or metric definition change?\n- Did bot filtering or duplicate suppression change in Monday's release?\n\n**3. Candidate causes**\n1. Redesigned form broken on a browser or device. Supports: drop concentrated in one segment. Contradicts: uniform drop. Check: signups by browser and device, before vs after.\n2. Added friction in the new form. Check: funnel completion by step; a sharp drop at one field points to it.\n3. Paused ad campaign. Check: signups by traffic source; if the lost volume matches that campaign's old volume, it explains the drop.\n4. Tracking missing on the new form (measurement, not real). Check: database counts vs analytics.\n5. Country-specific issue, such as a payment or validation rule. Check: signups by country.\n6. Seasonality or a holiday. Check: same period last year.\n\n**4. Decomposition**: signups = visits x visit-to-signup rate. If visits are flat, the rate fell; segment the rate by device and funnel step.\n\n**5. Decision tree**: Visits down -> traffic source breakdown. Visits flat, rate down everywhere -> form change. Rate down in one browser -> bug. Database flat but analytics down -> tracking.\n\n**6. Stakeholder note**: \"Signups are down about a third since Tuesday. We are checking whether it is a tracking issue, a form problem, or lower traffic. We will update you by end of day.\"\n\n**7. Follow-up**: alert when daily signups fall more than 20% below the same-weekday 4-week average.\n\n**Most useful extra info**: signup counts from the database vs analytics, split by device and browser.",
+      "notes": "Ruling out measurement problems before hunting for real causes avoids the most common waste of time. Add a screenshot description of the trend or sample numbers to sharpen the ranking.",
+      "useCase": "analyze",
+      "tags": [
+        "data-analysis",
+        "analytics"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-analysis-brief",
+      "title": "Turn a vague data request into an analysis brief",
+      "description": "Convert a stakeholder's fuzzy ask into a scoped analysis brief with the real question, definitions, data needed and success criteria.",
+      "body": "I'm a data analyst who received a vague request. Help me turn it into a clear analysis brief I can confirm with the requester before I start.\n\nThe request as I received it:\n{{request}}\n\nWho asked and how they will use it: {{requester}}\nDeadline: {{deadline}}\nData I think I have access to: {{data}}\n\nWrite the brief with:\n1. The real question: restate the request as one precise, answerable question, plus the decision it will inform. Offer two alternative interpretations if it is ambiguous.\n2. Definitions to agree on: every term that could be read differently (for example \"customer\", \"active\", \"revenue\", time period), with a proposed default for each.\n3. Scope: what is in, what is out, and what segments or time windows will be compared.\n4. Method: the analysis approach in 3-5 steps, and the single most important assumption.\n5. Data needed versus data available, and the gaps and how I could work around them.\n6. Deliverable: format, length, and the 1-2 charts or tables that will carry the answer.\n7. Risks and what would change the conclusion.\n8. Timeline: milestones that fit my deadline, with a point for an early check-in.\n9. A short, friendly message I can send to the requester with the 3-4 questions that must be answered before I start.\n\nKeep the brief to one page. Do not assume details I have not given; list them as questions.",
+      "variables": [
+        {
+          "key": "request",
+          "label": "The request",
+          "type": "long",
+          "default": "Can you take a look at why our enterprise customers seem less engaged lately? Need something for the leadership meeting.",
+          "required": false
+        },
+        {
+          "key": "requester",
+          "label": "Who and why",
+          "type": "text",
+          "default": "VP of Customer Success, wants to decide whether to reassign account managers",
+          "required": false
+        },
+        {
+          "key": "deadline",
+          "label": "Deadline",
+          "type": "text",
+          "default": "Friday, 4 working days from now",
+          "required": false
+        },
+        {
+          "key": "data",
+          "label": "Available data",
+          "type": "text",
+          "default": "Product usage logs (per user per day), CRM account data, support tickets",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. The real question**: \"Has product usage by enterprise accounts declined over the last 90 days relative to the prior 90, and in which segments is the decline concentrated?\" Decision: where to focus account manager capacity.\nAlternative readings: (a) engagement means support contact frequency; (b) lower feature adoption rather than lower logins.\n\n**2. Definitions (proposed defaults)**\n- Enterprise: accounts with annual contract value above $50k.\n- Engaged: a user with 3+ active days in a rolling 28-day window.\n- \"Lately\": last 90 days vs the previous 90.\n\n**3. Scope**: In: enterprise accounts active at the start of the period. Out: accounts that churned (reported separately). Compare by industry, account age and seat count.\n\n**4. Method**: 1) Build weekly engaged-user rate per account. 2) Compare periods and test for seasonality using last year. 3) Segment to find where the drop concentrates. Key assumption: usage logs are complete across the period.\n\n**5. Data gaps**: no seat license counts in usage logs; workaround: use CRM seats.\n\n**6. Deliverable**: 3-slide summary: trend chart, segment heatmap, account watchlist.\n\n**8. Timeline**: Day 1 confirm definitions; Day 2 data prep; Day 3 analysis and check-in; Day 4 write-up.\n\n**9. Message**: \"Quick questions before I start: Is engagement about product usage? Which accounts count as enterprise? Which period is 'lately'? Is this a decision about account manager assignments?\" ",
+      "notes": "Agreeing on definitions and the decision up front prevents rework and surprises. Send the drafted questions before you touch the data.",
+      "useCase": "plan",
+      "tags": [
+        "data-analysis",
+        "analytics",
+        "project-management",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-query-review",
+      "title": "Review and optimize a SQL query",
+      "description": "Paste a slow or suspicious SQL query and get correctness checks, performance fixes, and a cleaner rewrite you can verify.",
+      "body": "Review this {{dialect}} query for correctness first, then performance and readability.\n\nQuery:\n{{query}}\n\nContext: {{context}}\nWhat it is supposed to return: {{intent}}\n\nPlease do the following:\n1. Correctness review: find logical bugs, such as join fan-out, wrong join type, filters on the outer table of a LEFT JOIN placed in WHERE, NULL traps in comparisons and NOT IN, double counting, time zone or date boundary mistakes, and aggregations at the wrong grain. For each issue, show the offending line and a concrete failure example.\n2. Performance review: list the likely bottlenecks in order of impact (unindexed filters, functions on indexed columns, unnecessary DISTINCT, correlated subqueries, large sorts, selecting unneeded columns). Explain what you cannot judge without the execution plan or table statistics, and tell me what to look for in the plan.\n3. Rewrite: a corrected, optimized, readable version using clear CTE names and consistent formatting. Keep the output columns identical unless a change is needed; flag any change.\n4. Index suggestions: only the ones that clearly help, with the reason and the write-cost tradeoff.\n5. Verification: how to prove the rewrite returns the same result as the original (row counts, checksum or EXCEPT comparison on a sample).\n\nIf you are unsure whether something is a bug without knowing the data, say so rather than asserting.",
+      "variables": [
+        {
+          "key": "dialect",
+          "label": "SQL dialect",
+          "type": "select",
+          "options": [
+            "PostgreSQL",
+            "MySQL",
+            "SQL Server",
+            "BigQuery",
+            "Snowflake",
+            "SQLite"
+          ],
+          "default": "PostgreSQL",
+          "required": false
+        },
+        {
+          "key": "query",
+          "label": "Your query",
+          "type": "long",
+          "default": "SELECT c.country, COUNT(*) AS orders, SUM(o.total) AS revenue\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.id\nLEFT JOIN order_items i ON i.order_id = o.id\nWHERE o.created_at >= '2024-01-01'\nGROUP BY c.country\nORDER BY revenue DESC;",
+          "required": false,
+          "help": "Paste the full query."
+        },
+        {
+          "key": "context",
+          "label": "Context",
+          "type": "text",
+          "default": "Orders has 20M rows, order_items 80M rows. Query takes about 4 minutes.",
+          "required": false,
+          "help": "Table sizes, existing indexes, how long it takes."
+        },
+        {
+          "key": "intent",
+          "label": "Intended result",
+          "type": "text",
+          "default": "Number of orders and total revenue per country since the start of 2024",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Correctness**\n- Join fan-out: joining order_items multiplies each order by its number of items, so COUNT(*) counts items, not orders, and SUM(o.total) is repeated for each item. Example: an order of $100 with 3 items adds $300. This is the most serious bug.\n- Filter on a LEFT JOIN: WHERE o.created_at >= '2024-01-01' removes customers with no orders, turning the LEFT JOIN into an inner join. That may be what you want; if so, use INNER JOIN to say so.\n\n**2. Performance**\n- Biggest cost: joining 80M rows of order_items that the query never uses. Remove the join entirely.\n- Check the plan for a sequential scan of orders; a filter on created_at needs an index.\n- Cannot judge without the plan: whether the sort is spilling to disk.\n\n**3. Rewrite**\nSELECT c.country,\n       COUNT(*)  AS orders,\n       SUM(o.total) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nWHERE o.created_at >= DATE '2024-01-01'\nGROUP BY c.country\nORDER BY revenue DESC;\n\n**4. Index**: CREATE INDEX ON orders (created_at) INCLUDE (customer_id, total); helps this query; adds write cost on every insert.\n\n**5. Verify**: Compare SUM(revenue) with SELECT SUM(total) FROM orders WHERE created_at >= '2024-01-01'. The original will be inflated; the rewrite should match exactly.",
+      "notes": "Concrete failure examples for each suspected bug make the review checkable. Paste the EXPLAIN output as well for much more precise performance advice.",
+      "useCase": "critique",
+      "tags": [
+        "sql",
+        "code-review",
+        "performance"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-cohort-retention",
+      "title": "Cohort and retention analysis plan with code",
+      "description": "Set up a proper cohort retention analysis, from defining cohorts and the activity event to producing the table and reading it correctly.",
+      "body": "Help me do a cohort retention analysis.\n\nProduct or business: {{business}}\nCohort is defined by: {{cohort_basis}}\nRetention means the user did this: {{retention_event}}\nTime granularity: {{granularity}}\nData tables and columns available: {{data}}\nTool: {{tool}}\n\nProvide:\n1. Definitions: restate the cohort, the retention event, and the time bucket exactly. Point out any ambiguity (for example, is the first period \"period 0\" or \"period 1\"? is retention \"active in period N\" or \"active in N or later\"?). Recommend which to use.\n2. Step by step build: the logic for assigning each user to a cohort, computing periods since cohort start, counting active users per cohort-period, and dividing by cohort size. Then give working {{tool}} code.\n3. Incomplete periods: show how to avoid counting partially elapsed periods as drop-offs.\n4. How to read the retention table: what the diagonal pattern, a flat tail, and a steepening drop each mean. Describe the retention curve shape for a healthy product of this type and what would be a warning sign.\n5. Pitfalls: small cohorts, changing definitions of the activity event, seasonality, reactivated users, bots or internal users.\n6. Three follow-up cuts that could explain differences between cohorts (for example acquisition channel, plan, first-week behavior).\n7. A heatmap spec: colour scale, labeling, and how to show cohort sizes.\n\nState your assumptions, and ask about any detail that would change the code.",
+      "variables": [
+        {
+          "key": "business",
+          "label": "Business",
+          "type": "text",
+          "default": "Mobile fitness app with a free tier and a paid subscription",
+          "required": false
+        },
+        {
+          "key": "cohort_basis",
+          "label": "Cohort definition",
+          "type": "text",
+          "default": "Signup week",
+          "required": false
+        },
+        {
+          "key": "retention_event",
+          "label": "Retention event",
+          "type": "text",
+          "default": "Completes at least one workout in the week",
+          "required": false
+        },
+        {
+          "key": "granularity",
+          "label": "Granularity",
+          "type": "select",
+          "options": [
+            "Daily",
+            "Weekly",
+            "Monthly"
+          ],
+          "default": "Weekly",
+          "required": false
+        },
+        {
+          "key": "data",
+          "label": "Data available",
+          "type": "long",
+          "default": "users(user_id, signup_at, plan, channel); workouts(workout_id, user_id, completed_at)",
+          "required": false
+        },
+        {
+          "key": "tool",
+          "label": "Tool",
+          "type": "select",
+          "options": [
+            "SQL (PostgreSQL)",
+            "Python (pandas)",
+            "R",
+            "Excel",
+            "Google Sheets"
+          ],
+          "default": "SQL (PostgreSQL)",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Definitions**\n- Cohort: users grouped by the week of signup_at (week starts Monday).\n- Retained in week N: completed 1+ workout during the week that is N weeks after the signup week. Week 0 = signup week (always 100% if signup counts as activity, so I recommend excluding week 0 from the headline and showing week 1 onward, or defining week 0 by workouts too).\n- Ambiguity: \"active in week N\" (point-in-time) rather than \"active in week N or later\" (rolling). Use point-in-time; it is stricter and more common for apps.\n\n**2. Build (PostgreSQL)**\nWITH cohorts AS (\n  SELECT user_id, date_trunc('week', signup_at)::date AS cohort_week FROM users),\nactivity AS (\n  SELECT DISTINCT user_id, date_trunc('week', completed_at)::date AS active_week FROM workouts)\nSELECT c.cohort_week,\n       (a.active_week - c.cohort_week) / 7 AS week_n,\n       COUNT(DISTINCT a.user_id) AS active_users\nFROM cohorts c JOIN activity a USING (user_id)\nWHERE a.active_week >= c.cohort_week\nGROUP BY 1, 2 ORDER BY 1, 2;\nDivide by cohort size (COUNT per cohort_week from cohorts).\n\n**3. Incomplete periods**: Exclude cells where cohort_week + N weeks > the latest complete week.\n\n**4. Reading it**: Fitness apps often lose 60-70% in week 1; a flattening curve by week 6 is healthy; a continuing steep slope means no habit forms.\n\n**6. Cuts**: acquisition channel, plan, workouts completed in the first 7 days.\n\n**7. Heatmap**: rows = cohort week, columns = week N, shade by retention %, label cohort size at the row start.",
+      "notes": "Defining the retention event and the period numbering up front prevents the off-by-one confusion that makes retention tables untrustworthy. Ask for rolling retention variants if your product has infrequent use.",
+      "useCase": "plan",
+      "tags": [
+        "analytics",
+        "sql",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-findings-to-summary",
+      "title": "Turn analysis findings into an executive summary",
+      "description": "Convert raw findings and numbers into a short, decision-ready summary with the answer first, evidence, caveats and next steps.",
+      "body": "Turn my analysis into an executive summary for {{audience}}.\n\nThe question I was asked: {{question}}\nMy findings, numbers, and notes (messy is fine):\n{{findings}}\n\nCaveats or limitations I know about: {{caveats}}\nDecision or action this should support: {{decision}}\n\nWrite the summary as follows:\n1. Bottom line: a two-sentence answer to the question, leading with the conclusion and the single most important number. No preamble.\n2. Key findings: 3-4 bullets, each beginning with the insight, then the supporting number, then why it matters. Use only numbers I provided; do not invent or round in a misleading way. If I gave inconsistent figures, flag it.\n3. Confidence: say how confident we can be (high, medium, low) and why, in one or two sentences, using my caveats.\n4. Recommendation: 2-3 concrete actions, in priority order, each with an owner role and expected effect where I gave enough information.\n5. What we don't know: up to 3 open questions and how we could close them.\n6. Suggested visual: one chart that would make the main finding obvious, with a headline that states the insight.\n7. Then a 60-word version suitable for pasting into an email or chat message.\n\nWrite plainly, avoid hedging words that say nothing, and keep the whole thing under 350 words excluding the short version.",
+      "variables": [
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "senior leadership who have two minutes to read",
+          "required": false
+        },
+        {
+          "key": "question",
+          "label": "Original question",
+          "type": "text",
+          "default": "Why did customer churn increase in Q3?",
+          "required": false
+        },
+        {
+          "key": "findings",
+          "label": "Findings and notes",
+          "type": "long",
+          "default": "Churn rose from 2.1% to 3.4% monthly in Q3. 70% of the increase came from customers on the legacy Basic plan, mostly signed up via discount promos in Q1. Customers who contacted support within 30 days of signup churned at half the rate. Pro plan churn flat at 1.2%. Price increase on Basic took effect July 1.",
+          "required": false,
+          "help": "Numbers, observations, rough notes."
+        },
+        {
+          "key": "caveats",
+          "label": "Caveats",
+          "type": "text",
+          "default": "Promo cohort not separated from the price increase effect; no data on competitor pricing",
+          "required": false
+        },
+        {
+          "key": "decision",
+          "label": "Decision",
+          "type": "text",
+          "default": "Whether to roll back the Basic price increase or invest in onboarding support",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Bottom line**: Monthly churn rose from 2.1% to 3.4% in Q3, and about 70% of the increase came from the legacy Basic plan, especially customers acquired through Q1 discounts. Pro churn did not change (1.2%).\n\n**Key findings**\n- The increase is concentrated, not broad: Basic accounts for roughly 70% of the rise, so a company-wide fix is unnecessary.\n- Promo-acquired Basic customers are the main group at risk; they joined at a discount and then met the July 1 price increase.\n- Support contact predicts retention: customers who reached support within 30 days churned at half the rate. This is a correlation; engaged customers may be more likely to ask for help.\n\n**Confidence**: Medium. The price increase and the promo cohort overlap in time, so we cannot say which drove the churn.\n\n**Recommendation**\n1. Proactively contact new Basic customers in their first 30 days (Customer Success).\n2. Run a small test of the old price for promo-acquired Basic customers to separate the causes.\n3. Hold off on a full rollback until the test reads out.\n\n**What we don't know**: how competitors priced in Q3; whether promo customers churn at the same rate before the increase.\n\n**Suggested chart**: Line chart of monthly churn by plan, with the July 1 price change marked. Headline: \"Basic churn jumped after July; Pro did not move.\"\n\n**60-word version**: Churn rose from 2.1% to 3.4% in Q3, mostly on the Basic plan among customers who joined on discounts. Pro is unchanged. We cannot yet tell whether the price rise or the promo cohort is the cause. Recommend early support outreach and a small price test before rolling anything back.",
+      "notes": "Leading with the answer and forcing a confidence statement makes summaries decision-ready and honest. Paste your real notes unedited; the prompt is designed to restructure them.",
+      "useCase": "summarize",
+      "tags": [
+        "data-analysis",
+        "reporting",
+        "summarization"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "data-analysis-regression-interpretation",
+      "title": "Interpret regression output in plain language",
+      "description": "Paste a regression table and get a careful interpretation of coefficients, fit and reliability, with warnings about causal claims.",
+      "body": "Interpret this regression output for me in plain language, and check whether the model is trustworthy.\n\nModel type: {{model_type}}\nWhat the model tries to predict or explain: {{outcome}}\nPredictors and how they are measured (units, coding): {{predictors}}\nOutput (paste the table or summary):\n{{output}}\nWhy I ran this: {{purpose}}\n\nProvide:\n1. Model in one sentence: what it estimates, in simple words.\n2. Coefficient by coefficient: the meaning in real units (\"holding the other variables constant, one more X is associated with Y change in the outcome\"), the direction and size, and whether the uncertainty (confidence interval or standard error) leaves the effect clearly different from zero. For logistic or log-transformed models, convert to odds ratios or percentage changes and show the arithmetic.\n3. Fit and explanatory power: what R-squared or the equivalent says and does not say.\n4. Diagnostics I should check next: multicollinearity, non-linearity, outliers, heteroscedasticity, missing data, and overfitting, with the specific plot or test for each and what a problem looks like. Mention any warning signs visible in the output I pasted.\n5. Causal caution: what this model can and cannot claim given how the data was collected, and possible confounders.\n6. A 3-sentence statement I could present to a non-technical audience that does not overclaim.\n7. Suggested improvements or a next model.\n\nIf the output is incomplete or ambiguous, say what is missing instead of guessing.",
+      "variables": [
+        {
+          "key": "model_type",
+          "label": "Model type",
+          "type": "select",
+          "options": [
+            "Linear regression (OLS)",
+            "Logistic regression",
+            "Poisson regression",
+            "Other"
+          ],
+          "default": "Linear regression (OLS)",
+          "required": false
+        },
+        {
+          "key": "outcome",
+          "label": "Outcome",
+          "type": "text",
+          "default": "House sale price in thousands of dollars",
+          "required": false
+        },
+        {
+          "key": "predictors",
+          "label": "Predictors",
+          "type": "long",
+          "default": "sqft (square feet), bedrooms (count), age (years), distance_downtown (miles)",
+          "required": false
+        },
+        {
+          "key": "output",
+          "label": "Regression output",
+          "type": "long",
+          "default": "R-squared 0.71, n = 480\nIntercept: 52.3 (SE 18.1)\nsqft: 0.148 (SE 0.011, p < 0.001)\nbedrooms: -6.2 (SE 4.9, p = 0.21)\nage: -1.1 (SE 0.3, p < 0.001)\ndistance_downtown: -9.8 (SE 1.9, p < 0.001)",
+          "required": false,
+          "help": "Paste the coefficient table and fit statistics."
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "To understand what drives price and to build a rough price estimator",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Model**: A linear model estimating how sale price (in $ thousands) changes with size, bedrooms, age and distance from downtown, using 480 sales.\n\n**Coefficients**\n- sqft 0.148: each extra square foot is associated with $148 higher price, holding the rest constant. 100 more sqft is about $14.8k. Very precise (SE 0.011).\n- bedrooms -6.2: one more bedroom is associated with $6.2k lower price at the same size. The standard error (4.9) is large relative to the estimate, so this could easily be zero. It is negative because size is already in the model; more bedrooms in the same space means smaller rooms. Do not read it as \"bedrooms reduce value\".\n- age -1.1: each extra year, about $1.1k lower. Clear effect.\n- distance -9.8: each extra mile from downtown, about $9.8k lower. Clear effect.\n- Intercept 52.3 is a price for a zero-size, zero-everything house; it has no meaning.\n\n**Fit**: R-squared 0.71 means the model explains about 71% of the variation in this sample. It does not show the model predicts new houses well.\n\n**Check next**: bedrooms and sqft correlate (VIF); residuals vs fitted for fan shapes (price variance often grows with price, consider log price); outlier mansions (Cook's distance); hold-out validation.\n\n**Causal caution**: These are associations. Neighbourhood quality, condition and school district are omitted and may drive both distance and price.\n\n**For a presentation**: In our sample, bigger, newer houses closer to downtown sell for more. Size matters most. We cannot conclude that changing any one factor would change a price.",
+      "notes": "Translating each coefficient into real units and flagging what the model cannot claim prevents the usual over-interpretation. For better diagnostics, add the residual plots described or summary statistics for each variable.",
+      "useCase": "analyze",
+      "tags": [
+        "statistics",
+        "data-analysis"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

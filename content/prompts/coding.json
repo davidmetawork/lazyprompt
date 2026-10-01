@@ -1,0 +1,1523 @@
+{
+  "category": "coding",
+  "prompts": [
+    {
+      "key": "coding-pr-review",
+      "title": "Pull request review with ranked findings",
+      "description": "Get a prioritized code review that separates real defects from style nits, with a concrete fix for each issue.",
+      "body": "Review the following {{language}} change as a careful senior engineer who will be on call for it.\n\nContext: {{context}}\nReview focus: {{focus}}\n\nDiff or code:\n{{diff}}\n\nHow to review:\n- Read the whole change before commenting. Work out what it is trying to do, then check whether it does it.\n- Only raise issues you can point to in the code. If something depends on code you cannot see, say what you would need to check instead of guessing.\n- Skip formatting and naming nitpicks unless they hide a real problem.\n\nOutput format:\n1. Verdict: approve, approve with changes, or request changes, in one sentence with the main reason.\n2. Blocking issues: bugs, data loss, security holes, broken edge cases. For each give the location, why it fails (with a concrete input or scenario), and a suggested fix as a short code snippet.\n3. Should fix: maintainability, missing tests, unclear error handling.\n4. Optional suggestions: keep to at most three.\n5. What is done well: one or two specifics.\n6. Missing tests: list the cases you would add.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "TypeScript",
+          "required": false
+        },
+        {
+          "key": "context",
+          "label": "What the change does",
+          "type": "long",
+          "default": "Adds retry logic to the payment webhook handler so duplicate events are ignored.",
+          "required": false,
+          "help": "One or two sentences of intent."
+        },
+        {
+          "key": "focus",
+          "label": "Review focus",
+          "type": "select",
+          "options": [
+            "Correctness and edge cases",
+            "Security",
+            "Performance",
+            "Readability and maintainability",
+            "Test coverage"
+          ],
+          "default": "Correctness and edge cases",
+          "required": false
+        },
+        {
+          "key": "diff",
+          "label": "Diff or code",
+          "type": "long",
+          "required": true,
+          "help": "Paste the diff or the changed files."
+        }
+      ],
+      "exampleOutput": "**Verdict:** Request changes. The idempotency check has a race that can still double-charge.\n\n**Blocking issues**\n1. `handleWebhook`, dedupe check: you read `processedEvents` and write it in two separate steps. Two deliveries of the same event arriving together both pass the read and both charge. Fix: make the insert the guard.\n```ts\nconst inserted = await db.insertIfAbsent(\"processed_events\", { id: event.id });\nif (!inserted) return res.status(200).end();\n```\n2. Retry loop swallows the final error. After the last attempt the function returns normally, so the provider sees a 200 and never retries. Rethrow after the last attempt.\n\n**Should fix**\n- Retries use a fixed 100 ms delay; use exponential backoff with jitter or a retry storm will hit the payment API.\n- Event id is logged together with the card fingerprint. Drop the fingerprint.\n\n**Optional**\n- Extract the retry loop into a small helper so it can be tested alone.\n\n**Done well:** The handler is small and the signature check happens before any parsing.\n\n**Missing tests:** duplicate event delivered concurrently; provider returns 500 on every attempt; malformed signature.",
+      "notes": "It forces a verdict first and ranks findings by severity, so the author sees what blocks the merge. Requiring a concrete failing scenario for each issue cuts speculative comments. Paste the surrounding files for deeper checks.",
+      "useCase": "critique",
+      "tags": [
+        "code-review"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-stack-trace-diagnosis",
+      "title": "Diagnose a bug from a stack trace",
+      "description": "Turn an error message and stack trace into ranked root-cause hypotheses, quick checks to confirm each, and a fix.",
+      "body": "Help me find the root cause of an error in a {{language}} application.\n\nStack: {{stack}}\nWhat I was doing when it happened: {{trigger}}\nWhat I have already tried: {{tried}}\n\nError and stack trace:\n{{trace}}\n\nRelevant code (if any):\n{{code}}\n\nWork through it like this:\n1. Read the trace from the bottom up and identify the first frame that is in my own code. Explain in plain words what that line was doing when it failed.\n2. Give the 3 most likely root causes, ranked by probability. For each, give the evidence in the trace or code that supports it and one quick check (a log line, a debugger watch, a command) that would confirm or rule it out.\n3. For the top candidate, show the fix as a minimal code change.\n4. Say what additional information would change your ranking.\n5. Suggest one guard, assertion or test so this class of bug is caught earlier next time.\n\nDo not rewrite unrelated code. If the trace is truncated or the cause cannot be determined from what I gave you, say so and tell me exactly what to send next.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "stack",
+          "label": "Framework and runtime",
+          "type": "text",
+          "default": "Django 5, Python 3.12, PostgreSQL",
+          "required": false,
+          "help": "Versions help."
+        },
+        {
+          "key": "trigger",
+          "label": "What triggered it",
+          "type": "text",
+          "default": "Submitting the checkout form with an empty coupon code",
+          "required": false
+        },
+        {
+          "key": "tried",
+          "label": "Already tried",
+          "type": "text",
+          "default": "Restarting the server; clearing the cache",
+          "required": false
+        },
+        {
+          "key": "trace",
+          "label": "Error and stack trace",
+          "type": "long",
+          "required": true,
+          "help": "Paste the full trace, top to bottom."
+        },
+        {
+          "key": "code",
+          "label": "Relevant code",
+          "type": "long",
+          "required": false,
+          "help": "The function named in the first frame is ideal."
+        }
+      ],
+      "exampleOutput": "**Where it failed:** the first frame in your code is `apply_coupon` (checkout/services.py:48). It called `.upper()` on `None`, which raised `AttributeError`.\n\n**Likely causes**\n1. (High) An empty coupon field arrives as `None`, not an empty string, because the serializer has `allow_null=True`. Evidence: the trace shows the form POST and your note about the empty code. Check: log `repr(code)` at line 47.\n2. (Medium) A mobile client sends `\"coupon\": null` explicitly while the web form omits the key. Check: compare request payloads in the access log.\n3. (Low) A middleware strips empty strings and converts them to `None`. Check: print the raw `request.body`.\n\n**Fix**\n```python\ndef apply_coupon(cart, code):\n    if not code:\n        return cart\n    code = code.strip().upper()\n```\n\n**What would change my ranking:** the serializer definition and one raw failing request.\n\n**Prevention:** add a test that posts `coupon: null`, `\"\"` and a missing key to checkout and expects a 200 with no discount.",
+      "notes": "Asking for ranked hypotheses with a cheap confirming check each stops the model from jumping to one confident guess. Including what you tried avoids repeated advice.",
+      "useCase": "analyze",
+      "tags": [
+        "debugging"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-unit-tests",
+      "title": "Write thorough unit tests for a function",
+      "description": "Generate a well-organized test suite covering happy paths, edge cases and failure modes for code you paste in.",
+      "body": "Write unit tests for the {{language}} code below using {{framework}}.\n\nCode under test:\n{{code}}\n\nBehavior notes or requirements (optional): {{requirements}}\n\nRequirements for the tests:\n- First list, in plain bullets, the behaviors you will cover, grouped as: normal cases, boundary values, invalid input, and error or exception paths. Add concurrency, time or I/O cases only if the code involves them.\n- Then write the full test file. Use descriptive test names that read as sentences about behavior, one logical assertion per test, and a clear arrange / act / assert structure.\n- Prefer table-driven or parameterized tests when several cases share a shape.\n- Mock only true external boundaries (network, clock, filesystem, database). Do not mock the code under test.\n- Do not change the code under test. If you think you found a bug while writing a test, keep the test, mark it clearly, and explain the bug after the file.\n- Keep tests deterministic: no real sleeps, no random data without a fixed seed.\n\nAfter the code, list anything you could not test and why, and note any assumptions you made about intended behavior.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "framework",
+          "label": "Test framework",
+          "type": "text",
+          "default": "pytest",
+          "required": false,
+          "help": "e.g. Jest, Vitest, JUnit 5, Go testing"
+        },
+        {
+          "key": "code",
+          "label": "Code to test",
+          "type": "long",
+          "required": true,
+          "help": "Paste the function or class."
+        },
+        {
+          "key": "requirements",
+          "label": "Behavior notes",
+          "type": "long",
+          "required": false,
+          "help": "Rules the code should follow, if not obvious."
+        }
+      ],
+      "exampleOutput": "**Behaviors covered**\n- Normal: percentage discount applied, fixed discount applied\n- Boundary: discount of 0, discount equal to the price, price of 0.01\n- Invalid: negative price, percentage above 100, non-numeric input\n- Errors: unknown discount type raises `ValueError`\n\n```python\nimport pytest\nfrom pricing import apply_discount\n\n@pytest.mark.parametrize(\"price, kind, value, expected\", [\n    (100.00, \"percent\", 10, 90.00),\n    (100.00, \"fixed\", 15, 85.00),\n    (100.00, \"percent\", 0, 100.00),\n    (20.00, \"fixed\", 20, 0.00),\n    (0.01, \"percent\", 50, 0.01),\n])\ndef test_apply_discount_returns_expected_total(price, kind, value, expected):\n    assert apply_discount(price, kind, value) == expected\n\ndef test_apply_discount_rejects_negative_price():\n    with pytest.raises(ValueError):\n        apply_discount(-1, \"fixed\", 5)\n\ndef test_apply_discount_rejects_unknown_kind():\n    with pytest.raises(ValueError, match=\"kind\"):\n        apply_discount(10, \"bogus\", 5)\n```\n\n**Possible bug:** `apply_discount(0.01, \"percent\", 50)` returns 0.01 because of rounding up; the test documents that and may need a product decision.\n\n**Not tested:** currency conversion, since it lives in another module.",
+      "notes": "Listing the behaviors before the code makes the model reason about coverage first. The rule against changing the code under test turns suspected bugs into visible findings.",
+      "useCase": "generate",
+      "tags": [
+        "testing",
+        "code-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-refactor-plan",
+      "title": "Safe step-by-step refactoring plan",
+      "description": "Plan a refactor as small, reversible steps that keep tests green, instead of a risky big rewrite.",
+      "body": "Create a refactoring plan for the {{language}} code below.\n\nGoal of the refactor: {{goal}}\nConstraints: {{constraints}}\nTest coverage today: {{coverage}}\n\nCode:\n{{code}}\n\nProduce:\n1. Diagnosis: the 3-5 concrete problems in this code (name the specific functions, classes or lines) and how each one blocks the goal. No generic advice.\n2. Target shape: a short description or sketch of the structure after the refactor (modules, key function signatures, data flow).\n3. Ordered steps: each step must be small enough to ship on its own, leave the behavior unchanged, and be verifiable. For each step give what changes, how to verify it, and the risk level.\n4. Safety net: if coverage is weak, the characterization tests to write first, and exactly which behaviors they should pin down.\n5. What not to touch: related cleanups that are tempting but out of scope.\n6. Stop points: where the work could pause and still leave the code better than before.\n\nIf the goal and constraints conflict, say so and offer the two best tradeoffs.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "TypeScript",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Make the order-pricing logic testable and remove the global state",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "No public API changes; must ship in small PRs; team is new to the module",
+          "required": false
+        },
+        {
+          "key": "coverage",
+          "label": "Test coverage",
+          "type": "select",
+          "options": [
+            "No tests",
+            "Partial tests",
+            "Good tests"
+          ],
+          "default": "Partial tests",
+          "required": false
+        },
+        {
+          "key": "code",
+          "label": "Code",
+          "type": "long",
+          "required": true,
+          "help": "Paste the code or a representative slice."
+        }
+      ],
+      "exampleOutput": "**Diagnosis**\n1. `calculate_total` reads `CURRENT_REGION` global, so it cannot be tested without patching.\n2. Tax, discount and shipping rules are interleaved in one 140-line function.\n3. `Order` mutates itself inside `calculate_total`, so calling it twice changes the answer.\n\n**Target shape:** `PricingContext` (region, date) passed in; pure functions `subtotal`, `discounts`, `tax`, `shipping`; `calculate_total` composes them and returns a new `Totals` value.\n\n**Steps**\n1. Write characterization tests from 10 real orders (low risk).\n2. Add `PricingContext` and pass it through, defaulting to the global (low).\n3. Extract `tax` as a pure function; verify the tests (low).\n4. Extract `discounts`, then `shipping` (medium, discounts stack in an order-dependent way, so add a test first).\n5. Make `calculate_total` return `Totals` and stop mutating `Order` (medium).\n6. Remove the global default (low, grep callers).\n\n**Do not touch:** the currency formatting helpers.\n\n**Stop points:** after step 3 the module is already testable.",
+      "notes": "Ordering the work as shippable steps with verification keeps the plan useful in a real team. Naming what not to touch prevents scope creep.",
+      "useCase": "plan",
+      "tags": [
+        "refactoring",
+        "software-design",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-explain-code",
+      "title": "Explain unfamiliar code in plain language",
+      "description": "Understand code you inherited: a layered explanation from the big picture down to the tricky lines.",
+      "body": "I need to understand some {{language}} code I did not write. My experience level: {{level}}.\n\nWhat I need it for: {{purpose}}\n\nCode:\n{{code}}\n\nExplain it in layers:\n1. One-paragraph summary: what this code does and why it likely exists.\n2. Walkthrough: go through it in execution order. For each logical block say what it does and why, not just what the syntax means.\n3. Hard parts: pick the 2-4 trickiest lines or patterns and explain them with a tiny worked example (concrete input, step-by-step result).\n4. Hidden behavior: side effects, global or shared state, implicit assumptions, error paths and performance traps.\n5. Smells: anything that looks like a bug or a risk, labeled \"confirmed\" if it is clearly wrong or \"suspicion\" if it depends on context I did not show.\n6. Questions to ask the author or check in the codebase.\n\nDefine any jargon the first time you use it, at the level of someone with my experience. Do not rewrite the code unless I ask. If something depends on code that is not shown, say so instead of guessing.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "JavaScript",
+          "required": false
+        },
+        {
+          "key": "level",
+          "label": "My experience level",
+          "type": "select",
+          "options": [
+            "Beginner",
+            "Intermediate",
+            "Experienced but new to this language"
+          ],
+          "default": "Intermediate",
+          "required": false
+        },
+        {
+          "key": "purpose",
+          "label": "Why I need to understand it",
+          "type": "text",
+          "default": "I have to add a feature to it next week",
+          "required": false
+        },
+        {
+          "key": "code",
+          "label": "Code",
+          "type": "long",
+          "required": true,
+          "help": "Paste the code to explain."
+        }
+      ],
+      "exampleOutput": "**Summary:** This is a debounced search-as-you-type helper. It waits until the user stops typing for 300 ms, cancels any request still in flight, and only displays results from the latest query.\n\n**Walkthrough**\n1. `let timer, controller` keeps state outside the function, so it survives between keystrokes (a closure).\n2. Each call clears the pending timer, which restarts the 300 ms wait.\n3. When the timer fires, the old `AbortController` is aborted and a new one is created, so slow earlier responses are cancelled.\n4. `fetch` receives `controller.signal`; on success the results are rendered.\n\n**Hard part:** `catch (e) { if (e.name !== \"AbortError\") throw e; }`. Aborting a fetch rejects its promise with an error named AbortError. That is expected here, so it is ignored. Example: typing \"ca\" then \"cat\" aborts the \"ca\" request, which rejects quietly.\n\n**Hidden behavior:** the shared `controller` means two instances of this component would cancel each other.\n\n**Smells:** suspicion: no handling for non-200 responses.\n\n**Ask:** is the 300 ms value tuned for a reason?",
+      "notes": "Layered output lets you stop reading when you have enough. Labeling smells as confirmed or suspicion keeps the model from inventing bugs.",
+      "useCase": "tutor",
+      "tags": [
+        "code-generation",
+        "learning",
+        "refactoring"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-sql-query-writer",
+      "title": "Write a SQL query from plain English",
+      "description": "Describe the question and your tables, and get a correct, readable query with an explanation and edge cases.",
+      "body": "Write a {{dialect}} query that answers this question:\n\n{{question}}\n\nSchema (tables, columns, keys, anything relevant):\n{{schema}}\n\nRules:\n- Use only tables and columns that appear in the schema. If something I asked for is not in the schema, say so and ask rather than inventing a column.\n- Prefer CTEs for multi-step logic, explicit JOIN syntax, and clear aliases. Format for readability.\n- Handle NULLs, duplicates and ties deliberately, and tell me how.\n- Mention any assumptions about the data (for example, whether a status value means active).\n\nOutput:\n1. The query in a single code block.\n2. A short plain-language explanation of how it works, step by step.\n3. Edge cases and gotchas: what could make the result wrong or surprising.\n4. Which indexes would help if this table is large.\n5. A tiny sample of input rows and the output the query should return, so I can verify it.",
+      "variables": [
+        {
+          "key": "dialect",
+          "label": "SQL dialect",
+          "type": "select",
+          "options": [
+            "PostgreSQL",
+            "MySQL",
+            "SQL Server",
+            "SQLite",
+            "BigQuery",
+            "Snowflake",
+            "Oracle"
+          ],
+          "default": "PostgreSQL",
+          "required": false
+        },
+        {
+          "key": "question",
+          "label": "What do you want to know?",
+          "type": "long",
+          "default": "For each customer, show their total spend in the last 90 days and the date of their most recent order. Only include customers with at least 3 orders.",
+          "required": false
+        },
+        {
+          "key": "schema",
+          "label": "Schema",
+          "type": "long",
+          "default": "customers(id, name, email, created_at)\norders(id, customer_id, total_cents, status, created_at)",
+          "required": false,
+          "help": "Paste CREATE TABLE statements or a short list."
+        }
+      ],
+      "exampleOutput": "```sql\nWITH recent AS (\n  SELECT customer_id,\n         SUM(total_cents) / 100.0 AS spend_90d,\n         MAX(created_at)::date AS last_order_date,\n         COUNT(*) AS order_count\n  FROM orders\n  WHERE status = 'paid'\n    AND created_at >= CURRENT_DATE - INTERVAL '90 days'\n  GROUP BY customer_id\n)\nSELECT c.id, c.name, r.spend_90d, r.last_order_date\nFROM recent r\nJOIN customers c ON c.id = r.customer_id\nWHERE r.order_count >= 3\nORDER BY r.spend_90d DESC;\n```\n\n**How it works:** the CTE aggregates paid orders from the last 90 days per customer, then joins names and keeps those with 3 or more orders.\n\n**Gotchas**\n- I assumed `status = 'paid'` means a real purchase; refunds are not in the schema.\n- \"At least 3 orders\" is counted inside the 90-day window. If you meant lifetime orders, move the count to a separate CTE.\n\n**Indexes:** `orders (status, created_at, customer_id)`.\n\n**Check:** a customer with orders of 20.00, 30.00 and 50.00 should return 100.00.",
+      "notes": "Telling the model to refuse invented columns and to state its assumptions prevents the most common SQL failure, plausible but wrong queries. The sample-rows check gives you a fast way to verify.",
+      "useCase": "generate",
+      "tags": [
+        "sql"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-sql-query-optimizer",
+      "title": "Optimize a slow SQL query",
+      "description": "Find why a query is slow and get a faster version, index suggestions and a way to prove the improvement.",
+      "body": "Help me speed up a slow {{dialect}} query.\n\nQuery:\n{{query}}\n\nExecution plan (EXPLAIN / EXPLAIN ANALYZE output), if I have it:\n{{plan}}\n\nTable sizes and existing indexes:\n{{tables}}\n\nHow slow it is and what is acceptable: {{target}}\n\nPlease:\n1. Diagnose: explain in plain words what the database is doing and where the time goes. If a plan is provided, cite specific nodes (seq scans, sorts, nested loops, bad row estimates). If not, say what you suspect and ask me to run EXPLAIN ANALYZE, showing the exact command.\n2. Rank the fixes by expected impact: query rewrite, new or changed indexes, schema or statistics changes, and application-side changes such as pagination or caching.\n3. Show the rewritten query and the exact CREATE INDEX statements, with the column order justified.\n4. Warn about tradeoffs: write cost of new indexes, locking during creation, and whether the rewrite returns exactly the same rows.\n5. Give me a way to verify: what to compare before and after.\n\nDo not suggest rewrites that change the results unless you flag it clearly.",
+      "variables": [
+        {
+          "key": "dialect",
+          "label": "SQL dialect",
+          "type": "select",
+          "options": [
+            "PostgreSQL",
+            "MySQL",
+            "SQL Server",
+            "SQLite",
+            "BigQuery",
+            "Snowflake",
+            "Oracle"
+          ],
+          "default": "PostgreSQL",
+          "required": false
+        },
+        {
+          "key": "query",
+          "label": "Slow query",
+          "type": "long",
+          "required": true,
+          "help": "Paste the SQL."
+        },
+        {
+          "key": "plan",
+          "label": "Execution plan",
+          "type": "long",
+          "required": false,
+          "help": "Output of EXPLAIN ANALYZE if you have it."
+        },
+        {
+          "key": "tables",
+          "label": "Table sizes and indexes",
+          "type": "long",
+          "default": "orders: ~40M rows, index on id only\ncustomers: ~2M rows, index on id",
+          "required": false
+        },
+        {
+          "key": "target",
+          "label": "Target",
+          "type": "text",
+          "default": "Currently 12 seconds, needs under 500 ms",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Diagnosis:** No plan was provided, so this is a suspicion, not a measurement. With only `id` indexed on `orders` (about 40M rows), a query that filters on `status` and a date range almost certainly does a sequential scan of the whole table, then sorts the matches for `ORDER BY created_at DESC LIMIT 50`. Twelve seconds is consistent with reading tens of millions of rows. Please run this and send me the output:\n```sql\nEXPLAIN (ANALYZE, BUFFERS) SELECT o.id, o.total_cents, c.name FROM orders o JOIN customers c ON c.id = o.customer_id WHERE o.status = 'paid' AND DATE(o.created_at) = '2026-09-01' ORDER BY o.created_at DESC LIMIT 50;\n```\n\n**Fixes by impact**\n1. Index (high):\n```sql\nCREATE INDEX CONCURRENTLY idx_orders_status_created ON orders (status, created_at DESC) INCLUDE (customer_id, total_cents);\n```\nEquality column first, then the range and sort column, so rows come out already ordered and the LIMIT stops early. INCLUDE allows an index-only scan.\n2. Rewrite (medium): `DATE(created_at)` hides the column from the index. Use a range instead:\n```sql\nWHERE o.status = 'paid' AND o.created_at >= '2026-09-01' AND o.created_at < '2026-09-02'\n```\nSame rows returned.\n3. Application (low): paginate by keyset (`created_at < :last_seen`) instead of OFFSET.\n\n**Tradeoffs:** the index adds write cost to every insert and roughly 2-3 GB of disk. CONCURRENTLY avoids blocking writes but takes longer and must not run inside a transaction.\n\n**Verify:** compare plan nodes (Seq Scan should become Index Scan), execution time and buffers read before and after, on production-sized data, and confirm both queries return identical row counts.",
+      "notes": "Asking for the plan, and for the exact EXPLAIN command when it is missing, anchors advice in evidence rather than generic tips. Requiring same-result rewrites keeps optimizations safe.",
+      "useCase": "analyze",
+      "tags": [
+        "sql",
+        "performance"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-regex-builder",
+      "title": "Build and test a regular expression",
+      "description": "Describe what you want to match and get a commented regex with matching and non-matching test cases.",
+      "body": "Build a regular expression for this task.\n\nWhat it should match: {{goal}}\nRegex flavor: {{flavor}}\nExamples that MUST match:\n{{should_match}}\n\nExamples that must NOT match:\n{{should_not_match}}\n\nDeliver:\n1. The regex on its own line, in a code block, ready to paste.\n2. A token-by-token breakdown in a table (part, meaning).\n3. A test table covering every example I gave plus at least 6 more you invent, including tricky edge cases. For each row show the input, expected result and why. Walk through each case carefully so the table is correct for this flavor.\n4. Known limits: what it intentionally does not handle, catastrophic backtracking risks, and anything better done with a parser or a validation library instead.\n5. A usage snippet showing how to apply it with captured groups in {{language}}.\n\nUse only features supported by the stated flavor. Prefer the simplest pattern that satisfies all examples over a clever one.",
+      "variables": [
+        {
+          "key": "goal",
+          "label": "What to match",
+          "type": "text",
+          "default": "US-style phone numbers with optional country code, capturing area code, prefix and line number",
+          "required": false
+        },
+        {
+          "key": "flavor",
+          "label": "Regex flavor",
+          "type": "select",
+          "options": [
+            "PCRE",
+            "JavaScript",
+            "Python re",
+            "Java",
+            "Go RE2",
+            ".NET",
+            "POSIX ERE"
+          ],
+          "default": "PCRE",
+          "required": false
+        },
+        {
+          "key": "should_match",
+          "label": "Should match",
+          "type": "long",
+          "default": "(415) 555-0132\n415-555-0132\n+1 415 555 0132\n4155550132",
+          "required": false
+        },
+        {
+          "key": "should_not_match",
+          "label": "Should not match",
+          "type": "long",
+          "default": "555-0132\n(415) 5550-132\n+44 415 555 0132",
+          "required": false
+        },
+        {
+          "key": "language",
+          "label": "Language for usage snippet",
+          "type": "text",
+          "default": "Python",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Regex**\n```\n^(?:\\+1[\\s.-]?)?\\(?([2-9]\\d{2})\\)?[\\s.-]?(\\d{3})[\\s.-]?(\\d{4})$\n```\n\n| Part | Meaning |\n|---|---|\n| `(?:\\+1[\\s.-]?)?` | optional +1 prefix with optional separator |\n| `\\(?([2-9]\\d{2})\\)?` | area code, optionally in parentheses, cannot start with 0 or 1 |\n| `[\\s.-]?` | optional space, dot or dash |\n| `(\\d{3})` / `(\\d{4})` | prefix and line number |\n\n**Tests**\n| Input | Match | Why |\n|---|---|---|\n| (415) 555-0132 | yes | parenthesized area code |\n| +1 415 555 0132 | yes | prefix with spaces |\n| 555-0132 | no | no area code |\n| +44 415 555 0132 | no | only +1 is allowed |\n| 115-555-0132 | no | area code starts with 1 |\n| (415 555-0132 | yes* | unbalanced parenthesis is accepted; see limits |\n\n**Limits:** it does not enforce balanced parentheses; for real validation use a phone library. No nested quantifiers, so backtracking is bounded.\n\n```python\nm = re.match(PATTERN, text)\narea, prefix, line = m.groups() if m else (None,)*3\n```",
+      "notes": "Requiring a test table, including negative cases, forces the model to check its own pattern. The flavor selector matters because lookbehind and Unicode support differ between engines.",
+      "useCase": "generate",
+      "tags": [
+        "code-generation",
+        "testing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-api-design-review",
+      "title": "REST API design review",
+      "description": "Review an API design for consistency, evolvability, error handling and security before you ship it.",
+      "body": "Review the design of this {{style}} API as an experienced API architect.\n\nPurpose and consumers: {{consumers}}\nPriorities: {{priorities}}\n\nAPI description (endpoints, schemas, OpenAPI, or examples):\n{{api}}\n\nAssess each area and give concrete findings, not generalities:\n1. Resource and naming consistency: URLs, verbs, pluralization, casing, field names.\n2. Request and response shapes: nullability, ID formats, timestamps, money and enums, pagination, filtering and sorting.\n3. Errors: status codes, error body structure, whether clients can handle failures programmatically.\n4. Idempotency and concurrency: retries, duplicate submissions, optimistic locking.\n5. Versioning and evolvability: which likely future changes would be breaking, and how to avoid them.\n6. Security and abuse: authentication and authorization per endpoint, rate limits, over-exposed fields, mass assignment.\n7. Developer experience: discoverability, documentation gaps, surprising behavior.\n\nOutput a table of findings (area, issue, severity: high/medium/low, recommended change with an example request or response), followed by the top five changes to make before launch and anything you could not assess from what I provided.",
+      "variables": [
+        {
+          "key": "style",
+          "label": "API style",
+          "type": "select",
+          "options": [
+            "REST",
+            "GraphQL",
+            "gRPC",
+            "Webhooks"
+          ],
+          "default": "REST",
+          "required": false
+        },
+        {
+          "key": "consumers",
+          "label": "Purpose and consumers",
+          "type": "text",
+          "default": "Public API for third-party developers to manage invoices",
+          "required": false
+        },
+        {
+          "key": "priorities",
+          "label": "Priorities",
+          "type": "text",
+          "default": "Stability, easy integration, safe retries",
+          "required": false
+        },
+        {
+          "key": "api",
+          "label": "API description",
+          "type": "long",
+          "required": true,
+          "help": "Paste endpoints, an OpenAPI snippet or sample requests."
+        }
+      ],
+      "exampleOutput": "| Area | Issue | Severity | Recommendation |\n|---|---|---|---|\n| Naming | `GET /getInvoices` and `POST /invoice/create` mix verbs and singular/plural | Medium | `GET /invoices`, `POST /invoices` |\n| Errors | Failures return 200 with `{\"ok\": false}` | High | Use 4xx/5xx plus `{\"error\": {\"code\": \"invoice_not_found\", \"message\": \"No invoice with id inv_123\", \"request_id\": \"req_8f2a\"}}` |\n| Idempotency | `POST /invoices` has no retry protection | High | Accept an `Idempotency-Key` header and store the result for 24 h |\n| Pagination | `GET /invoices` returns all invoices | High | Cursor pagination: `?limit=50&after=inv_123`, response includes `next_cursor` |\n| Money | `amount: 12.5` as float | High | Integer minor units plus currency: `{\"amount\": 1250, \"currency\": \"USD\"}` |\n| Security | `GET /invoices/{id}` has no ownership check mentioned | High | Scope by account and return 404 for other accounts' invoices |\n| Concurrency | `PUT /invoices/{id}` overwrites silently | Medium | Return an `ETag`, require `If-Match`, answer 412 on mismatch |\n| Evolution | `status` is a free string | Medium | Document it as an open enum clients must tolerate new values for |\n| Timestamps | `created: \"09/01/2026\"` | Low | ISO 8601 UTC: `\"created_at\": \"2026-09-01T10:15:00Z\"` |\n\n**Top five before launch:** consistent error format, idempotency keys, integer money, cursor pagination, ownership checks.\n\n**Could not assess:** rate limits, auth scopes and webhook signing, since none were described.",
+      "notes": "Splitting the review into fixed areas ensures security and evolvability are not skipped. The severity table gives you a ready-made work list.",
+      "useCase": "critique",
+      "tags": [
+        "software-design",
+        "code-review"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-migration-plan",
+      "title": "Plan a safe migration or upgrade",
+      "description": "Plan a database, framework or infrastructure migration with phases, rollback points and verification at each step.",
+      "body": "Plan a migration for me.\n\nFrom: {{from}}\nTo: {{to}}\nSize and complexity: {{scale}}\nHard constraints (downtime allowed, deadlines, team size, compliance): {{constraints}}\nAnything fragile or poorly understood: {{risks}}\n\nCreate a plan that includes:\n1. Strategy choice: compare the realistic approaches (for example big bang, phased, strangler, dual-write, parallel run) in a short table and recommend one with reasons that tie to my constraints.\n2. Preparation: inventory of what has to move or change, compatibility problems to expect, and the checks to run before starting.\n3. Phased steps: for each phase give the actions, the exit criteria that prove it worked, and how long it should roughly take for my scale.\n4. Rollback: the point of no return, what rollback looks like in each phase, and what data could be lost or diverge.\n5. Verification: how to confirm correctness (row counts, checksums, shadow traffic, canary metrics), and what to monitor.\n6. Cutover runbook: an ordered checklist for the day, with owners as roles.\n7. Top risks with mitigation, and the questions you need answered before committing to this plan.\n\nBe specific to the technologies named. Flag any step where you are unsure and I should consult the official migration guide.",
+      "variables": [
+        {
+          "key": "from",
+          "label": "Migrating from",
+          "type": "text",
+          "default": "MySQL 5.7 on a single VM",
+          "required": false
+        },
+        {
+          "key": "to",
+          "label": "Migrating to",
+          "type": "text",
+          "default": "PostgreSQL 16 on a managed service",
+          "required": false
+        },
+        {
+          "key": "scale",
+          "label": "Size and complexity",
+          "type": "text",
+          "default": "180 GB, 120 tables, 3 services read and write it",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "Max 10 minutes of downtime, 2 engineers, 8 weeks",
+          "required": false
+        },
+        {
+          "key": "risks",
+          "label": "Fragile areas",
+          "type": "text",
+          "default": "Stored procedures and a nightly reporting job",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Recommendation:** phased migration with continuous replication, then a short write freeze for cutover.\n\n| Approach | Downtime | Risk | Fit |\n|---|---|---|---|\n| Dump and restore | Hours | Low | Fails the 10-minute limit |\n| Replication then cutover | Minutes | Medium | Fits |\n| Dual-write in the app | None | High | Too much code for 2 engineers |\n\n**Phases**\n1. Prep (week 1-2): inventory types and procedures; port the 14 stored procedures; run a schema conversion tool. Exit: the schema loads in a staging Postgres.\n2. Replicate (week 3-4): set up change data capture into the target. Exit: lag under 5 s for a week.\n3. Verify (week 5-6): row counts and checksums per table; run the reporting job against the replica. Exit: zero diffs.\n4. Rehearse (week 7): full cutover on staging, timed.\n5. Cutover: freeze writes, wait for zero lag, verify, flip connection strings.\n\n**Rollback:** until step 5 the old database is authoritative. After cutover, keep reverse replication for 7 days.\n\n**Questions:** are there MySQL-specific behaviors, such as zero dates, case-insensitive collations, that code relies on?",
+      "notes": "Choosing the strategy against your stated constraints, and defining a rollback for every phase, avoids the usual one-way-door plans. Answer its closing questions and rerun for a tighter plan.",
+      "useCase": "plan",
+      "tags": [
+        "refactoring",
+        "devops",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-commit-message",
+      "title": "Write a clear Git commit message",
+      "description": "Turn a diff or a rough description into a clean commit message that explains the why, not just the what.",
+      "body": "Write a Git commit message for this change.\n\nConvention: {{convention}}\nWhy the change was made (issue, bug report, goal): {{reason}}\nIssue or ticket reference: {{ticket}}\n\nDiff or summary of changes:\n{{diff}}\n\nRules:\n- Subject line: imperative mood, at most 50 characters, no trailing period, specific enough that someone scanning the log knows what changed.\n- Body, wrapped at 72 characters: explain why the change was needed, what approach was taken and any tradeoff or alternative that was rejected. Do not just restate the diff line by line.\n- Mention behavior changes, breaking changes or required follow-ups, if any.\n- Add the ticket reference in a footer when one is given.\n- If the diff contains several unrelated changes, say so and propose how to split it into separate commits with a message for each.\n\nGive me the final message in a code block, then give two alternative subject lines.",
+      "variables": [
+        {
+          "key": "convention",
+          "label": "Convention",
+          "type": "select",
+          "options": [
+            "Conventional Commits",
+            "Plain imperative sentence",
+            "Gitmoji"
+          ],
+          "default": "Conventional Commits",
+          "required": false
+        },
+        {
+          "key": "reason",
+          "label": "Why",
+          "type": "text",
+          "default": "Users were logged out after password reset because old sessions were not rotated",
+          "required": false
+        },
+        {
+          "key": "ticket",
+          "label": "Ticket",
+          "type": "text",
+          "default": "AUTH-482",
+          "required": false
+        },
+        {
+          "key": "diff",
+          "label": "Diff or summary",
+          "type": "long",
+          "required": true,
+          "help": "Paste git diff output or describe the change."
+        }
+      ],
+      "exampleOutput": "```\nfix(auth): rotate session after password reset\n\nAfter a password reset the existing session id stayed valid, so a\nstolen session survived the reset and users on other devices were\nnot signed out. Issue a new session id on reset and invalidate all\nother sessions for the account.\n\nThe sessions table gets an index on user_id so the bulk\ninvalidation stays fast for accounts with many sessions.\n\nRejected: shortening session lifetime globally, because it would\nsign out every user more often for a problem tied to one event.\n\nRefs: AUTH-482\n```\n\n**Alternative subjects**\n- `fix(auth): invalidate old sessions on password reset`\n- `fix(auth): end other sessions after resetting password`",
+      "notes": "The rules push the body toward why and tradeoffs, which is what future maintainers need. The split suggestion catches overloaded commits.",
+      "useCase": "generate",
+      "tags": [
+        "devops",
+        "documentation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-pr-description",
+      "title": "Write a pull request description",
+      "description": "Create a PR description that helps reviewers understand the change, how to test it and what to watch for.",
+      "body": "Write a pull request description for reviewers.\n\nChange summary or diff:\n{{changes}}\n\nProblem being solved (and link): {{problem}}\nType of change: {{type}}\nHow I tested it: {{testing}}\nKnown limitations or follow-ups: {{followups}}\n\nUse this structure, in Markdown:\n## Summary\nTwo or three sentences: what changed and why, written for someone with no prior context.\n## Changes\nA short bullet list grouped by area. Mention anything surprising.\n## How to review\nWhere to start, which files carry the real logic, and which are mechanical (renames, generated code).\n## Testing\nWhat was run, plus step-by-step manual verification a reviewer can repeat.\n## Risks and rollout\nImpact on existing behavior, migrations, config or feature flags needed, and how to roll back.\n## Screenshots or output\nLeave a placeholder only if the change is visible.\n\nKeep it concise and skimmable. Do not invent test results: if my testing notes are thin, list what is still unverified under Testing. Do not repeat the diff line by line.",
+      "variables": [
+        {
+          "key": "changes",
+          "label": "Changes or diff",
+          "type": "long",
+          "required": true,
+          "help": "Paste the diff, a commit list or your notes."
+        },
+        {
+          "key": "problem",
+          "label": "Problem and link",
+          "type": "text",
+          "default": "Search results are slow for large accounts (#1204)",
+          "required": false
+        },
+        {
+          "key": "type",
+          "label": "Type of change",
+          "type": "select",
+          "options": [
+            "Bug fix",
+            "Feature",
+            "Refactor",
+            "Performance",
+            "Dependency update",
+            "Documentation"
+          ],
+          "default": "Performance",
+          "required": false
+        },
+        {
+          "key": "testing",
+          "label": "How you tested",
+          "type": "long",
+          "default": "Unit tests added; ran locally against a copy of a large account",
+          "required": false
+        },
+        {
+          "key": "followups",
+          "label": "Limitations and follow-ups",
+          "type": "text",
+          "default": "Cache invalidation on bulk import is still manual",
+          "required": false
+        }
+      ],
+      "exampleOutput": "## Summary\nSearch on large accounts took 3-8 seconds because every query loaded all documents before filtering. This PR moves filtering into the database query and adds an index, bringing the typical query under 200 ms. Fixes #1204.\n\n## Changes\n- `search/query.ts`: filters and pagination now happen in SQL\n- `migrations/0042_search_index.sql`: adds a composite index on `(account_id, updated_at)`\n- `search/query.test.ts`: tests for filters, empty results and pagination\n\n## How to review\nStart with `search/query.ts`; the migration is one statement; the test file is the quickest way to see the new behavior.\n\n## Testing\n- Unit tests pass.\n- Manual: open an account with more than 50k documents and search \"invoice\"; results should appear in under half a second.\n- Not yet verified: behavior under concurrent imports.\n\n## Risks and rollout\nThe migration builds an index on a large table; run it during low traffic. Roll back by reverting the PR and dropping the index. Follow-up: cache invalidation after bulk import is still manual.",
+      "notes": "Giving the model a fixed structure and a how-to-review section saves reviewers time. The rule against inventing test results keeps the description honest.",
+      "useCase": "generate",
+      "tags": [
+        "code-review",
+        "devops",
+        "documentation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-security-review",
+      "title": "Application security review checklist",
+      "description": "Audit code or a feature design for vulnerabilities, mapped to realistic attack scenarios and fixes.",
+      "body": "Act as an application security engineer reviewing a {{language}} {{app_type}}.\n\nWhat it does and what is sensitive (data, money, privileges): {{context}}\nThreat concerns: {{concerns}}\n\nCode, configuration or design to review:\n{{code}}\n\nReview for these classes of problems, skipping any that do not apply: injection (SQL, command, template), authentication and session handling, authorization and object-level access checks, input validation and output encoding, secrets and key handling, unsafe deserialization and file handling, SSRF and open redirects, cryptography misuse, logging of sensitive data, dependency and configuration risks, and denial-of-service vectors.\n\nFor every finding give:\n- Severity (critical, high, medium, low) and the matching weakness category (CWE or OWASP name if you know it with confidence).\n- Location in the code.\n- A realistic attack in two or three sentences: who, what they send, what they gain.\n- A fix with a short secure code example.\n\nRules: report only issues supported by the code shown and say \"needs verification\" where it depends on code you cannot see. Do not pad with generic advice. End with a short list of things that look correct and a prioritized fix order. If you notice nothing wrong in an area, say so briefly.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "app_type",
+          "label": "Application type",
+          "type": "select",
+          "options": [
+            "Web API",
+            "Web app",
+            "Mobile backend",
+            "CLI tool",
+            "Serverless function",
+            "Library"
+          ],
+          "default": "Web API",
+          "required": false
+        },
+        {
+          "key": "context",
+          "label": "What it does",
+          "type": "long",
+          "default": "Invoice API where users download PDFs of their own invoices; stores customer addresses.",
+          "required": false
+        },
+        {
+          "key": "concerns",
+          "label": "Main concerns",
+          "type": "text",
+          "default": "Access control and file handling",
+          "required": false
+        },
+        {
+          "key": "code",
+          "label": "Code or design",
+          "type": "long",
+          "required": true,
+          "help": "Paste the handlers, config or design notes."
+        }
+      ],
+      "exampleOutput": "**1. Broken object-level authorization: High (CWE-639)**\n`download_invoice` (api/invoices.py:31) looks up the invoice by `invoice_id` only. Any logged-in user can request `/invoices/1042/pdf`, then 1043, and read other customers' addresses. Fix:\n```python\ninvoice = Invoice.query.filter_by(id=invoice_id, account_id=current_user.account_id).first_or_404()\n```\n\n**2. Path traversal: High (CWE-22)**\nThe PDF is read from `os.path.join(PDF_DIR, request.args[\"name\"])`. A request with `name=../../etc/passwd` escapes the directory. Fix: ignore the client value; build the path from the stored invoice id, or check the resolved path stays under `PDF_DIR`.\n\n**3. Verbose errors: Low**\nUnhandled exceptions return a stack trace with the database URL. Needs verification that debug mode is off in production.\n\n**Looks correct:** parameterized queries in `list_invoices`; passwords hashed with a modern algorithm.\n\n**Fix order:** 1, 2, then 3.",
+      "notes": "Asking for a realistic attack for each finding filters out theoretical noise, and 'needs verification' keeps the model honest about code it cannot see. Review one module at a time for the best depth.",
+      "useCase": "critique",
+      "tags": [
+        "security",
+        "code-review"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-performance-profile",
+      "title": "Interpret profiling and benchmark output",
+      "description": "Paste a profile, flame graph summary or timings and get a ranked list of real bottlenecks with what to try first.",
+      "body": "Help me interpret performance data for a {{language}} program.\n\nWhat the program does and what is slow: {{symptom}}\nEnvironment (hardware, runtime version, load): {{environment}}\nProfiler or tool used: {{tool}}\n\nProfile or benchmark output:\n{{data}}\n\nRelevant code (optional):\n{{code}}\n\nPlease:\n1. Read the data: in two or three sentences describe where the time or memory goes, quoting the specific functions and numbers.\n2. Separate signal from noise: say which entries are expected, which are profiler artifacts, and which are real bottlenecks. Consider self time versus total time.\n3. Hypotheses: for each of the top three bottlenecks, say why it is probably slow (algorithmic complexity, allocation, I/O wait, lock contention, N+1 calls, GC pressure) and what evidence supports it.\n4. Experiments: for each hypothesis, a small change to try and how to measure its effect, so I can confirm before committing to a rewrite.\n5. Estimate the best case: what total improvement is realistic, using Amdahl's law with the numbers above.\n6. What data is missing, and the exact command or setting to capture it.\n\nDo not recommend micro-optimizations in code that is under 5% of the total. If the data is not enough to conclude, say so.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "symptom",
+          "label": "Symptom",
+          "type": "text",
+          "default": "Nightly CSV import takes 40 minutes; it used to take 8",
+          "required": false
+        },
+        {
+          "key": "environment",
+          "label": "Environment",
+          "type": "text",
+          "default": "Python 3.12, 4 vCPU container, 8 GB RAM, 2M rows",
+          "required": false
+        },
+        {
+          "key": "tool",
+          "label": "Tool",
+          "type": "text",
+          "default": "cProfile sorted by cumulative time",
+          "required": false
+        },
+        {
+          "key": "data",
+          "label": "Profile output",
+          "type": "long",
+          "required": true,
+          "help": "Paste the top 20-40 lines of the report."
+        },
+        {
+          "key": "code",
+          "label": "Relevant code",
+          "type": "long",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Where the time goes:** 31 of 40 minutes (78%) is inside `normalize_row`, and 24 minutes of that is `re.compile`, called 2M times. A further 6 minutes (15%) is `session.commit`, called once per row.\n\n**Signal vs noise:** `csv.reader` (4%) and `json.dumps` (2%) are expected and not worth touching. Time in `<built-in method time.sleep>` is the retry backoff and is zero on a clean run.\n\n**Hypotheses**\n1. Regex recompiled per call. The cache is small, and `normalize_row` builds the pattern from a variable, defeating it. Try: compile once at module level.\n2. Commit per row. 2M round trips. Try: commit every 5,000 rows.\n3. N+1 lookup of the country table (`get_country`, 2M calls, 3% self time but 11% cumulative). Try: load the table into a dict once.\n\n**Best case:** removing items 1 and 2 leaves about 3 minutes of work, so roughly 40 down to 9-10 minutes.\n\n**Missing data:** memory use. Run `python -X tracemalloc` or `memray` to check batching will fit.",
+      "notes": "Separating self time from total time and asking for experiments before rewrites prevents optimizing the wrong thing. The Amdahl estimate shows how much win to expect.",
+      "useCase": "analyze",
+      "tags": [
+        "performance"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-coding-agent-system-prompt",
+      "title": "System prompt for an AI coding agent",
+      "description": "Draft a clear, tight system prompt that tells an AI coding assistant how to work in your repository.",
+      "body": "Write a system prompt for an AI coding agent that will work in my codebase. The agent can read files, edit files and run shell commands.\n\nProject: {{project}}\nStack and tooling: {{stack}}\nCommands it should use (build, test, lint, run): {{commands}}\nConventions and architecture rules: {{conventions}}\nThings it must never do: {{forbidden}}\nAutonomy level: {{autonomy}}\n\nWrite the finished system prompt, addressed to the agent in second person, with these sections:\n1. Role and goal: one short paragraph.\n2. How to work: explore before editing, make the smallest change that solves the task, follow existing patterns, run the tests and linter after changes, and report honestly when something fails instead of claiming success.\n3. Project facts: the stack, structure and commands, stated as facts, not instructions.\n4. Conventions: concrete, checkable rules with a one-line reason for each non-obvious one.\n5. Boundaries: actions that need confirmation first and actions that are forbidden.\n6. When to ask: the specific situations where the agent should stop and ask me a question, and the situations where it should proceed on its own with a stated assumption.\n7. Final report format: what changed, how it was verified, what is left undone and any risks.\n\nKeep it under 600 words. Prefer positive, specific instructions over long lists of prohibitions. After the prompt, add three short suggestions for what I should add once I see how the agent behaves.",
+      "variables": [
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "default": "B2B invoicing web app",
+          "required": false
+        },
+        {
+          "key": "stack",
+          "label": "Stack and tooling",
+          "type": "text",
+          "default": "TypeScript, Next.js 14, Postgres with Prisma, pnpm, Vitest",
+          "required": false
+        },
+        {
+          "key": "commands",
+          "label": "Commands",
+          "type": "text",
+          "default": "pnpm test, pnpm lint, pnpm typecheck, pnpm dev",
+          "required": false
+        },
+        {
+          "key": "conventions",
+          "label": "Conventions",
+          "type": "long",
+          "default": "Server logic lives in /src/server; components are function components; no default exports; money is stored as integer cents.",
+          "required": false
+        },
+        {
+          "key": "forbidden",
+          "label": "Never do",
+          "type": "text",
+          "default": "Edit migrations that have shipped, touch .env files, run commands against production",
+          "required": false
+        },
+        {
+          "key": "autonomy",
+          "label": "Autonomy",
+          "type": "select",
+          "options": [
+            "Cautious: ask before every edit",
+            "Moderate: ask before large or risky changes",
+            "High: work independently and report"
+          ],
+          "default": "Moderate: ask before large or risky changes",
+          "required": false
+        }
+      ],
+      "exampleOutput": "You are a software engineer working inside the invoicing app repository. Your goal is to complete the task you are given with correct, minimal, well-tested changes.\n\n**How to work**\nRead the relevant code before editing. Make the smallest change that solves the problem and follow the patterns already in the file. After each change run `pnpm typecheck`, `pnpm lint` and `pnpm test`. If anything fails, fix it or say plainly that it still fails; never claim success you did not observe.\n\n**Project facts**\nNext.js 14 with TypeScript, Postgres via Prisma, Vitest for tests, pnpm for packages. Server logic lives in `/src/server`.\n\n**Conventions**\n- Named exports only (keeps imports greppable).\n- Money is integer cents, never floats (rounding errors).\n- Components are function components.\n\n**Boundaries**\nNever edit shipped migrations, touch `.env` files or run anything against production. Ask before changes that span more than five files, alter the schema or add dependencies.\n\n**When to ask**\nAsk if requirements conflict or data could be lost. For minor ambiguity, pick the simplest reading and state your assumption.\n\n**Final report**\nChanges made, checks run and results, anything left undone, risks.\n\n*Add next:* an example of a good test, a note on error-handling style, and the review process.",
+      "notes": "Separating facts, conventions and boundaries makes the prompt easy to maintain and test. The explicit when-to-ask rules are the part most agent prompts leave out.",
+      "useCase": "system_prompt",
+      "tags": [
+        "prompt-engineering"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-flaky-test-investigation",
+      "title": "Find the cause of a flaky test or intermittent bug",
+      "description": "Systematically narrow down why a test or bug only fails sometimes, with experiments to prove the cause.",
+      "body": "I have an intermittent failure in {{language}} and need a systematic way to pin it down.\n\nWhat fails and how often: {{frequency}}\nWhere it fails (CI only, locally, specific machines): {{where}}\nFailure output from a failing run:\n{{failure}}\n\nTest or code involved:\n{{code}}\n\nWhat changed recently, or other clues: {{clues}}\n\nPlease:\n1. List the most likely categories of cause for this specific situation, ranked, from this set: shared state between tests, ordering dependence, timing and race conditions, unawaited async work, real clocks and time zones, randomness, resource limits, environment differences, and external services. For each, say what in my information points to it.\n2. For the top three, give an experiment that would reproduce or rule it out. Be concrete: a command, a loop to run the test 200 times, a flag to randomize or fix order, a log line or a delay injected to widen a race window.\n3. Explain how to tell which result means what, so I can read the experiment outcomes.\n4. Once the cause is found, outline the right kind of fix for each category. Warn me against the tempting wrong fixes such as sleeps, retries or increased timeouts.\n5. Suggest instrumentation to leave in place so a future occurrence leaves a useful trail.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "TypeScript",
+          "required": false
+        },
+        {
+          "key": "frequency",
+          "label": "Failure rate",
+          "type": "text",
+          "default": "About 1 in 15 CI runs; never locally",
+          "required": false
+        },
+        {
+          "key": "where",
+          "label": "Where it fails",
+          "type": "text",
+          "default": "GitHub Actions, Linux, 2 cores",
+          "required": false
+        },
+        {
+          "key": "failure",
+          "label": "Failure output",
+          "type": "long",
+          "required": true,
+          "help": "Paste the assertion error or log from a failing run."
+        },
+        {
+          "key": "code",
+          "label": "Test and code involved",
+          "type": "long",
+          "required": true,
+          "help": "Paste the test and the code it exercises."
+        },
+        {
+          "key": "clues",
+          "label": "Recent changes or clues",
+          "type": "text",
+          "default": "Started after we enabled parallel test workers",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Likely causes (ranked)**\n1. Shared state between tests (high). It began when parallel workers were enabled, and the failure is \"expected 1 row, got 3\". Two workers likely write to the same table.\n2. Race with unawaited async work (medium). `createUser` is called without `await` in the setup helper, so the assertion can run first.\n3. Environment resource limits (low). CI has 2 cores; slower timing could expose a race.\n\n**Experiments**\n1. Run `vitest --no-file-parallelism` 30 times. If it never fails, shared state is confirmed.\n2. Add `await` to the setup call, then loop: `for i in $(seq 200); do vitest run users.test.ts || break; done`.\n3. Run under CPU throttling: `taskset -c 0 vitest run`.\n\n**Reading results:** fails only in parallel means isolation; fails alone in a loop means a race inside the test.\n\n**Right fixes:** per-worker schema or transaction rollback for isolation; awaiting the promise. Avoid adding sleeps or `retry: 3`, which hide the defect.\n\n**Instrumentation:** log worker id and database name at test start.",
+      "notes": "Ranking cause categories against your clues, then pairing each with an experiment, turns guesswork into a process. The warning against sleeps and retries steers toward real fixes.",
+      "useCase": "analyze",
+      "tags": [
+        "debugging",
+        "testing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-readme-writer",
+      "title": "Write a README that gets people running",
+      "description": "Generate a practical README for a project: what it is, quick start, usage examples and contribution notes.",
+      "body": "Write a README.md for this project.\n\nProject name: {{name}}\nWhat it does and who it is for: {{purpose}}\nLanguage and tooling: {{language}}\nInstall and run steps as I know them: {{setup}}\nKey features or API surface:\n{{features}}\nTone: {{tone}}\n\nStructure:\n1. Title and a one-sentence description a stranger could understand in five seconds.\n2. Why it exists: the problem and how this differs from the obvious alternatives, in at most four sentences. No marketing language.\n3. Quick start: the shortest path from zero to a working result, as copy-pasteable commands, with expected output.\n4. Usage: two or three realistic examples, from simple to more advanced, each with a code block.\n5. Configuration: a table of options with defaults.\n6. Project layout, only if it helps a newcomer.\n7. Development: how to run tests and the linter, and how to contribute.\n8. License and support section placeholders.\n\nOnly document what I have told you or what is evident from the input. Where information is missing, insert a clearly marked TODO rather than inventing commands, flags or badges. Verify that each step in the quick start follows from the one before it.",
+      "variables": [
+        {
+          "key": "name",
+          "label": "Project name",
+          "type": "text",
+          "default": "tinyqueue",
+          "required": false
+        },
+        {
+          "key": "purpose",
+          "label": "What it does",
+          "type": "text",
+          "default": "A small job queue for Node.js apps backed by SQLite, for side projects that do not want to run Redis",
+          "required": false
+        },
+        {
+          "key": "language",
+          "label": "Language and tooling",
+          "type": "text",
+          "default": "TypeScript, npm, Node 20+",
+          "required": false
+        },
+        {
+          "key": "setup",
+          "label": "Install and run steps",
+          "type": "long",
+          "default": "npm install tinyqueue; create a Queue with a file path; call queue.add and queue.process",
+          "required": false
+        },
+        {
+          "key": "features",
+          "label": "Key features",
+          "type": "long",
+          "default": "Delayed jobs, retries with backoff, concurrency limit, graceful shutdown",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Friendly and concise",
+            "Formal and precise",
+            "Playful"
+          ],
+          "default": "Friendly and concise",
+          "required": false
+        }
+      ],
+      "exampleOutput": "# tinyqueue\n\nA small, durable job queue for Node.js that stores jobs in SQLite.\n\n## Why\n\nMost queues need Redis. For a side project or a single-server app that is one more service to run and pay for. tinyqueue keeps jobs in a local file, survives restarts, and has no other dependencies.\n\n## Quick start\n\n```bash\nnpm install tinyqueue\n```\n\n```ts\nimport { Queue } from \"tinyqueue\";\n\nconst queue = new Queue(\"./jobs.db\");\nqueue.process(\"email\", async (job) => {\n  console.log(\"sending to\", job.data.to);\n});\nawait queue.add(\"email\", { to: \"ada@example.com\" });\n```\nExpected output: `sending to ada@example.com`\n\n## Usage\n- Delay: `queue.add(\"email\", data, { delayMs: 60_000 })`\n- Retries: `{ retries: 5, backoff: \"exponential\" }`\n\n## Configuration\n| Option | Default | Description |\n|---|---|---|\n| `concurrency` | 1 | Jobs run at once |\n| `retries` | 3 | Attempts before a job is marked failed |\n\n## Development\n`npm test` and `npm run lint`. TODO: contribution guidelines.\n\n## License\nTODO",
+      "notes": "The no-invention rule with TODO markers keeps the README accurate rather than confidently wrong. Paste your package manifest or main file as features for a more precise result.",
+      "useCase": "generate",
+      "tags": [
+        "documentation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-code-translation",
+      "title": "Translate code between languages idiomatically",
+      "description": "Port code to another language so it reads like native code, with notes on behavior differences and gotchas.",
+      "body": "Translate the code below from {{from_lang}} to {{to_lang}}.\n\nPurpose of the code and how it is used: {{purpose}}\nTarget environment (versions, libraries I prefer or must avoid): {{environment}}\n\nSource code:\n{{code}}\n\nRequirements:\n- Produce idiomatic {{to_lang}}, not a line-by-line transliteration. Use the target language's standard library, naming conventions, error handling style and data structures.\n- Preserve behavior exactly, including edge cases. Where languages differ on integer overflow, string encoding, mutability, null handling, sorting stability, floating point formatting, concurrency or iteration order, handle it deliberately.\n- Keep the public interface as close as it can reasonably be, and tell me where I must change it.\n- Do not add features or remove checks.\n\nOutput:\n1. The translated code in one block.\n2. A table of semantic differences that mattered: construct in the source, what I did in the target, and why.\n3. Libraries or dependencies I need to add.\n4. Three test cases (inputs and expected outputs) I can run on both versions to confirm they agree.\n5. Anything you were unsure about, flagged.",
+      "variables": [
+        {
+          "key": "from_lang",
+          "label": "From",
+          "type": "text",
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "to_lang",
+          "label": "To",
+          "type": "text",
+          "default": "Go",
+          "required": false
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose and usage",
+          "type": "text",
+          "default": "A helper that groups log lines into sessions by user id and a 30 minute inactivity gap",
+          "required": false
+        },
+        {
+          "key": "environment",
+          "label": "Environment",
+          "type": "text",
+          "default": "Go 1.22, standard library only",
+          "required": false
+        },
+        {
+          "key": "code",
+          "label": "Source code",
+          "type": "long",
+          "required": true,
+          "help": "Paste the code to translate."
+        }
+      ],
+      "exampleOutput": "```go\ntype Event struct {\n    UserID string\n    At     time.Time\n    Line   string\n}\n\nfunc GroupSessions(events []Event, gap time.Duration) map[string][][]Event {\n    sort.SliceStable(events, func(i, j int) bool { return events[i].At.Before(events[j].At) })\n    out := make(map[string][][]Event)\n    last := make(map[string]time.Time)\n    for _, e := range events {\n        sessions := out[e.UserID]\n        if prev, ok := last[e.UserID]; !ok || e.At.Sub(prev) > gap {\n            sessions = append(sessions, nil)\n        }\n        sessions[len(sessions)-1] = append(sessions[len(sessions)-1], e)\n        out[e.UserID] = sessions\n        last[e.UserID] = e.At\n    }\n    return out\n}\n```\n\n**Differences that mattered**\n| Source | Target | Why |\n|---|---|---|\n| `defaultdict(list)` | map plus explicit append | Go has no default values for missing keys |\n| `sorted(events, key=...)` | `sort.SliceStable` | Python's sort is stable; Go's `sort.Slice` is not |\n| `datetime` subtraction | `Time.Sub` | Returns `Duration` |\n\n**Dependencies:** none.\n\n**Tests:** empty input returns an empty map; two events 30m01s apart give two sessions; unordered input is sorted first.\n\n**Unsure:** the original mutates the input list order; mine sorts in place too, so callers see the same side effect.",
+      "notes": "Calling out semantic differences, such as sort stability and default values, is where translations usually go wrong. Running the three cross-check tests on both versions gives real confidence.",
+      "useCase": "rewrite",
+      "tags": [
+        "refactoring",
+        "code-generation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-ci-failure-diagnosis",
+      "title": "Diagnose a failing CI pipeline",
+      "description": "Find why a build or pipeline fails in CI but not locally, and get the exact change to fix it.",
+      "body": "My CI pipeline is failing. Help me find the cause and the fix.\n\nCI system: {{ci}}\nProject type and stack: {{stack}}\nDoes it pass locally?: {{local}}\nWhat changed since the last green run: {{changes}}\n\nPipeline config:\n{{config}}\n\nLog output around the failure (include some lines before the first error):\n{{log}}\n\nPlease:\n1. Find the first real error in the log, ignoring the cascade of follow-on errors, and quote it. Say which step failed and why.\n2. List the plausible causes ranked, considering differences between my machine and CI: clean checkout, cached dependencies, tool and OS versions, environment variables and secrets, file permissions and case sensitivity, available memory and time limits, network access, and test ordering.\n3. For the top cause, give the exact config or code change as a diff, and a way to reproduce it locally (for example a container command that mimics the CI image).\n4. Suggest how to confirm the fix without waiting for many full runs.\n5. Point out any unrelated problems in the config that I should fix: missing cache keys, unpinned versions, steps that run twice, or unnecessary privileges.\n\nIf the log is cut off or the cause is ambiguous, tell me exactly what to add to the log or which debug flag to turn on.",
+      "variables": [
+        {
+          "key": "ci",
+          "label": "CI system",
+          "type": "select",
+          "options": [
+            "GitHub Actions",
+            "GitLab CI",
+            "CircleCI",
+            "Jenkins",
+            "Azure Pipelines",
+            "Bitbucket Pipelines"
+          ],
+          "default": "GitHub Actions",
+          "required": false
+        },
+        {
+          "key": "stack",
+          "label": "Project and stack",
+          "type": "text",
+          "default": "Node 20 monorepo with pnpm",
+          "required": false
+        },
+        {
+          "key": "local",
+          "label": "Passes locally?",
+          "type": "text",
+          "default": "Yes, on macOS",
+          "required": false
+        },
+        {
+          "key": "changes",
+          "label": "What changed",
+          "type": "text",
+          "default": "Upgraded a dependency and added a new test file",
+          "required": false
+        },
+        {
+          "key": "config",
+          "label": "Pipeline config",
+          "type": "long",
+          "required": true,
+          "help": "Paste the workflow or pipeline file."
+        },
+        {
+          "key": "log",
+          "label": "Log output",
+          "type": "long",
+          "required": true,
+          "help": "Paste the failing step with context."
+        }
+      ],
+      "exampleOutput": "**First real error:** step \"Test\" failed with `Cannot find module './Utils'` imported from `src/format.test.ts`. The following 40 errors are consequences.\n\n**Ranked causes**\n1. File-name case mismatch (high). The file is `utils.ts`, the import says `./Utils`. macOS is case-insensitive, Linux CI is not, which also fits \"passes locally on macOS\".\n2. Stale cache (low). Cache key ignores the lockfile, but the error is not dependency related.\n\n**Fix**\n```diff\n- import { fmt } from \"./Utils\";\n+ import { fmt } from \"./utils\";\n```\nReproduce locally:\n```bash\ndocker run --rm -v \"$PWD\":/app -w /app node:20 sh -c \"corepack enable && pnpm i --frozen-lockfile && pnpm test\"\n```\n**Confirm quickly:** run only the failing test file in the container before pushing.\n\n**Other issues in the config**\n- The cache key is `deps-v1`; use `${{ hashFiles('pnpm-lock.yaml') }}`.\n- `pnpm install` runs in both the build and test jobs; share the install via cache.\n- Node version is `20`; pin it to a minor version for repeatable builds.",
+      "notes": "Ranking differences between your machine and CI covers most real-world causes, and the container reproduction command saves many push-and-wait cycles. Paste more context lines for a surer diagnosis.",
+      "useCase": "analyze",
+      "tags": [
+        "devops",
+        "debugging"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-database-schema-design",
+      "title": "Design a database schema from requirements",
+      "description": "Turn feature requirements into a normalized schema with keys, constraints, indexes and the tradeoffs explained.",
+      "body": "Design a {{database}} schema for the following application.\n\nWhat the application does: {{app}}\nCore requirements and rules:\n{{requirements}}\nExpected scale and main query patterns: {{scale}}\n\nDeliver:\n1. Entities and relationships: a short list in plain words, including cardinality (one-to-many, many-to-many) and anything optional.\n2. Schema as runnable DDL, with primary keys, foreign keys and their ON DELETE behavior, NOT NULL and CHECK constraints, unique constraints, sensible types (for money, timestamps with time zones, identifiers, enums) and default values.\n3. Indexes: justified by the query patterns I gave. Do not add indexes without naming the query they serve.\n4. Decisions and tradeoffs: normalization choices, where denormalization is worth it, soft delete versus hard delete, audit history, multi-tenancy handling.\n5. Five example queries for the most important access patterns.\n6. Evolution: which likely future requirements would be painful with this design, and how to prepare for them.\n7. Questions: ambiguities in my requirements that would change the design.\n\nUse clear snake_case names. Enforce rules in the database rather than relying on application code whenever the database can express them.",
+      "variables": [
+        {
+          "key": "database",
+          "label": "Database",
+          "type": "select",
+          "options": [
+            "PostgreSQL",
+            "MySQL",
+            "SQLite",
+            "SQL Server",
+            "MongoDB"
+          ],
+          "default": "PostgreSQL",
+          "required": false
+        },
+        {
+          "key": "app",
+          "label": "Application",
+          "type": "text",
+          "default": "A booking system for a small chain of climbing gyms",
+          "required": false
+        },
+        {
+          "key": "requirements",
+          "label": "Requirements",
+          "type": "long",
+          "default": "Members buy passes (single entry, 10-visit, monthly). Classes have capacity limits and instructors. A member can book a class if they have a valid pass. Cancellations up to 2 hours before are free. Each gym has its own opening hours.",
+          "required": false
+        },
+        {
+          "key": "scale",
+          "label": "Scale and queries",
+          "type": "text",
+          "default": "5 gyms, 20k members; most common queries are today's class roster and a member's remaining visits",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Entities:** gym 1-N class_session; instructor 1-N class_session (optional); member 1-N pass; member N-N class_session via booking; each booking is paid by one pass. Gym opening hours are 1-N rows per gym.\n\n```sql\nCREATE TABLE gym (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name text NOT NULL UNIQUE, timezone text NOT NULL);\nCREATE TABLE gym_hours (gym_id bigint NOT NULL REFERENCES gym(id) ON DELETE CASCADE, weekday smallint NOT NULL CHECK (weekday BETWEEN 0 AND 6), opens time NOT NULL, closes time NOT NULL, PRIMARY KEY (gym_id, weekday), CHECK (closes > opens));\nCREATE TABLE member (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, email text NOT NULL UNIQUE, full_name text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());\nCREATE TABLE instructor (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, full_name text NOT NULL);\nCREATE TABLE class_session (\n  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  gym_id bigint NOT NULL REFERENCES gym(id),\n  instructor_id bigint REFERENCES instructor(id) ON DELETE SET NULL,\n  starts_at timestamptz NOT NULL,\n  capacity int NOT NULL CHECK (capacity > 0));\nCREATE TABLE pass (\n  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  member_id bigint NOT NULL REFERENCES member(id),\n  kind text NOT NULL CHECK (kind IN ('single','ten_visit','monthly')),\n  visits_left int CHECK (visits_left >= 0),\n  valid_until date,\n  CHECK ((kind = 'monthly') = (valid_until IS NOT NULL AND visits_left IS NULL)));\nCREATE TABLE booking (\n  class_session_id bigint NOT NULL REFERENCES class_session(id),\n  member_id bigint NOT NULL REFERENCES member(id),\n  pass_id bigint NOT NULL REFERENCES pass(id),\n  booked_at timestamptz NOT NULL DEFAULT now(),\n  cancelled_at timestamptz,\n  PRIMARY KEY (class_session_id, member_id));\nCREATE INDEX idx_session_gym_start ON class_session (gym_id, starts_at); -- today's roster\nCREATE INDEX idx_pass_member ON pass (member_id); -- remaining visits\n```\n\n**Tradeoffs:** capacity is enforced in a transaction using `SELECT ... FOR UPDATE` on the session row. Cancellations set `cancelled_at` (kept for audit); refunds are allowed only if `starts_at - now() >= interval '2 hours'`.\n\n**Key queries:** roster = join booking and member where `class_session_id = $1 AND cancelled_at IS NULL`; remaining visits = `SELECT sum(visits_left) FROM pass WHERE member_id = $1`.\n\n**Questions:** can one pass cover several gyms? Is there a waitlist?",
+      "notes": "Requiring every index to name the query it serves prevents speculative indexing. The final questions surface the unclear requirements that most often cause redesigns.",
+      "useCase": "generate",
+      "tags": [
+        "sql"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-technical-design-doc",
+      "title": "Technical design document draft",
+      "description": "Draft a design doc with goals, options, a recommendation and risks, ready for team review.",
+      "body": "Draft a technical design document for the following.\n\nProblem or feature: {{problem}}\nBackground and current system: {{background}}\nConstraints (deadline, team, budget, tech, compliance): {{constraints}}\nOptions I am already considering: {{options}}\nAudience: {{audience}}\n\nStructure the document with:\n1. Summary: three sentences, readable alone.\n2. Context and problem: why this matters now and what happens if we do nothing.\n3. Goals and non-goals: measurable goals; non-goals that prevent scope arguments.\n4. Proposed design: components, data flow, key interfaces or data models, and a simple text diagram if useful.\n5. Alternatives considered: at least two, including my options, each with an honest comparison and the reason it was not chosen.\n6. Key tradeoffs and open questions: what we are giving up, and the questions reviewers must answer.\n7. Rollout plan: phases, feature flags, migration, backward compatibility and how to roll back.\n8. Testing and observability: how we will know it works in production, with specific metrics and alerts.\n9. Risks and mitigations.\n10. Effort estimate in rough ranges with the assumptions behind them.\n\nBe specific and direct. Where my input lacks a fact you need, write the assumption in a bold \"Assumption:\" line rather than inventing details. Do not pad sections that do not apply.",
+      "variables": [
+        {
+          "key": "problem",
+          "label": "Problem or feature",
+          "type": "text",
+          "default": "Let customers receive webhooks when an order status changes",
+          "required": false
+        },
+        {
+          "key": "background",
+          "label": "Background",
+          "type": "long",
+          "default": "Monolith with Postgres; order status changes happen in several code paths; no outbound event system yet.",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "Two engineers, six weeks, must not slow down checkout",
+          "required": false
+        },
+        {
+          "key": "options",
+          "label": "Options considered",
+          "type": "text",
+          "default": "Call HTTP endpoints inline; transactional outbox with a worker; managed webhook service",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "select",
+          "options": [
+            "Engineering team",
+            "Engineering plus product",
+            "Senior architects"
+          ],
+          "default": "Engineering team",
+          "required": false
+        }
+      ],
+      "exampleOutput": "# Design: Order status webhooks\n\n**Summary.** We will send signed HTTP webhooks when an order changes status, using a transactional outbox so events are never lost and checkout latency is unaffected. A worker delivers events with retries. Estimated 4-5 weeks for two engineers.\n\n**Goals:** deliver 99.9% of events within 30 s; no checkout latency increase above 5 ms. **Non-goals:** a customer-facing event log UI; event types beyond order status.\n\n**Proposed design.** In the same transaction as the status update, insert a row into `outbox_events`. A worker polls (`FOR UPDATE SKIP LOCKED`), signs the payload with HMAC-SHA256 and POSTs to each subscribed endpoint.\n\n**Alternatives**\n| Option | Pros | Cons |\n|---|---|---|\n| Inline HTTP calls | Simplest | Slow endpoints block checkout; events lost on crash |\n| Outbox + worker (chosen) | Reliable, isolated | New worker to run |\n| Managed service | Fast to ship | Cost, data leaves our network |\n\n**Open questions:** retry schedule and when to disable a failing endpoint.\n\n**Rollout:** behind a flag per account; start with internal accounts.\n\n**Observability:** delivery latency, failure rate, outbox depth with alert at 1,000 rows.\n\n**Assumption:** peak is under 50 events per second.",
+      "notes": "The mandatory alternatives and non-goals sections force real tradeoff thinking, and marked assumptions keep invented details visible. Paste real schemas or code in the background for a more accurate design.",
+      "useCase": "plan",
+      "tags": [
+        "software-design",
+        "documentation"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-dependency-upgrade-plan",
+      "title": "Plan a major dependency upgrade",
+      "description": "Prepare for a major library or framework upgrade: breaking changes, code to update and a safe rollout order.",
+      "body": "Help me plan an upgrade of {{package}} from {{from_version}} to {{to_version}}.\n\nProject: {{project}}\nHow we use it (key features, patterns, wrappers): {{usage}}\nOther related dependencies and runtime versions: {{related}}\nTest coverage and release process: {{process}}\n\nPlease:\n1. Summarize the breaking changes and deprecations between these versions that are likely to affect a project like mine. For each, say what I should search for in my code and what to change it to. Distinguish what you are confident about from what you recall less certainly, and tell me to confirm against the official changelog and migration guide before relying on those parts.\n2. Check compatibility: required runtime, peer dependencies, plugins and tooling that may need upgrading first or at the same time.\n3. Give the upgrade order: whether to go in one jump or via intermediate versions, and what to do before upgrading (cleanup, codemods, deprecation fixes on the old version).\n4. Provide a checklist of grep patterns or commands to find affected code.\n5. Define the verification plan: tests to run, manual checks, performance or bundle size comparison, and what to watch after release.\n6. Rollback strategy and a split of the work into reviewable pull requests.\n7. Estimate the effort and the top three risks.\n\nDo not invent version numbers, option names or APIs. If you are unsure whether something changed, say so.",
+      "variables": [
+        {
+          "key": "package",
+          "label": "Package",
+          "type": "text",
+          "default": "React Router",
+          "required": false
+        },
+        {
+          "key": "from_version",
+          "label": "From version",
+          "type": "text",
+          "default": "5",
+          "required": false
+        },
+        {
+          "key": "to_version",
+          "label": "To version",
+          "type": "text",
+          "default": "7",
+          "required": false
+        },
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "default": "Single-page app with 120 routes, TypeScript, Vite",
+          "required": false
+        },
+        {
+          "key": "usage",
+          "label": "How we use it",
+          "type": "long",
+          "default": "Route config in one file; nested routes; useHistory in about 40 components; custom Prompt wrapper for unsaved changes.",
+          "required": false
+        },
+        {
+          "key": "related",
+          "label": "Related dependencies",
+          "type": "text",
+          "default": "React 18, Vite 5, Node 20",
+          "required": false
+        },
+        {
+          "key": "process",
+          "label": "Tests and release",
+          "type": "text",
+          "default": "Moderate unit tests, no end-to-end tests; weekly releases",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Breaking changes likely to matter (confirm in the official migration guide)**\n| Area | Search for | Change |\n|---|---|---|\n| History hook | `useHistory` | Use `useNavigate`; `history.push(x)` becomes `navigate(x)` |\n| Switch | `<Switch>` | Replaced by `<Routes>`; routes use `element` instead of `component` |\n| Prompt | custom `Prompt` wrapper | Replace with `useBlocker`; behavior differs, retest by hand |\n| Relative paths | nested routes with absolute links | Link resolution is relative by default now |\n\nLess certain: data router APIs and future flags. Check the guide.\n\n**Order:** go to the last 6.x release first, fix deprecation warnings there, then move to 7. Do not jump straight from 5.\n\n**Find affected code**\n```bash\ngrep -rn \"useHistory\\|<Switch\\|component=\" src | wc -l\n```\n\n**Verification:** unit tests plus a manual pass over unsaved-changes flows, since there are no end-to-end tests. Add smoke tests for the five most used routes first.\n\n**PRs:** (1) add smoke tests, (2) 5 to 6, (3) 6 to 7.\n\n**Risks:** the unsaved-changes wrapper, relative link behavior, plugin compatibility with Vite. Effort: 3-5 days.",
+      "notes": "Telling the model to separate confident knowledge from uncertain recall, and to point you to the official guide, reduces fabricated API details. Splitting the work into small PRs keeps the upgrade reviewable.",
+      "useCase": "plan",
+      "tags": [
+        "refactoring",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-coding-interview-coach",
+      "title": "Coding interview practice coach",
+      "description": "Practice algorithm problems with progressive hints, complexity analysis and feedback, instead of getting spoiled with the answer.",
+      "body": "Act as a coding interview coach. I want to practice with a {{difficulty}} {{topic}} problem in {{language}}.\n\nMy current level and goals: {{level}}\n\nHow the session works:\n1. Give me one original problem with a clear statement, input and output examples, and constraints. Do not show a solution.\n2. Wait for me to respond. I may ask clarifying questions; answer them as an interviewer would, without volunteering hints.\n3. When I share my approach, assess it: is the idea correct, what are the time and space complexity, and what edge cases did I miss? Do not write the solution for me.\n4. If I am stuck, give hints in levels, one level at a time and only when I ask: level 1 a nudge about the key observation, level 2 the approach in one sentence, level 3 a pseudocode outline.\n5. When I submit code, review it as an interviewer would: correctness against edge cases (trace one example), complexity, naming and structure, and how clearly I explained my thinking.\n6. After I finish, show an optimal solution in {{language}}, compare it with mine, and give a short list of related problems to practice and the pattern to remember.\n\nKeep your replies short, and stay in the coaching role until I say \"end session\". Start now with the problem.",
+      "variables": [
+        {
+          "key": "difficulty",
+          "label": "Difficulty",
+          "type": "select",
+          "options": [
+            "Easy",
+            "Medium",
+            "Hard"
+          ],
+          "default": "Medium",
+          "required": false
+        },
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "default": "Sliding window and hash maps",
+          "required": false
+        },
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "Python",
+          "required": false
+        },
+        {
+          "key": "level",
+          "label": "Level and goals",
+          "type": "text",
+          "default": "Two years of experience, preparing for mid-level interviews in 3 weeks",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Problem: Longest Calm Stretch**\n\nYou are given an array of integers `readings` representing a sensor's measurements, and an integer `k`. A stretch of consecutive readings is *calm* if the difference between its largest and smallest reading is at most `k`.\n\nReturn the length of the longest calm stretch.\n\n**Examples**\n- `readings = [4, 6, 5, 9, 8], k = 2` returns `3` (the stretch `[4, 6, 5]`)\n- `readings = [1, 1, 1], k = 0` returns `3`\n- `readings = [], k = 3` returns `0`\n\n**Constraints**\n- `0 <= len(readings) <= 100000`\n- `-10^9 <= readings[i] <= 10^9`\n- `0 <= k <= 10^9`\n\nTake your time. Tell me your first thoughts, ask any clarifying questions, and share your approach before you write code. I will not provide hints unless you ask for one.",
+      "notes": "Hint levels you must ask for keep you in the productive struggle, which is what real interviews test. Say end session to get the full comparison and a practice list.",
+      "useCase": "tutor",
+      "tags": [
+        "interview-prep",
+        "code-generation",
+        "learning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "coding-simplify-complex-code",
+      "title": "Simplify and clean up a complicated function",
+      "description": "Make tangled code easier to read and change without altering behavior, with every edit explained.",
+      "body": "Simplify the {{language}} code below so it is easier to read, test and change. Behavior must stay exactly the same.\n\nWhat the code is for: {{purpose}}\nPriorities: {{priority}}\nStyle constraints (linters, team conventions, language version): {{style}}\n\nCode:\n{{code}}\n\nProcess:\n1. First, in a few bullets, state what the code does, so I can confirm you understood it. List its inputs, outputs, side effects and error behavior.\n2. Identify the specific sources of complexity: deep nesting, long functions, duplicated logic, unclear names, mixed responsibilities, boolean flags, hidden state, magic values, and error handling that obscures the main path.\n3. Show the simplified version in full. Prefer early returns, small well-named functions, clear data structures, and removing dead code. Do not introduce new abstractions, patterns or dependencies that are heavier than the problem.\n4. Give a change log: each edit, its reason, and a risk note if any edit could alter behavior in an edge case (such as null handling, ordering, or short-circuit evaluation).\n5. List the tests I should run or write to prove nothing changed, naming the exact inputs that exercise the riskiest edits.\n\nIf you spot a real bug, do not silently fix it. Keep the behavior, point out the bug separately and show the one-line fix.",
+      "variables": [
+        {
+          "key": "language",
+          "label": "Language",
+          "type": "select",
+          "options": [
+            "TypeScript",
+            "JavaScript",
+            "Python",
+            "Go",
+            "Java",
+            "C#",
+            "Rust",
+            "Ruby",
+            "PHP",
+            "Kotlin",
+            "Swift",
+            "C++"
+          ],
+          "default": "JavaScript",
+          "required": false
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "Calculates shipping cost for an order based on weight, destination and membership",
+          "required": false
+        },
+        {
+          "key": "priority",
+          "label": "Priority",
+          "type": "select",
+          "options": [
+            "Readability",
+            "Testability",
+            "Fewer lines",
+            "Easier to extend"
+          ],
+          "default": "Readability",
+          "required": false
+        },
+        {
+          "key": "style",
+          "label": "Style constraints",
+          "type": "text",
+          "default": "ES2022, ESLint recommended, no new dependencies",
+          "required": false
+        },
+        {
+          "key": "code",
+          "label": "Code",
+          "type": "long",
+          "required": true,
+          "help": "Paste the function or module."
+        }
+      ],
+      "exampleOutput": "**Understanding:** `shippingCost(order, user)` returns a number. Inputs: weight in kg, country, membership. It returns 0 for members on orders over 50, charges per kg with a surcharge for non-domestic orders, and caps cost at 80. No side effects; throws on negative weight.\n\n**Sources of complexity:** four nested ifs; the member check repeated twice; magic numbers 50, 80, 4.5; variable `x` reused for two meanings.\n\n**Simplified**\n```js\nconst FREE_SHIPPING_MIN = 50;\nconst MAX_COST = 80;\nconst RATE_PER_KG = 4.5;\nconst INTERNATIONAL_SURCHARGE = 12;\n\nfunction shippingCost(order, user) {\n  if (order.weightKg < 0) throw new Error(\"negative weight\");\n  if (user.isMember && order.total > FREE_SHIPPING_MIN) return 0;\n\n  const base = order.weightKg * RATE_PER_KG;\n  const surcharge = order.country === \"US\" ? 0 : INTERNATIONAL_SURCHARGE;\n  return Math.min(base + surcharge, MAX_COST);\n}\n```\n\n**Change log**\n- Flattened nesting with early returns (no behavior change).\n- Named constants (none).\n- Risk: original checked `order.total >= 50` in one branch and `> 50` in another; I kept the `>` version. Confirm which is right.\n\n**Possible bug:** weight 0 charges only the surcharge; kept as is.\n\n**Tests:** total exactly 50 as member; weight 0 international; weight 30 domestic (cap); negative weight.",
+      "notes": "Restating the behavior first lets you catch misunderstandings before any code changes. Reporting bugs separately keeps a cleanup from quietly altering behavior.",
+      "useCase": "rewrite",
+      "tags": [
+        "refactoring",
+        "code-review"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}
