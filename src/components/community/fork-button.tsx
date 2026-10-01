@@ -1,9 +1,15 @@
-// PLACEHOLDER owned by community-ui.
 import Link from "next/link";
+import { GitFork } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { signInHref } from "./helpers";
 
 export interface ForkButtonProps { shortId: string; signedIn: boolean }
 
 export function ForkButton({ shortId, signedIn }: ForkButtonProps) {
-  const href = signedIn ? `/submit?fork=${shortId}` : `/sign-in?next=${encodeURIComponent(`/submit?fork=${shortId}`)}`;
-  return <Link href={href} className="text-sm text-primary underline-offset-4 hover:underline">Fork</Link>;
+  const target = `/submit?fork=${encodeURIComponent(shortId)}`;
+  return (
+    <Link href={signedIn ? target : signInHref(target)} className={buttonVariants({ variant: "outline" })}>
+      <GitFork /> Fork
+    </Link>
+  );
 }
