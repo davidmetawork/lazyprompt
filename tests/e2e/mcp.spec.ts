@@ -152,8 +152,8 @@ test.describe("OAuth sign-in and consent (browser)", () => {
     await page.waitForURL(/\/sign-in\/check-email/);
     await page.goto(await waitForMagicLink(email, since));
     await expect(page).toHaveURL(/\/oauth\/consent\?/);
-    await expect(page.getByRole("heading", { name: /connect e2e connector to lazyprompt/i })).toBeVisible();
-    await expect(page.getByText("127.0.0.1:9911")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /connect e2e connector.*to lazyprompt/i })).toBeVisible();
+    await expect(page.getByText("127.0.0.1:9911").first()).toBeVisible();
     await expect(page.getByText(/rate prompts and save them/i)).toBeVisible();
 
     // 3. approve -> redirected to the client's redirect URI with a code and our state

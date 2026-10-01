@@ -24,9 +24,21 @@ describe("RSS", () => {
 });
 
 describe("degradation when the server calls throw", () => {
-  it("feed returns an empty valid channel", async () => {
+  it("feed rethrows database errors at runtime so the last good ISR copy keeps being served", async () => {
+    queries.listPrompts.mockRejectedValue(new Error("db down"));
+    await expect(feedGet()).rejects.toThrow("db down");
+  });
+
+  it("llms.txt rethrows database errors at runtime", async () => {
+    taxonomy.listCategories.mockRejectedValue(new Error("db down"));
+    await expect(llmsGet()).rejects.toThrow("db down");
+  });
+
+  it("feed returns an empty valid channel when the production build has no database", async () => {
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
     queries.listPrompts.mockRejectedValue(new Error("db down"));
     const res = await feedGet();
+    vi.unstubAllEnvs();
     expect(res.headers.get("content-type")).toContain("application/rss+xml");
     const xml = await res.text();
     expect(xml).toContain("<channel>");
@@ -64,9 +76,11 @@ describe("degradation when the server calls throw", () => {
     expect(urls.some((u) => u.endsWith("/t/small"))).toBe(false);
   });
 
-  it("llms.txt falls back to the static category list and links /apps", async () => {
+  it("llms.txt falls back to the static category list and links /apps when the production build has no database", async () => {
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
     taxonomy.listCategories.mockRejectedValue(new Error("nope"));
     const text = await (await llmsGet()).text();
+    vi.unstubAllEnvs();
     expect(text).toContain("/c/coding");
     expect(text).toMatch(/\/apps/);
   });

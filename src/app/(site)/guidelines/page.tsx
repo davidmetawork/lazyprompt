@@ -19,7 +19,7 @@ export default function GuidelinesPage() {
       supportEmail={SUPPORT_EMAIL}
     >
       <PolicySection id="welcome" title="What we welcome">
-        <p>Practical, reusable prompts with clear variables, a sensible description and, ideally, an example of the output. Tell people which models you tested it on and why it works.</p>
+        <p>Practical, reusable prompts with clear variables, a sensible description and, ideally, an example of the output. Explain why it works and share any tips for getting the best results.</p>
       </PolicySection>
       <PolicySection id="not-allowed" title="What is not allowed">
         <ul>
