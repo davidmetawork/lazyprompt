@@ -31,4 +31,11 @@ describe("SignInForm", () => {
     }));
     expect(push).toHaveBeenCalledWith("/sign-in/check-email?email=a%40b.co&next=%2Fsubmit");
   });
+
+  it("hides the email form when email sign-in is unavailable", () => {
+    render(<SignInForm googleEnabled githubEnabled={false} emailEnabled={false} />);
+    expect(screen.getByRole("button", { name: /google/i })).toBeTruthy();
+    expect(screen.queryByLabelText("Email")).toBeNull();
+    expect(screen.queryByText(/or use email/i)).toBeNull();
+  });
 });

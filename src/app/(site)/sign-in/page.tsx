@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { canSendMagicLink } from "@/auth/email";
 import { getViewer } from "@/auth/viewer";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { Container } from "@/components/layout/container";
@@ -18,6 +19,8 @@ export default async function SignInPage(props: PageProps<"/sign-in">) {
 
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
   const githubEnabled = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
+  const emailEnabled = canSendMagicLink();
+  const anyMethod = googleEnabled || githubEnabled || emailEnabled;
 
   // Better Auth overwrites ?error= with its own code (INVALID_TOKEN, access_denied, ...), so `from` carries which flow failed.
   const from = typeof sp.from === "string" ? sp.from : sp.error;
@@ -36,7 +39,14 @@ export default async function SignInPage(props: PageProps<"/sign-in">) {
         <p role="alert" className="mt-6 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">{errorMessage}</p>
       ) : null}
       <div className="mt-8">
-        <SignInForm next={nextRaw} googleEnabled={googleEnabled} githubEnabled={githubEnabled} />
+        {anyMethod ? (
+          <SignInForm next={nextRaw} googleEnabled={googleEnabled} githubEnabled={githubEnabled} emailEnabled={emailEnabled} />
+        ) : (
+          <p role="status" className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            Sign-in is temporarily unavailable while we finish setting up accounts. You can still browse, fill in and
+            copy every prompt.
+          </p>
+        )}
       </div>
     </Container>
   );

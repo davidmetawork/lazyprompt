@@ -29,8 +29,8 @@ function GoogleIcon() {
 }
 
 export function SignInForm({
-  next, googleEnabled, githubEnabled,
-}: { next?: string; googleEnabled: boolean; githubEnabled: boolean }) {
+  next, googleEnabled, githubEnabled, emailEnabled = true,
+}: { next?: string; googleEnabled: boolean; githubEnabled: boolean; emailEnabled?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
@@ -75,13 +75,15 @@ export function SignInForm({
               <GithubIcon /> Continue with GitHub
             </Button>
           ) : null}
-          <div className="relative py-2 text-center text-xs text-muted-foreground">
-            <span className="relative z-10 bg-background px-2">or use email</span>
-            <span className="absolute inset-x-0 top-1/2 h-px bg-border" />
-          </div>
+          {emailEnabled ? (
+            <div className="relative py-2 text-center text-xs text-muted-foreground">
+              <span className="relative z-10 bg-background px-2">or use email</span>
+              <span className="absolute inset-x-0 top-1/2 h-px bg-border" />
+            </div>
+          ) : null}
         </div>
       ) : null}
-      <form onSubmit={magic} className="space-y-3">
+      {emailEnabled ? <form onSubmit={magic} className="space-y-3">
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input id="email" name="email" type="email" required autoComplete="email" placeholder="you@example.com"
@@ -91,7 +93,8 @@ export function SignInForm({
           {pending ? <Loader2 className="animate-spin" /> : <Mail />} Email me a sign-in link
         </Button>
         {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-      </form>
+      </form> : null}
+      {!emailEnabled && error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
     </div>
   );
 }
