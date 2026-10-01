@@ -26,6 +26,7 @@ export const renderPromptInput = z.object({
   id: promptId,
   values: z.record(z.string().min(1).max(64), z.string().max(4000))
     .refine((v) => Object.keys(v).length <= 20, "At most 20 values")
+    .default({})
     .describe("Variable values keyed by variable key, as listed by get_prompt. Leave out variables the user has not provided."),
 });
 

@@ -204,4 +204,59 @@ describe("renderTemplate", () => {
     const r = renderTemplate("a {{name}} b \\{{c}} d", defs, {});
     expect(r.segments.map((s) => s.text).join("")).toBe(r.text);
   });
+  it("never reads Object.prototype for reserved variable keys", () => {
+    for (const key of ["constructor", "__proto__", "toString", "hasOwnProperty", "valueOf"]) {
+      const body = `Hello {{${key}}}`;
+      const bare = renderTemplate(body, [], {});
+      expect(bare.text).toBe(`Hello [${labelFromKey(key)}]`);
+      expect(bare.missing).toEqual([key]);
+      expect(renderTemplate(body, [def({ key })], {}).text).toBe(`Hello [${labelFromKey(key)}]`);
+    }
+    expect(renderTemplate("Hello {{constructor}}", [], { constructor: "x" } as Record<string, string>).text).toBe("Hello x");
+    const own = JSON.parse('{"__proto__": "y"}') as Record<string, string>;
+    expect(renderTemplate("Hello {{__proto__}}", [], own).text).toBe("Hello y");
+  });
+
+  it("ignores non-string own values instead of crashing", () => {
+    const bad = { name: 5 } as unknown as Record<string, string>;
+    expect(renderTemplate("Hi {{name}}", defs, bad).text).toBe("Hi [Name]");
+  });
+});
+
+describe("renderTemplate placeholders: empty", () => {
+  const optional = def({ key: "extra", required: false });
+  const optionalDefault = def({ key: "tone", required: false, default: "warm" });
+  const required = def({ key: "name" });
+
+  it("renders an unfilled optional variable without a default as nothing", () => {
+    const r = renderTemplate("Hi {{name}}. Notes: {{extra}}", [required, optional], { name: "Sam" }, { placeholders: "empty" });
+    expect(r.text).toBe("Hi Sam. Notes: ");
+    expect(r.missing).toEqual([]);
+    expect(renderTemplate("Notes: {{extra}}", [optional], {}).text).toBe("Notes: [Extra]");
+  });
+
+  it("an optional variable with a default still uses the default", () => {
+    expect(renderTemplate("Tone: {{tone}}", [optionalDefault], {}, { placeholders: "empty" }).text).toBe("Tone: warm");
+    expect(renderTemplate("{{tone}}", [optionalDefault], { tone: "formal" }, { placeholders: "empty" }).text).toBe("formal");
+  });
+
+  it("collapses lines left blank by the substitution but keeps authored blank lines", () => {
+    const body = "Intro\n{{extra}}\n\nOutro\n  {{extra}}  \nEnd";
+    const r = renderTemplate(body, [optional], {}, { placeholders: "empty" });
+    expect(r.text).toBe("Intro\n\nOutro\nEnd");
+    expect(r.segments.map((s) => s.text).join("")).toBe(r.text);
+    const filled = renderTemplate("A\n{{extra}}\nB", [optional], { extra: "mid" }, { placeholders: "empty" });
+    expect(filled.text).toBe("A\nmid\nB");
+  });
+
+  it("collapses a trailing blank line and keeps lines that still hold other text", () => {
+    expect(renderTemplate("A\n{{extra}}", [optional], {}, { placeholders: "empty" }).text).toBe("A");
+    expect(renderTemplate("A\nNotes: {{extra}}\nB", [optional], {}, { placeholders: "empty" }).text).toBe("A\nNotes: \nB");
+  });
+
+  it("still brackets unfilled REQUIRED variables and reports them missing", () => {
+    const r = renderTemplate("Hi {{name}}\n{{extra}}", [required, optional], {}, { placeholders: "empty" });
+    expect(r.text).toBe("Hi [Name]");
+    expect(r.missing).toEqual(["name"]);
+  });
 });

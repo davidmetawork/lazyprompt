@@ -41,13 +41,19 @@ describe("render_prompt input", () => {
     expect(renderPromptInput.safeParse({ id: "abc1234", values: {} }).success).toBe(true);
   });
 
-  it("rejects too many values, oversized values, non-string values and a missing values map", () => {
+  it("treats an omitted values map as empty (a prompt without variables needs no values)", () => {
+    const parsed = renderPromptInput.safeParse({ id: "abc1234" });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.values).toEqual({});
+  });
+
+  it("rejects too many values, oversized values, non-string values and a null values map", () => {
     const twentyOne = Object.fromEntries(Array.from({ length: 21 }, (_, i) => [`k${i}`, "v"]));
     expect(renderPromptInput.safeParse({ id: "abc1234", values: twentyOne }).success).toBe(false);
     expect(renderPromptInput.safeParse({ id: "abc1234", values: { a: "x".repeat(4001) } }).success).toBe(false);
     expect(renderPromptInput.safeParse({ id: "abc1234", values: { a: 5 } }).success).toBe(false);
     expect(renderPromptInput.safeParse({ id: "abc1234", values: { "": "x" } }).success).toBe(false);
-    expect(renderPromptInput.safeParse({ id: "abc1234" }).success).toBe(false);
+    expect(renderPromptInput.safeParse({ id: "abc1234", values: null }).success).toBe(false);
   });
 });
 

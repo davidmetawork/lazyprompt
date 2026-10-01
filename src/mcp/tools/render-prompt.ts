@@ -5,7 +5,7 @@ import { renderTemplate } from "@/lib/template";
 import { recordUsageEvent } from "@/server/usage";
 import { buildOpenLinks } from "../open-links";
 import { renderPromptInput } from "../schemas";
-import { PROMPT_NOT_FOUND, READ_ANNOTATIONS, errorFrom, errorResult, findPublishedPrompt, okResult, requestIp, requestUserAgent, toolMeta } from "./shared";
+import { PROMPT_NOT_FOUND, communityContent, errorFrom, errorResult, findPublishedPrompt, okResult, requestIp, requestUserAgent, toolMeta } from "./shared";
 import { RENDER_PROMPT_DESCRIPTION } from "../descriptions";
 
 export function registerRenderPrompt(server: Pick<McpServer, "registerTool">): void {
@@ -16,14 +16,15 @@ export function registerRenderPrompt(server: Pick<McpServer, "registerTool">): v
       title: "Fill in prompt",
       description: RENDER_PROMPT_DESCRIPTION,
       inputSchema: renderPromptInput,
-      annotations: READ_ANNOTATIONS,
+      // Not read-only: every call records a usage event for the prompt (public usage stats).
+      annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true, idempotentHint: true },
       _meta: toolMeta({ invoking: "Filling in prompt...", invoked: "Prompt filled in", security: "noauth", widget: "display", widgetAccessible: true }),
     },
     async (args, ctx) => {
       try {
         const found = await findPublishedPrompt(args.id);
         if (!found) return errorResult(PROMPT_NOT_FOUND);
-        const { text, missing } = renderTemplate(found.body, found.variables, args.values, { unfilled: "label" });
+        const { text, missing } = renderTemplate(found.body, found.variables, args.values, { unfilled: "label", placeholders: "empty" });
         const complete = missing.length === 0;
 
         // Usage stats are best effort and must never break a render. Variable values are never logged or stored.
@@ -41,7 +42,7 @@ export function registerRenderPrompt(server: Pick<McpServer, "registerTool">): v
         const note = complete
           ? "Filled in prompt:"
           : `Still missing ${missing.length} required value${missing.length === 1 ? "" : "s"} (${missing.join(", ")}); they are shown in [brackets]:`;
-        return okResult(`${note}\n\n${text}`, { id: found.shortId, text, missing, complete, openLinks });
+        return okResult(`${note}\n\n${communityContent(text)}`, { id: found.shortId, text, missing, complete, openLinks });
       } catch (e) {
         return errorFrom(e, "render_prompt");
       }

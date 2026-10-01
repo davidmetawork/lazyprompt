@@ -28,9 +28,13 @@ describe("UsePanel", () => {
     fireEvent.change(screen.getByLabelText(/Name/), { target: { value: "Sam" } });
     fireEvent.change(screen.getByLabelText(/Topic/), { target: { value: "the launch" } });
     expect(screen.getByTestId("prompt-preview").textContent).toContain("Write to Sam about the launch.");
+    // the on-screen preview still shows the placeholder for the skipped optional variable
+    expect(screen.getByTestId("prompt-preview").textContent).toContain("Context: [Context]");
     fireEvent.click(screen.getByRole("button", { name: "Copy" }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(
-      "Write to Sam about the launch.\nTone: warm\nWords: 120\nContext: [Context]"));
+      "Write to Sam about the launch.\nTone: warm\nWords: 120\nContext: "));
+    // ...but the copied text never carries "[Context]" for an optional variable the user skipped
+    expect(writeText.mock.calls[0]![0]).not.toContain("[Context]");
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Copied"));
   });
 

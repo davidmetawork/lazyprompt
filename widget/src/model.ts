@@ -1,5 +1,13 @@
 // Pure view-model helpers (no DOM, no host bridge) so they can be unit tested.
+import { MODEL_TARGETS } from "../../src/lib/models";
 import type { ListState, PromptData, SearchResult, ToolResult, View } from "./types";
+
+/** Friendly model name for a badge ("chatgpt" -> "ChatGPT"). Unknown ids fall back to a humanized id. */
+export function modelLabel(id: string): string {
+  const target = Object.hasOwn(MODEL_TARGETS, id) ? MODEL_TARGETS[id as keyof typeof MODEL_TARGETS] : undefined;
+  if (target) return target.name;
+  return id.replace(/[_-]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
 
 export function textOf(result: ToolResult): string {
   return (result.content ?? []).filter((c) => c.type === "text" && c.text).map((c) => c.text).join("\n").trim();

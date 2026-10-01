@@ -21,6 +21,11 @@ export function UsePanel({ prompt, category }: { prompt: UsePanelPrompt; categor
   const { values, setValue, reset } = useVariableValues(prompt.shortId, prompt.variables);
   const [used, setUsed] = useState<{ model?: AiModel } | null>(null);
   const rendered = useMemo(() => renderTemplate(prompt.body, prompt.variables, values), [prompt.body, prompt.variables, values]);
+  // Copy and Open-in must not carry "[Label]" for optional variables the user skipped.
+  const outgoingText = useMemo(
+    () => renderTemplate(prompt.body, prompt.variables, values, { placeholders: "empty" }).text,
+    [prompt.body, prompt.variables, values],
+  );
   const filled = prompt.variables.length === 0 || rendered.segments.some((s) => s.kind === "var" && s.filled);
 
   return (
@@ -31,14 +36,14 @@ export function UsePanel({ prompt, category }: { prompt: UsePanelPrompt; categor
       <div className="grid gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <CopyButton
-            text={rendered.text}
+            text={outgoingText}
             onCopied={() => {
               setUsed((u) => u ?? {});
               sendUsageEvent({ promptId: prompt.id, type: "copy" }, { category, filled });
             }}
           />
           <OpenInMenu
-            text={rendered.text}
+            text={outgoingText}
             models={prompt.models}
             onOpened={({ model, prefilled }) => {
               setUsed({ model });

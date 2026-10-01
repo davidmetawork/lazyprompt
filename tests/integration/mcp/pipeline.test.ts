@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
 import { closeDb, db } from "@/db";
-import { POST, GET, OPTIONS } from "@/app/mcp/route";
+import { POST, GET, DELETE, OPTIONS } from "@/app/mcp/route";
 import { hashIp } from "@/server/rate-limit";
 import { createUser } from "../../helpers/factories";
 import { resetDb } from "../../helpers/db";
@@ -102,6 +102,27 @@ describe("rate limiting", () => {
     expect((await ping({ "x-real-ip": ip })).status).toBe(200);
   });
 
+  it("does not spend the pre-auth budget on VALID tokens (shared egress IPs), only on failed verifications", async () => {
+    const ip = "192.0.2.71";
+    const u = await createUser();
+    const token = await mintToken({ sub: u.id });
+    for (let i = 0; i < 3; i++) expect((await ping({ authorization: `Bearer ${token}`, "x-real-ip": ip })).status).toBe(200);
+    const key = `mcp:auth:${hashIp(ip)}`;
+    const after = async () => (await db.execute<{ count: number }>(sql`SELECT count FROM app_rate_limits WHERE key = ${key}`)).rows[0]?.count;
+    expect(await after()).toBeUndefined();
+    expect((await ping({ authorization: "Bearer junk", "x-real-ip": ip })).status).toBe(200);
+    expect(Number(await after())).toBe(1);
+  });
+
+  it("refuses a bearer from an IP that used up its failed-verification budget before verifying it, even a valid one", async () => {
+    const ip = "192.0.2.72";
+    const u = await createUser();
+    const token = await mintToken({ sub: u.id });
+    await seed(`mcp:auth:${hashIp(ip)}`, 600);
+    expect((await ping({ authorization: `Bearer ${token}`, "x-real-ip": ip })).status).toBe(429);
+    expect((await ping({ authorization: `Bearer ${token}`, "x-real-ip": "192.0.2.73" })).status).toBe(200);
+  });
+
   it("counts every POST (initialize and tools/list too)", async () => {
     const ip = "192.0.2.60";
     await seed(`mcp:s:ip:${hashIp(ip)}`, 120);
@@ -121,6 +142,41 @@ describe("transport", () => {
     const res = await POST(mcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }));
     expect(res.headers.get("access-control-allow-origin")).toBe("*");
     expect(res.headers.get("access-control-expose-headers")).toContain("WWW-Authenticate");
+  });
+
+  it("allows the browser headers an MCP client sends, not a wildcard", async () => {
+    const res = await OPTIONS();
+    const allowed = (res.headers.get("access-control-allow-headers") ?? "").toLowerCase();
+    for (const h of ["authorization", "content-type", "accept", "mcp-protocol-version", "mcp-session-id", "last-event-id"]) expect(allowed).toContain(h);
+    expect(allowed).not.toContain("*");
+  });
+
+  it("GET and DELETE pass through the pre-auth cap and the per-IP rate limit like POST", async () => {
+    const send = (method: "GET" | "DELETE", headers: Record<string, string>) =>
+      (method === "GET" ? GET : DELETE)(new Request("http://localhost:3000/mcp", { method, headers: { accept: "text/event-stream", ...headers } }));
+
+    const capped = "192.0.2.80";
+    await seed(`mcp:auth:${hashIp(capped)}`, 600);
+    for (const method of ["GET", "DELETE"] as const) {
+      const res = await send(method, { authorization: "Bearer forged", "x-real-ip": capped });
+      expect(res.status).toBe(429);
+      expect(res.headers.get("retry-after")).toBe("60");
+      expect(res.headers.get("access-control-allow-origin")).toBe("*");
+      await res.body?.cancel();
+    }
+
+    const noisy = "192.0.2.81";
+    await seed(`mcp:s:ip:${hashIp(noisy)}`, 120);
+    for (const method of ["GET", "DELETE"] as const) {
+      const res = await send(method, { "x-real-ip": noisy });
+      expect(res.status).toBe(429);
+      await res.body?.cancel();
+    }
+
+    // an IP under both limits still reaches the handler
+    const fine = await send("GET", { "x-real-ip": "192.0.2.82" });
+    expect(fine.status).not.toBe(429);
+    await fine.body?.cancel();
   });
 
   it("stateless GET does not stream a session", async () => {
