@@ -22,6 +22,8 @@ test("rating a prompt 4 stars updates the average", async ({ page }) => {
   await page.getByRole("radio", { name: /^4 stars/ }).click();
   await expect(page.getByRole("radio", { name: /^4 stars/ })).toHaveAttribute("aria-checked", "true");
   await expect(rate.getByText("Your rating: 4 of 5")).toBeVisible();
+  // The click is optimistic: wait for the server action to finish before reloading, or the reload races the write.
+  await expect(rate.getByRole("radiogroup", { name: "Rate this prompt" })).toHaveAttribute("aria-busy", "false");
   await page.reload();
   await expect(page.getByRole("radio", { name: /^4 stars/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.locator("#rate").getByLabel(/out of 5 stars from \d+ rating/)).toBeVisible();
@@ -78,8 +80,9 @@ test("a new member's prompt is pending in /me/prompts", async ({ page }) => {
   );
   await expect(page.getByTestId("variable-row")).toHaveCount(2);
   await page.getByLabel("Category").selectOption({ index: 1 });
-  await page.getByRole("combobox").fill("meetings");
-  await page.getByRole("combobox").press("Enter");
+  const tags = page.getByRole("combobox", { name: "Tags" });   // the variable-type and category selects are comboboxes too
+  await tags.fill("meetings");
+  await tags.press("Enter");
   await page.getByRole("button", { name: "Submit prompt" }).click();
   await expect(page).toHaveURL(/\/me\/prompts\?submitted=1/);
   await expect(page.getByText(/New members' prompts are reviewed before publishing/)).toBeVisible();

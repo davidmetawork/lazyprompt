@@ -31,10 +31,11 @@ test("OG images are 1200x630 PNGs, including the per-prompt one", async ({ reque
   // The per-prompt route carries a hash suffix, so discover it from the prompt page's og:image.
   const listing = await request.get("/prompts");
   const slug = /\/p\/(politely-decline-a-request-by-email-[0-9a-z]{7})/.exec(await listing.text())?.[1];
-  test.skip(!slug, "needs the browse-ui /prompts listing (blocked on merge)");
+  expect(slug, "the /prompts listing links the fixture prompt").toBeTruthy();
   await page.goto(`/p/${slug}`);
   const og = await page.locator('meta[property="og:image"]').first().getAttribute("content");
-  test.skip(!og || !/opengraph-image/.test(og) || !og.includes(`/p/${slug}`), "needs the browse-ui prompt page (blocked on merge)");
+  expect(og, "the prompt page emits its own og:image").toMatch(/opengraph-image/);
+  expect(og).toContain(`/p/${slug}`);
   const img = await request.get(new URL(og!).pathname);
   expect(img.ok()).toBe(true);
   expect(img.headers()["content-type"]).toContain("image/png");

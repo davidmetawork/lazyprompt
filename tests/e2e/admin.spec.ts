@@ -11,14 +11,18 @@ async function seed() {
   process.env.DATABASE_URL = E2E_DATABASE_URL;           // before src/db is first loaded
   const factories = await import("../helpers/factories");
   const { db } = await import("../../src/db");
-  const schema = await import("../../src/db/schema");
+  // Playwright's loader wraps a barrel that only `export *`s into { default: {...} }, so unwrap it.
+  const schemaModule = await import("../../src/db/schema");
+  const schema = ("default" in schemaModule ? schemaModule.default : schemaModule) as typeof schemaModule;
   return { ...factories, db, schema };
 }
 
 async function newSignedInPage(browser: Browser, email: string, next = "/"): Promise<Page> {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
-  await signIn(page, email, next);
+  // The admin shell has no site header (so no user menu to assert on): sign in on the site, then open `next`.
+  await signIn(page, email);
+  if (next !== "/") await page.goto(next);
   return page;
 }
 

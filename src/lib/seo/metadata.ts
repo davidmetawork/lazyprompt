@@ -31,13 +31,14 @@ export function buildMetadata(input: {
   const description = truncateAtWord(input.description, MAX_DESCRIPTION);
   const noindex = input.noindex === true || process.env.SEO_NOINDEX === "true";
   // Without an explicit image, the route's colocated opengraph-image file convention supplies og:image and twitter:image.
+  // Next only falls back to that file when the `images` KEY is absent (hasOwnProperty), so never emit `images: undefined`.
   const images = input.ogImage ? [{ url: input.ogImage }] : undefined;
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: url },
     robots: noindex ? { index: false, follow: true } : undefined,
-    openGraph: { title, description, url, siteName: SITE_NAME, type: input.type ?? "website", images },
-    twitter: { card: "summary_large_image", title, description, images: images?.map((i) => i.url) },
+    openGraph: { title, description, url, siteName: SITE_NAME, type: input.type ?? "website", ...(images ? { images } : {}) },
+    twitter: { card: "summary_large_image", title, description, ...(images ? { images: images.map((i) => i.url) } : {}) },
   };
 }

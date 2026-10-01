@@ -9,7 +9,9 @@ import { UserMenu } from "./user-menu";
 import { cn } from "@/lib/utils";
 
 export async function SiteHeader() {
-  const viewer = await getViewer();
+  const loaded = await getViewer();
+  // A banned user's session cookie can outlive the ban (60 s cookieCache), but the header must not present them as signed in.
+  const viewer = loaded && !loaded.banned ? loaded : null;
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <Container className="flex h-16 items-center gap-3 sm:gap-5">

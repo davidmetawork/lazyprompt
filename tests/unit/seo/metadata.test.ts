@@ -41,4 +41,10 @@ describe("buildMetadata", () => {
     const m = buildMetadata({ title: "t", description: "d", path: "/", ogImage: "https://x.test/a.png" });
     expect(m.openGraph?.images).toEqual([{ url: "https://x.test/a.png" }]);
   });
+
+  it("omits the images keys without ogImage so Next falls back to the opengraph-image file convention", () => {
+    const m = buildMetadata({ title: "t", description: "d", path: "/" });
+    expect(Object.prototype.hasOwnProperty.call(m.openGraph, "images")).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(m.twitter, "images")).toBe(false);
+  });
 });
