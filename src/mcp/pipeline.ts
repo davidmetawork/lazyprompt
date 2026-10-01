@@ -4,7 +4,7 @@ import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { getBaseUrl } from "@/lib/base-url";
 import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
-import { clientIp, enforceRateLimit } from "@/server/rate-limit";
+import { checkRateLimit, clientIp, enforceRateLimit, hashIp } from "@/server/rate-limit";
 import { protectedHandlerOptions, verifyToken } from "./auth";
 import { MAX_BODY_BYTES, peekBody, selectChallengeMode, type PeekedRequest } from "./config";
 import { SERVER_INSTRUCTIONS, registerLazyPromptTools } from "./server";
@@ -59,6 +59,18 @@ async function readLimited(req: Request, limit: number): Promise<string | null> 
   return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
+const PRE_AUTH_LIMIT = 600;
+
+/**
+ * Bounds bearer-token verification attempts per IP BEFORE any token is verified. A forged JWT with an unknown `kid` makes
+ * the verifier refetch the JWKS, so unauthenticated junk tokens must not be able to drive that work without a cap.
+ */
+async function preAuthAllowed(req: Request, ip: string | null): Promise<boolean> {
+  const [type, token] = req.headers.get("authorization")?.split(" ") ?? [];
+  if (type?.toLowerCase() !== "bearer" || !token || !ip) return true;
+  return (await checkRateLimit(`mcp:auth:${hashIp(ip)}`, PRE_AUTH_LIMIT, 60)).ok;
+}
+
 /** Verified-token subject for rate limiting, else the client-provided openai/subject. Used for limiting only, never authz. */
 async function rateLimitSubject(req: Request, peek: PeekedRequest): Promise<string | undefined> {
   const header = req.headers.get("authorization");
@@ -96,9 +108,13 @@ export async function handleMcpPost(req: Request): Promise<Response> {
     /* malformed JSON: the handler reports the parse error */
   }
 
-  // 2. Rate limit per subject plus a per-IP ceiling.
+  // 2. Rate limit per subject plus a per-IP ceiling (token verification attempts are capped per IP first).
+  const ip = clientIp(req.headers);
   try {
-    await enforceRateLimit("mcp", { userId: await rateLimitSubject(req, peek), ip: clientIp(req.headers) ?? undefined });
+    if (!(await preAuthAllowed(req, ip))) {
+      return jsonRpcError(429, -32029, "Too many requests. Try again in 60s.", peek.id, { "retry-after": "60" });
+    }
+    await enforceRateLimit("mcp", { userId: await rateLimitSubject(req, peek), ip: ip ?? undefined });
   } catch (e) {
     if (e instanceof AppError && e.code === "RATE_LIMITED") {
       return jsonRpcError(429, -32029, e.message, peek.id, { "retry-after": retryAfter(e.message) });

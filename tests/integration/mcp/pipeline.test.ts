@@ -85,6 +85,15 @@ describe("rate limiting", () => {
     expect(anon.status).toBe(200);
   });
 
+  it("caps bearer-token verification attempts per IP before verifying anything", async () => {
+    const ip = "192.0.2.70";
+    await seed(`mcp:auth:${hashIp(ip)}`, 600);
+    const withToken = await ping({ authorization: "Bearer junk", "x-real-ip": ip });
+    expect(withToken.status).toBe(429);
+    // requests without a bearer from the same IP are not affected by the verification cap
+    expect((await ping({ "x-real-ip": ip })).status).toBe(200);
+  });
+
   it("counts every POST (initialize and tools/list too)", async () => {
     const ip = "192.0.2.60";
     await seed(`mcp:s:ip:${hashIp(ip)}`, 120);

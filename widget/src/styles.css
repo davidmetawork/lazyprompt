@@ -69,7 +69,9 @@ textarea { resize: vertical; }
 .preview mark { background: var(--mark); color: inherit; border-radius: 4px; padding: 0 2px; }
 .chip { border: 1px dashed var(--line); border-radius: 4px; padding: 0 3px; color: var(--muted); background: var(--bg); }
 .manual { margin-top: 8px; }
+.card > .link { justify-self: start; }
 .actions, .rate { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions { position: sticky; bottom: -12px; z-index: 1; padding: 8px 0; background: var(--bg); border-top: 1px solid var(--line); }
 .btn { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; font-weight: 500; cursor: pointer; }
 .btn:hover:not(:disabled) { background: var(--bg-soft); }
 .btn.primary { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
