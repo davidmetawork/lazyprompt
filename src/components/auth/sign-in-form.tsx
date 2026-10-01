@@ -36,11 +36,13 @@ export function SignInForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const callbackURL = safeNext(next);
+  const errorURL = (kind: "link" | "oauth") =>
+    `/sign-in?error=${kind}&from=${kind}${callbackURL !== "/" ? `&next=${encodeURIComponent(callbackURL)}` : ""}`;
 
   async function social(provider: "google" | "github") {
     trackEvent("sign_in_start", { method: provider });
     setError(null);
-    const { error } = await authClient.signIn.social({ provider, callbackURL });
+    const { error } = await authClient.signIn.social({ provider, callbackURL, errorCallbackURL: errorURL("oauth") });
     if (error) setError(error.message ?? "Could not start sign-in");
   }
 
@@ -49,13 +51,14 @@ export function SignInForm({
     setPending(true);
     setError(null);
     trackEvent("sign_in_start", { method: "magic_link" });
-    const { error } = await authClient.signIn.magicLink({ email: email.trim(), callbackURL });
+    const { error } = await authClient.signIn.magicLink({ email: email.trim(), callbackURL, errorCallbackURL: errorURL("link") });
     setPending(false);
     if (error) {
       setError(error.message ?? "Could not send the sign-in link");
       return;
     }
-    router.push(`/sign-in/check-email?email=${encodeURIComponent(email.trim())}`);
+    const nextParam = callbackURL !== "/" ? `&next=${encodeURIComponent(callbackURL)}` : "";
+    router.push(`/sign-in/check-email?email=${encodeURIComponent(email.trim())}${nextParam}`);
   }
 
   return (

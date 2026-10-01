@@ -11,7 +11,7 @@ import { RatingWidget } from "@/components/community/rating-widget";
 import { ReportButton } from "@/components/community/report-button";
 import { SaveButton } from "@/components/community/save-button";
 import { Breadcrumbs } from "@/components/prompt/breadcrumbs";
-import { LICENSE_INFO, modelName, promptPageTitle, labelForUseCase } from "@/components/prompt/labels";
+import { LICENSE_INFO, promptPageTitle, labelForUseCase } from "@/components/prompt/labels";
 import { ModelBadges } from "@/components/prompt/model-badges";
 import { RelatedPrompts } from "@/components/prompt/related-prompts";
 import { StatusBanner } from "@/components/prompt/status-banner";
@@ -115,17 +115,6 @@ export default async function PromptPage({ params }: PageProps<"/p/[slug]">) {
                 </li>
               ))}
             </ul>
-          ) : null}
-
-          {prompt.testedOn.length > 0 ? (
-            <p className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-              <span>Tested on</span>
-              {prompt.testedOn.map((t) => (
-                <Badge key={t.model} variant="secondary">
-                  {modelName(t.model)}{t.version ? ` ${t.version}` : ""}{t.date ? ` (${t.date})` : ""}
-                </Badge>
-              ))}
-            </p>
           ) : null}
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">

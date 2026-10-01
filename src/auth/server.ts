@@ -10,6 +10,7 @@ import { ensureProfile } from "../db/profiles";
 import { adminEmails, authSecret, rateLimitsRelaxedForE2e } from "../lib/env";
 import { getBaseUrl } from "../lib/base-url";
 import { sendMagicLink } from "./email";
+import { promoteIfAdmin } from "./promote";
 import { mcpAuthPlugins } from "./mcp-plugins";
 
 function origins(): string[] {
@@ -25,11 +26,6 @@ function origins(): string[] {
   return [...out];
 }
 
-async function promoteIfAdmin(userId: string, email: string): Promise<void> {
-  if (!adminEmails().has(email.toLowerCase())) return;
-  await db.update(schema.user).set({ role: "admin" }).where(eq(schema.user.id, userId));
-}
-
 const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 const githubConfigured = Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
 
@@ -43,11 +39,18 @@ export const auth = betterAuth({
     ...(githubConfigured ? { github: { clientId: process.env.GITHUB_CLIENT_ID!, clientSecret: process.env.GITHUB_CLIENT_SECRET! } } : {}),
   },
   emailAndPassword: { enabled: false },
+  // The settings UI never edits name/image through Better Auth (profiles go through our screened server action), so
+  // the unscreened update-user endpoint is closed rather than hardened.
+  disabledPaths: ["/update-user"],
   session: { cookieCache: { enabled: true, maxAge: 60 } },   // short, so bans and role changes apply within a minute
   rateLimit: {
     enabled: process.env.NODE_ENV === "production" && !rateLimitsRelaxedForE2e(),
     storage: "database",
-    customRules: { "/sign-in/magic-link": { window: 60, max: 3 } },
+    customRules: {
+      "/sign-in/magic-link": { window: 60, max: 3 },
+      // Dynamic client registration is unauthenticated (ChatGPT needs it); cap how many clients one IP can mint.
+      "/oauth2/register": { window: 3600, max: 10 },
+    },
   },
   advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip", "x-forwarded-for"] } },
   databaseHooks: {
@@ -55,7 +58,7 @@ export const auth = betterAuth({
       create: {
         after: async (u) => {
           await ensureProfile({ id: u.id, name: u.name, email: u.email });
-          await promoteIfAdmin(u.id, u.email);
+          await promoteIfAdmin(u.id, u.email, u.emailVerified === true);
         },
       },
     },
@@ -63,9 +66,9 @@ export const auth = betterAuth({
       create: {
         after: async (s) => {
           if (adminEmails().size === 0) return;
-          const [row] = await db.select({ email: schema.user.email, role: schema.user.role })
+          const [row] = await db.select({ email: schema.user.email, role: schema.user.role, emailVerified: schema.user.emailVerified })
             .from(schema.user).where(eq(schema.user.id, s.userId)).limit(1);
-          if (row && row.role !== "admin") await promoteIfAdmin(s.userId, row.email);
+          if (row && row.role !== "admin") await promoteIfAdmin(s.userId, row.email, row.emailVerified === true);
         },
       },
     },

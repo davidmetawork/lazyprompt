@@ -10,6 +10,13 @@ const DEV_IP_SALT = "dev-insecure-ip-hash-salt";
 const optionalString = z.string().optional().transform((v) => (v === undefined || v === "" ? undefined : v));
 const optionalBool = z.string().optional().transform((v) => v === "true" || v === "1");
 
+const blankToUndefined = (v: unknown) => (v === "" ? undefined : v);
+
+/** Strict (no insecure dev fallbacks): any Vercel prod/preview, or a production build outside CI. */
+function isStrict(src: { VERCEL_ENV?: string; NODE_ENV?: string; CI?: string }): boolean {
+  return src.VERCEL_ENV === "production" || src.VERCEL_ENV === "preview" || (src.NODE_ENV === "production" && !src.CI);
+}
+
 const schema = z.object({
   NODE_ENV: z.string().default("development"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
@@ -29,11 +36,11 @@ const schema = z.object({
   IP_HASH_SALT: optionalString,
   CRON_SECRET: optionalString,
   MCP_OAUTH_ENABLED: optionalBool,
-  MCP_AUTH_CHALLENGE: z.enum(["auto", "http401", "result"]).optional().default("auto"),
+  MCP_AUTH_CHALLENGE: z.preprocess(blankToUndefined, z.enum(["auto", "http401", "result"]).optional().default("auto")),
   MCP_WIDGET_DOMAIN: optionalString,
   SEO_NOINDEX: optionalBool,
   SEED_ON_BUILD: optionalBool,
-  REPORT_AUTOHIDE_THRESHOLD: z.coerce.number().int().min(1).optional().default(3),
+  REPORT_AUTOHIDE_THRESHOLD: z.preprocess(blankToUndefined, z.coerce.number().int().min(1).optional().default(3)),
   VERCEL: optionalString,
   VERCEL_ENV: optionalString,
   VERCEL_URL: optionalString,
@@ -56,7 +63,7 @@ export function parseEnv(source: Record<string, string | undefined> = process.en
     throw new Error(`Invalid or missing environment variable(s): ${names.join(", ")}`);
   }
   const base = parsed.data;
-  const strict = base.VERCEL_ENV === "production" || base.VERCEL_ENV === "preview";
+  const strict = isStrict({ VERCEL_ENV: base.VERCEL_ENV, NODE_ENV: base.NODE_ENV, CI: source.CI });
   const missing: string[] = [];
   if (strict && !base.BETTER_AUTH_SECRET) missing.push("BETTER_AUTH_SECRET");
   if (strict && !base.IP_HASH_SALT) missing.push("IP_HASH_SALT");
@@ -105,7 +112,7 @@ export function adminEmails(): Set<string> {
 export function authSecret(): string {
   const v = process.env.BETTER_AUTH_SECRET;
   if (v) return v;
-  if (process.env.VERCEL_ENV === "production" || process.env.VERCEL_ENV === "preview") {
+  if (isStrict(process.env)) {
     throw new Error("Missing required environment variable(s): BETTER_AUTH_SECRET");
   }
   return DEV_AUTH_SECRET;

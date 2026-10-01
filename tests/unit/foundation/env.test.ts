@@ -51,6 +51,16 @@ describe("parseEnv", () => {
     expect(e.MCP_AUTH_CHALLENGE).toBe("auto");
     expect(() => parseEnv({ DATABASE_URL: "postgres://x/y", MCP_AUTH_CHALLENGE: "weird" })).toThrow();
   });
+  it("is strict for production builds outside CI, lenient in CI", () => {
+    const base = { DATABASE_URL: "postgres://x/y", NODE_ENV: "production" };
+    expect(() => parseEnv(base)).toThrow(/BETTER_AUTH_SECRET, IP_HASH_SALT/);
+    expect(() => parseEnv({ ...base, CI: "true" })).not.toThrow();
+  });
+  it("treats empty optional numeric/enum values as unset", () => {
+    const e = parseEnv({ DATABASE_URL: "postgres://x/y", REPORT_AUTOHIDE_THRESHOLD: "", MCP_AUTH_CHALLENGE: "" });
+    expect(e.REPORT_AUTOHIDE_THRESHOLD).toBe(3);
+    expect(e.MCP_AUTH_CHALLENGE).toBe("auto");
+  });
   it("treats empty strings as unset", () => {
     expect(parseEnv({ DATABASE_URL: "postgres://x/y", RESEND_API_KEY: "" }).RESEND_API_KEY).toBeUndefined();
   });

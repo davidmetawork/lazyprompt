@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Bookmark, FileText, Settings, Shield, User as UserIcon } from "lucide-react";
+import { LogOut, Plus, Search, Bookmark, FileText, Settings, Shield, User as UserIcon } from "lucide-react";
 import { authClient } from "@/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,8 @@ export function UserMenu({
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuLabel className="truncate">{user.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild><Link href="/submit"><Plus /> Submit a prompt</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link href="/prompts"><Search /> Browse</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link href={`/u/${user.username}`}><UserIcon /> Profile</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link href="/me/prompts"><FileText /> My prompts</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link href="/me/saved"><Bookmark /> Saved</Link></DropdownMenuItem>

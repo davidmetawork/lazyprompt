@@ -61,7 +61,7 @@ export const getViewer: () => Promise<Viewer | null> = cache(async () => {
 export async function requireViewer(next?: string): Promise<Viewer> {
   const v = await getViewer();
   if (!v) redirect(`/sign-in?next=${encodeURIComponent(safeNext(next))}`);
-  if (v.banned) throw new AppError("BANNED", "Your account has been suspended");
+  if (v.banned) redirect("/suspended");
   return v;
 }
 
@@ -75,7 +75,7 @@ export async function requireAdmin(): Promise<Viewer> {
 export async function requireViewerForAction(): Promise<Viewer> {
   const v = await getViewer();
   if (!v) throw new AppError("UNAUTHENTICATED", "Please sign in");
-  if (v.banned) throw new AppError("BANNED", "Your account has been suspended");
+  if (v.banned) redirect("/suspended");
   return v;
 }
 

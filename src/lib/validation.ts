@@ -5,6 +5,11 @@ import {
 } from "./constants";
 import { normalizeTag } from "./slug";
 
+const RESERVED_VARIABLE_KEYS = new Set([
+  "constructor", "prototype", "__proto__", "toString", "valueOf", "hasOwnProperty",
+  "isPrototypeOf", "propertyIsEnumerable", "toLocaleString",
+]);
+
 const trimmed = (min: number, max: number) => z.string().trim().min(min).max(max);
 
 export const variableDefSchema = z.object({
@@ -16,6 +21,9 @@ export const variableDefSchema = z.object({
   required: z.boolean(),
   help: z.string().max(200).optional(),
 }).superRefine((v, ctx) => {
+  if (RESERVED_VARIABLE_KEYS.has(v.key)) {
+    ctx.addIssue({ code: "custom", path: ["key"], message: "That variable name is reserved" });
+  }
   if (v.type === "select" && (!v.options || v.options.length < 2)) {
     ctx.addIssue({ code: "custom", path: ["options"], message: "Select variables need 2-20 options" });
   }
@@ -92,10 +100,22 @@ export const usageEventInputSchema = z.object({
   model: z.enum(AI_MODELS).optional(),
 });
 
-/** Returns raw iff it is a same-site absolute path (no `//` or `/\` prefix) of at most 512 chars, else "/". */
+/**
+ * Returns a same-site absolute path (path + query + hash) for `raw` of at most 512 chars, else "/".
+ * Rejects control characters, whitespace and backslashes anywhere (browsers strip tabs/newlines, so "/\t/evil.com"
+ * would become "//evil.com"), then requires the URL parser to keep the origin unchanged.
+ */
 export function safeNext(raw: string | null | undefined): string {
   if (typeof raw !== "string" || raw.length === 0 || raw.length > 512) return "/";
-  return /^\/(?![/\\])/.test(raw) ? raw : "/";
+  if (/[\u0000-\u001f\u007f\s\\]/.test(raw)) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  try {
+    const u = new URL(raw, "http://x");
+    if (u.origin !== "http://x") return "/";
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return "/";
+  }
 }
 
 export type VariableDefInput = z.infer<typeof variableDefSchema>;

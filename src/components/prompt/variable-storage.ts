@@ -7,16 +7,20 @@ const MAX_VALUE_LENGTH = 4000;
 export const variablesStorageKey = (shortId: string) => `lp:vars:${shortId}`;
 
 /** Reads saved values for a prompt. Only known keys with string values survive; any failure gives {}. */
-export function loadVariableValues(shortId: string, variables: Pick<VariableDef, "key">[]): Record<string, string> {
+export function loadVariableValues(shortId: string, variables: Pick<VariableDef, "key" | "type" | "options">[]): Record<string, string> {
   try {
     const raw = window.localStorage.getItem(variablesStorageKey(shortId));
     if (!raw) return {};
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    const known = new Set(variables.map((v) => v.key));
+    const byKey = new Map(variables.map((v) => [v.key, v]));
     const out: Record<string, string> = {};
     for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
-      if (known.has(k) && typeof v === "string") out[k] = v.slice(0, MAX_VALUE_LENGTH);
+      const def = byKey.get(k);
+      if (!def || typeof v !== "string") continue;
+      if (def.type === "select" && !(def.options ?? []).includes(v)) continue;   // option was removed since it was saved
+      if (def.type === "number" && v.trim() !== "" && !Number.isFinite(Number(v))) continue;
+      out[k] = v.slice(0, MAX_VALUE_LENGTH);
     }
     return out;
   } catch {

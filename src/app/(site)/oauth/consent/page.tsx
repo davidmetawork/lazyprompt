@@ -21,6 +21,20 @@ async function loadClient(clientId: string): Promise<PublicClient | null> {
   }
 }
 
+const KNOWN_CLIENT_HOSTS = ["chatgpt.com", "openai.com", "claude.ai", "anthropic.com"];
+
+/** True when the client's self-declared client_uri is on (or under) an allowlisted host. The name itself is never verified. */
+function isKnownClient(clientUri: string | undefined): boolean {
+  if (!clientUri) return false;
+  try {
+    const u = new URL(clientUri);
+    if (u.protocol !== "https:") return false;
+    return KNOWN_CLIENT_HOSTS.some((h) => u.hostname === h || u.hostname.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
 export default async function ConsentPage(props: PageProps<"/oauth/consent">) {
   const viewer = await requireViewer("/oauth/consent");
   const q = toUrlSearchParams(await props.searchParams);
@@ -39,9 +53,15 @@ export default async function ConsentPage(props: PageProps<"/oauth/consent">) {
   }
 
   const name = client.client_name?.trim() || "An AI app";
+  const verified = isKnownClient(client.client_uri);
   return (
     <Container className="max-w-md py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Connect {name} to LazyPrompt?</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        Connect {name}{host ? <> ({host})</> : null} to LazyPrompt?
+      </h1>
+      {!verified ? (
+        <p className="mt-2 text-sm text-muted-foreground">LazyPrompt has not verified this app&apos;s name.</p>
+      ) : null}
       <p className="mt-2 text-sm text-muted-foreground">
         You are signed in as <span className="font-medium text-foreground">@{viewer.username}</span>.
         {host ? <> After you answer, you will be sent back to <span className="font-medium text-foreground">{host}</span>.</> : null}

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Container } from "./container";
 
 const LINKS = [
+  { href: "/prompts", label: "Browse" },
+  { href: "/submit", label: "Submit a prompt" },
   { href: "/about", label: "About" },
   { href: "/guidelines", label: "Guidelines" },
   { href: "/privacy", label: "Privacy" },

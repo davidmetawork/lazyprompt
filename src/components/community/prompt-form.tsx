@@ -71,6 +71,9 @@ export function PromptForm({ mode, categories, initial, promptId, slug, reviewNo
     mode === "edit" ? updatePromptAction : createPromptAction, null,
   );
   const alertRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const dirtyRef = useRef(false);
+  const draftKey = `draft:${slug ?? "new"}`;
 
   const built = useMemo(() => buildVariables(values.body, overrides), [values.body, overrides]);
   const preview = useMemo(
@@ -87,12 +90,46 @@ export function PromptForm({ mode, categories, initial, promptId, slug, reviewNo
     else if (serverFailure) alertRef.current?.focus();
   }, [serverFailure, fail]);
 
+  // Restore an unsent draft (for example after the session expired mid-edit). localStorage only exists after
+  // hydration, so this has to run in an effect; the setState calls are the external-system sync.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { values?: Partial<PromptFormValues>; overrides?: Record<string, VariableOverride> };
+      if (saved.values && typeof saved.values === "object") setValues((v) => ({ ...v, ...saved.values }));
+      if (saved.overrides && typeof saved.overrides === "object") setOverrides(saved.overrides);
+    } catch { /* storage unavailable or corrupt draft */ }
+  }, [draftKey]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Persist on change (never before the user touched the form, so an untouched edit page cannot leave a stale draft).
+  useEffect(() => {
+    if (!dirtyRef.current) return;
+    try {
+      window.localStorage.setItem(draftKey, JSON.stringify({ values, overrides }));
+    } catch { /* storage unavailable or full */ }
+  }, [values, overrides, draftKey, serverFailure]);
+
+  // Move focus to the first invalid control after a failed validation.
+  useEffect(() => {
+    if (!clientErrors && !serverFailure) return;
+    const el = formRef.current?.querySelector<HTMLElement>("[aria-invalid=true]");
+    if (el) {
+      el.focus({ preventScroll: true });
+      el.scrollIntoView?.({ block: "center" });
+    }
+  }, [clientErrors, serverFailure]);
+
   function set<K extends keyof PromptFormValues>(key: K, value: PromptFormValues[K]) {
+    dirtyRef.current = true;
     setValues((v) => ({ ...v, [key]: value }));
     setClientErrors(null);
   }
 
   function setOverride(key: string, patch: VariableOverride) {
+    dirtyRef.current = true;
     setOverrides((o) => ({ ...o, [key]: { ...o[key], ...patch } }));
   }
 
@@ -117,6 +154,9 @@ export function PromptForm({ mode, categories, initial, promptId, slug, reviewNo
       return;
     }
     setClientErrors(null);
+    // A successful save redirects away, so the draft is dropped now; a failure re-saves it (effect above).
+    dirtyRef.current = true;
+    try { window.localStorage.removeItem(draftKey); } catch { /* ignore */ }
     startTransition(() => formAction(fd));
   }
 
@@ -126,7 +166,7 @@ export function PromptForm({ mode, categories, initial, promptId, slug, reviewNo
   const hasFieldErrors = errors ? Object.keys(errors).length > 0 : false;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-8" aria-busy={pending}>
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-8" aria-busy={pending}>
       {reviewNotice && mode === "create" ? (
         <Alert>
           <Info />
