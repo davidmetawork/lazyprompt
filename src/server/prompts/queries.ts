@@ -1,16 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// Foundation implements: getPromptByShortId, getPromptById, listPrompts (simple ILIKE for q), getHomeSections,
-// getViewerPromptState, findSimilarPrompts. data-read replaces the rest (and upgrades listPrompts search, section 5).
+// Server read layer for prompts (ARCHITECTURE.md sections 5, 7). Reads take plain arguments and return DTOs with ISO dates.
 import "server-only";
 import { cache } from "react";
-import { and, desc, eq, exists, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ne, sql, type SQL } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
+import { z } from "zod";
 import { db } from "@/db";
-import { categories, profiles, promptModels, prompts, ratings, saves, user } from "@/db/schema";
-import { notImplemented } from "@/lib/errors";
+import { categories, profiles, promptModels, prompts, promptVersions, ratings, saves, user } from "@/db/schema";
+import { DEFAULT_PAGE_SIZE, MAX_PAGE } from "@/lib/constants";
+import { AppError } from "@/lib/errors";
 import { listPromptsInputSchema, type ListPromptsInput } from "@/lib/validation";
 import type {
   Paginated, PromptCard, PromptDetail, PromptStatus, PromptVersionDetail, PromptVersionSummary, Viewer, ViewerPromptState,
 } from "@/lib/types";
+import { allOf, correctQuery, filterConditions, matchCondition, rankExpression } from "@/server/search";
 import {
   promptCardColumns, promptDetailColumns, toAuthorSummary, toPromptCard, toPromptDetail,
   type PromptCardRow, type PromptDetailRow,
@@ -18,21 +20,24 @@ import {
 
 // ---------- shared helpers ----------
 
-function cardQuery() {
+function cardQuery<E extends Record<string, SQL | SQL.Aliased | PgColumn>>(extra?: E) {
   return db
-    .select({ ...promptCardColumns, total: sql<number>`count(*) over()::int` })
+    .select({ ...promptCardColumns, total: sql<number>`count(*) over()::int`, ...(extra ?? ({} as E)) })
     .from(prompts)
     .innerJoin(categories, eq(categories.id, prompts.categoryId))
     .innerJoin(user, eq(user.id, prompts.authorId))
     .leftJoin(profiles, eq(profiles.userId, user.id));
 }
 
-function escapeLike(s: string): string {
-  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
-}
+const topOrder = () => [desc(prompts.bayesScore), desc(prompts.isFeatured), desc(prompts.copyCount), desc(prompts.publishedAt), asc(prompts.id)];
+const newOrder = () => [desc(prompts.publishedAt), desc(prompts.createdAt), asc(prompts.id)];
+const trendingOrder = () => [desc(prompts.trendingScore), ...topOrder()];
 
-const topOrder = () => [desc(prompts.bayesScore), desc(prompts.isFeatured), desc(prompts.copyCount), desc(prompts.publishedAt)];
-const newOrder = () => [desc(prompts.publishedAt), desc(prompts.createdAt)];
+const uuidSchema = z.uuid();
+function assertUuid(value: string, field: string): void {
+  if (!uuidSchema.safeParse(value).success) throw new AppError("VALIDATION", `${field} must be a valid id`, { [field]: ["Invalid id"] });
+}
+const asCard = (r: unknown): PromptCard => toPromptCard(r as PromptCardRow);
 
 // ---------- detail ----------
 
@@ -95,51 +100,31 @@ export async function getPromptById(id: string, opts?: { includeNonPublic?: bool
 
 // ---------- lists ----------
 
-export async function listPrompts(input: ListPromptsInput): Promise<Paginated<PromptCard>> {
-  const p = listPromptsInputSchema.parse(input);
-  const conds: SQL[] = [eq(prompts.status, "published")];
-  if (p.category) conds.push(eq(categories.slug, p.category));
-  if (p.useCase) conds.push(eq(prompts.useCase, p.useCase));
-  if (p.authorId) conds.push(eq(prompts.authorId, p.authorId));
-  if (p.model) {
-    // "any model" prompts (no prompt_models rows) are included too.
-    conds.push(or(
-      exists(db.select({ x: sql`1` }).from(promptModels)
-        .where(and(eq(promptModels.promptId, prompts.id), eq(promptModels.model, p.model)))),
-      sql`not exists (select 1 from prompt_models pm0 where pm0.prompt_id = ${prompts.id})`,
-    )!);
-  }
-  if (p.tag) {
-    // Resolve through alias_of_id: match prompts tagged with the canonical tag or any alias of it.
-    conds.push(sql`exists (
-      select 1 from prompt_tags pt
-      join tags t on t.id = pt.tag_id
-      where pt.prompt_id = ${prompts.id}
-        and coalesce(t.alias_of_id, t.id) = (select coalesce(t2.alias_of_id, t2.id) from tags t2 where t2.slug = ${p.tag} limit 1)
-    )`);
-  }
-  if (p.q) {
-    const like = `%${escapeLike(p.q)}%`;
-    conds.push(or(
-      sql`${prompts.title} ILIKE ${like}`,
-      sql`${prompts.description} ILIKE ${like}`,
-      sql`${prompts.tagsText} ILIKE ${like}`,
-    )!);
-  }
+type ParsedList = ReturnType<typeof listPromptsInputSchema.parse>;
 
-  const sort = p.sort ?? (p.q ? "relevance" : "top");
-  const order = sort === "new" ? newOrder() : topOrder();   // relevance/trending map to top until data-read lands
+async function runList(p: ParsedList, q: string | undefined): Promise<Paginated<PromptCard>> {
+  const conds = filterConditions(p);
+  if (q) conds.push(matchCondition(q));
+  const sort = p.sort ?? (q ? "relevance" : "top");
   const offset = (p.page - 1) * p.pageSize;
 
-  const rows = await cardQuery().where(and(...conds)).orderBy(...order).limit(p.pageSize).offset(offset);
+  const base = q ? cardQuery({ rank: rankExpression(q) }) : cardQuery();
+  const order =
+    sort === "new" ? newOrder()
+    : sort === "trending" ? trendingOrder()
+    : sort === "relevance" && q ? [sql`rank desc`, ...topOrder()]
+    : topOrder();
+  const rows = await base.where(allOf(conds)).orderBy(...order).limit(p.pageSize).offset(offset);
+
   let total = rows[0]?.total ?? 0;
   if (rows.length === 0 && p.page > 1) {
+    // Page past the end: the window count is gone with the rows, so count separately.
     const [c] = await db.select({ n: sql<number>`count(*)::int` }).from(prompts)
-      .innerJoin(categories, eq(categories.id, prompts.categoryId)).where(and(...conds));
+      .innerJoin(categories, eq(categories.id, prompts.categoryId)).where(allOf(conds));
     total = c?.n ?? 0;
   }
   return {
-    items: rows.map((r) => toPromptCard(r as unknown as PromptCardRow)),
+    items: rows.map(asCard),
     page: p.page,
     pageSize: p.pageSize,
     total,
@@ -147,28 +132,134 @@ export async function listPrompts(input: ListPromptsInput): Promise<Paginated<Pr
   };
 }
 
+/**
+ * Browse + search (section 5). With `q`: websearch_to_tsquery + trigram + escaped ILIKE, ranked by relevance. When the
+ * query matches nothing, tokens are corrected against the title/tag vocabulary (typo tolerance) and the search is retried.
+ */
+export async function listPrompts(input: ListPromptsInput): Promise<Paginated<PromptCard>> {
+  const p = listPromptsInputSchema.parse(input);
+  const result = await runList(p, p.q);
+  if (p.q && result.total === 0 && p.page === 1) {
+    const corrected = await correctQuery(p.q);
+    if (corrected) return runList(p, corrected);
+  }
+  return result;
+}
+
+const HOME_FEATURED = 6;
+const HOME_ROW = 12;
+
 export async function getHomeSections(): Promise<{
   featured: PromptCard[]; trending: PromptCard[]; top: PromptCard[]; latest: PromptCard[];
 }> {
   const pub = eq(prompts.status, "published");
   const run = async (where: SQL, order: SQL[], limit: number) =>
-    (await cardQuery().where(where).orderBy(...order).limit(limit)).map((r) => toPromptCard(r as unknown as PromptCardRow));
-  const [featured, top, latest] = await Promise.all([
-    run(and(pub, eq(prompts.isFeatured, true))!, topOrder(), 6),
-    run(pub, topOrder(), 8),
-    run(pub, newOrder(), 8),
+    (await cardQuery().where(where).orderBy(...order).limit(limit)).map(asCard);
+  const [featured, trendingRaw, topPool, latest] = await Promise.all([
+    run(and(pub, eq(prompts.isFeatured, true))!, topOrder(), HOME_FEATURED),
+    run(and(pub, gt(prompts.trendingScore, 0))!, trendingOrder(), HOME_ROW),
+    // 2x the row size guarantees enough distinct prompts to pad trending even when every trending prompt is also top.
+    run(pub, topOrder(), HOME_ROW * 2),
+    run(pub, newOrder(), HOME_ROW),
   ]);
-  return { featured, trending: top, top, latest };   // trending = top until data-read computes real trending
+  const top = topPool.slice(0, HOME_ROW);
+  let trending = trendingRaw;
+  if (trending.length < HOME_ROW) {
+    const seen = new Set(trending.map((t) => t.id));
+    trending = [...trending, ...topPool.filter((t) => !seen.has(t.id))].slice(0, HOME_ROW);
+  }
+  return { featured, trending, top, latest };
 }
 
-export async function getRelatedPrompts(promptId: string, limit?: number): Promise<PromptCard[]> {
-  return notImplemented("getRelatedPrompts");
+/** Published prompts sharing the category and/or tags with `promptId` (shared tags first), never the prompt itself. */
+export async function getRelatedPrompts(promptId: string, limit: number = 6): Promise<PromptCard[]> {
+  assertUuid(promptId, "promptId");
+  const n = Math.min(Math.max(Math.trunc(limit) || 6, 1), 24);
+  const rows = await cardQuery({
+    shared: sql<number>`(select count(*) from prompt_tags a join prompt_tags b on b.tag_id = a.tag_id
+      where a.prompt_id = ${promptId}::uuid and b.prompt_id = ${prompts.id})::int`.as("shared"),
+  })
+    .where(and(
+      eq(prompts.status, "published"),
+      ne(prompts.id, promptId),
+      sql`(${prompts.categoryId} = (select category_id from prompts where id = ${promptId}::uuid)
+        or exists (select 1 from prompt_tags a join prompt_tags b on b.tag_id = a.tag_id
+          where a.prompt_id = ${promptId}::uuid and b.prompt_id = ${prompts.id}))`,
+    ))
+    .orderBy(
+      sql`shared desc`,
+      sql`(${prompts.categoryId} = (select category_id from prompts where id = ${promptId}::uuid)) desc`,
+      ...topOrder(),
+    )
+    .limit(n);
+  return rows.map(asCard);
 }
+
+// ---------- versions ----------
+// Callers (the /p/[slug]/versions pages) gate on prompt visibility via getPromptByShortId first.
+
 export async function listPromptVersions(promptId: string): Promise<PromptVersionSummary[]> {
-  return notImplemented("listPromptVersions");
+  assertUuid(promptId, "promptId");
+  const rows = await db
+    .select({
+      version: promptVersions.version, title: promptVersions.title, changeNote: promptVersions.changeNote,
+      createdAt: promptVersions.createdAt,
+      editorId: user.id, editorName: user.name, editorImage: user.image,
+      editorUsername: profiles.username, editorIsSystem: profiles.isSystem,
+    })
+    .from(promptVersions)
+    .leftJoin(user, eq(user.id, promptVersions.editorId))
+    .leftJoin(profiles, eq(profiles.userId, user.id))
+    .where(eq(promptVersions.promptId, promptId))
+    .orderBy(desc(promptVersions.version));
+  return rows.map((r) => ({
+    version: r.version,
+    title: r.title,
+    changeNote: r.changeNote,
+    createdAt: r.createdAt.toISOString(),
+    editor: r.editorId
+      ? toAuthorSummary({
+        authorId: r.editorId, authorUsername: r.editorUsername, authorName: r.editorName ?? "", authorImage: r.editorImage,
+        authorIsSystem: r.editorIsSystem,
+      })
+      : null,
+  }));
 }
+
 export async function getPromptVersion(promptId: string, version: number): Promise<PromptVersionDetail | null> {
-  return notImplemented("getPromptVersion");
+  assertUuid(promptId, "promptId");
+  if (!Number.isInteger(version) || version < 1) throw new AppError("VALIDATION", "version must be a positive integer", { version: ["Invalid version"] });
+  const [r] = await db
+    .select({
+      version: promptVersions.version, title: promptVersions.title, changeNote: promptVersions.changeNote,
+      createdAt: promptVersions.createdAt, description: promptVersions.description, body: promptVersions.body,
+      variables: promptVersions.variables, exampleOutput: promptVersions.exampleOutput, notes: promptVersions.notes,
+      editorId: user.id, editorName: user.name, editorImage: user.image,
+      editorUsername: profiles.username, editorIsSystem: profiles.isSystem,
+    })
+    .from(promptVersions)
+    .leftJoin(user, eq(user.id, promptVersions.editorId))
+    .leftJoin(profiles, eq(profiles.userId, user.id))
+    .where(and(eq(promptVersions.promptId, promptId), eq(promptVersions.version, version)))
+    .limit(1);
+  if (!r) return null;
+  return {
+    version: r.version,
+    title: r.title,
+    changeNote: r.changeNote,
+    createdAt: r.createdAt.toISOString(),
+    editor: r.editorId
+      ? toAuthorSummary({
+        authorId: r.editorId, authorUsername: r.editorUsername, authorName: r.editorName ?? "", authorImage: r.editorImage,
+        authorIsSystem: r.editorIsSystem,
+      })
+      : null,
+    description: r.description,
+    body: r.body,
+    variables: r.variables ?? [],
+    exampleOutput: r.exampleOutput,
+    notes: r.notes,
+  };
 }
 
 export async function getViewerPromptState(promptId: string, viewer: Viewer | null): Promise<ViewerPromptState> {
@@ -189,15 +280,57 @@ export async function getViewerPromptState(promptId: string, viewer: Viewer | nu
   };
 }
 
+/**
+ * An author's prompts, newest first (page size 24). Public callers get published rows only; `includeNonPublic` (the author
+ * or an admin) adds draft/pending/rejected/hidden rows, with `status` and `moderationNote`. Soft-deleted ("removed") rows
+ * are never listed.
+ */
 export async function listPromptsByAuthor(
   authorId: string,
   opts?: { page?: number; includeNonPublic?: boolean },
 ): Promise<Paginated<PromptCard & { status: PromptStatus; moderationNote: string | null }>> {
-  return notImplemented("listPromptsByAuthor");
+  const page = opts?.page ?? 1;
+  if (!Number.isInteger(page) || page < 1 || page > MAX_PAGE) throw new AppError("VALIDATION", "page must be between 1 and 50", { page: ["Invalid page"] });
+  if (!authorId) throw new AppError("VALIDATION", "authorId is required", { authorId: ["Required"] });
+  const includeNonPublic = opts?.includeNonPublic ?? false;
+  const pageSize = DEFAULT_PAGE_SIZE;
+  const offset = (page - 1) * pageSize;
+  const where = and(
+    eq(prompts.authorId, authorId),
+    includeNonPublic ? ne(prompts.status, "removed") : eq(prompts.status, "published"),
+  )!;
+  const rows = await cardQuery({ status: prompts.status, moderationNote: prompts.moderationNote })
+    .where(where)
+    .orderBy(desc(sql`coalesce(${prompts.publishedAt}, ${prompts.createdAt})`), asc(prompts.id))
+    .limit(pageSize)
+    .offset(offset);
+  let total = rows[0]?.total ?? 0;
+  if (rows.length === 0 && page > 1) {
+    const [c] = await db.select({ n: sql<number>`count(*)::int` }).from(prompts).where(where);
+    total = c?.n ?? 0;
+  }
+  return {
+    items: rows.map((r) => ({
+      ...asCard(r),
+      status: r.status,
+      moderationNote: includeNonPublic ? r.moderationNote : null,
+    })),
+    page,
+    pageSize,
+    total,
+    hasMore: offset + rows.length < total,
+  };
 }
 
+/** Published prompts for the sitemap, most recently updated first (the protocol cap is 50,000 URLs). */
 export async function listSitemapEntries(): Promise<{ slug: string; updatedAt: string }[]> {
-  return notImplemented("listSitemapEntries");
+  const rows = await db
+    .select({ slug: prompts.slug, updatedAt: prompts.updatedAt })
+    .from(prompts)
+    .where(eq(prompts.status, "published"))
+    .orderBy(desc(prompts.updatedAt), asc(prompts.id))
+    .limit(50_000);
+  return rows.map((r) => ({ slug: r.slug, updatedAt: r.updatedAt.toISOString() }));
 }
 
 /**
