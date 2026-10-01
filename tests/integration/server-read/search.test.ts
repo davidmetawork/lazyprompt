@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "@/db";
-import { prompts, tags } from "@/db/schema";
+import { appRateLimits, prompts, tags } from "@/db/schema";
 import { listPrompts } from "@/server/prompts/queries";
 import { resetDb } from "../../helpers/db";
 import { createPrompt, createUser } from "../../helpers/factories";
@@ -67,6 +67,29 @@ describe("listPrompts typo tolerance", () => {
     const hit = await createPrompt(ada, { title: "Weekly status report", tags: ["management"] });
     expect((await listPrompts({ q: "wekly staus" })).items.map((i) => i.id)).toEqual([hit.id]);
     expect((await listPrompts({ q: "managment" })).items.map((i) => i.id)).toEqual([hit.id]);
+  });
+
+  it("only attempts correction for short queries (at most 3 tokens and 40 characters)", async () => {
+    const ada = await createUser();
+    await createPrompt(ada, { title: "Cold email opener" });
+    const searchKeys = async () =>
+      (await db.select().from(appRateLimits)).filter((r) => r.key.startsWith("search:")).length;
+    expect((await listPrompts({ q: "emial" })).total).toBe(1);                             // 1 token: corrected
+    expect(await searchKeys()).toBe(1);
+    await db.delete(appRateLimits);
+    await listPrompts({ q: "zzzq yyyq xxxq wwwq" });                                       // 4 tokens: no correction attempt
+    await listPrompts({ q: "zzzq".repeat(11) });                                           // over 40 characters
+    expect(await searchKeys()).toBe(0);
+  });
+
+  it("rate limits the correction path per IP and falls back to the uncorrected (empty) result", async () => {
+    const ada = await createUser();
+    await createPrompt(ada, { title: "Cold email opener" });
+    const ip = "203.0.113.50";
+    for (let i = 0; i < 30; i++) expect((await listPrompts({ q: "emial" }, { ip })).total).toBe(1);
+    expect((await listPrompts({ q: "emial" }, { ip })).total).toBe(0);                     // limit hit: no correction, no error
+    expect((await listPrompts({ q: "email" }, { ip })).total).toBe(1);                     // real matches never need the budget
+    expect((await listPrompts({ q: "emial" }, { ip: "203.0.113.51" })).total).toBe(1);     // another client is unaffected
   });
 
   it("does not 'correct' gibberish into results", async () => {

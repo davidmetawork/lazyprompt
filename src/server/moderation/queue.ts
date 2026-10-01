@@ -199,6 +199,7 @@ export async function listModerationLog(admin: Viewer, page?: number): Promise<P
     .select({
       id: moderationActions.id, targetType: moderationActions.targetType, targetId: moderationActions.targetId,
       action: moderationActions.action, reason: moderationActions.reason, createdAt: moderationActions.createdAt,
+      via: sql<string | null>`${moderationActions.metadata}->>'via'`,
       actorId: user.id, actorUsername: profiles.username, actorName: user.name, actorImage: user.image,
       actorIsSystem: profiles.isSystem, total: sql<number>`count(*) over()::int`,
     })
@@ -213,7 +214,9 @@ export async function listModerationLog(admin: Viewer, page?: number): Promise<P
     actor: r.actorId
       ? { id: r.actorId, username: r.actorUsername ?? "", name: r.actorName ?? "", image: r.actorImage, isSystem: r.actorIsSystem ?? false }
       : null,
-    targetType: r.targetType, targetId: r.targetId, action: r.action, reason: r.reason, createdAt: r.createdAt.toISOString(),
+    targetType: r.targetType, targetId: r.targetId,
+    // A version redaction is stored as `remove` (the mod_action enum has no dedicated value); the log must not read as "prompt removed".
+    action: r.via === "redact_version" ? "redact_version" : r.action, reason: r.reason, createdAt: r.createdAt.toISOString(),
     target: pickLabelHref(targets.get(`${r.targetType}:${r.targetId}`) ?? DELETED_TARGET),
   }));
   return paginated(items, rows[0]?.total ?? 0, pg, LOG_PAGE_SIZE);
@@ -257,7 +260,7 @@ export async function listAdminUsers(
 export async function listAdminPrompts(
   admin: Viewer,
   input: { q?: string; status?: PromptStatus; page?: number },
-): Promise<Paginated<PromptCard & { status: PromptStatus; moderationFlags: string[] }>> {
+): Promise<Paginated<PromptCard & { status: PromptStatus; moderationFlags: string[]; version: number }>> {
   assertAdmin(admin);
   const pg = pageOf(input.page);
   const q = input.q?.trim().slice(0, 100);
@@ -272,7 +275,7 @@ export async function listAdminPrompts(
   }
   const rows = await db
     .select({
-      ...promptCardColumns, status: prompts.status, moderationFlags: prompts.moderationFlags,
+      ...promptCardColumns, status: prompts.status, moderationFlags: prompts.moderationFlags, version: prompts.version,
       total: sql<number>`count(*) over()::int`,
     })
     .from(prompts)
@@ -283,7 +286,7 @@ export async function listAdminPrompts(
     .orderBy(desc(prompts.createdAt), asc(prompts.id))
     .limit(QUEUE_PAGE_SIZE).offset((pg - 1) * QUEUE_PAGE_SIZE);
   const items = rows.map((r) => ({
-    ...toPromptCard(r as unknown as PromptCardRow), status: r.status, moderationFlags: r.moderationFlags ?? [],
+    ...toPromptCard(r as unknown as PromptCardRow), status: r.status, moderationFlags: r.moderationFlags ?? [], version: r.version,
   }));
   return paginated(items, rows[0]?.total ?? 0, pg, QUEUE_PAGE_SIZE);
 }

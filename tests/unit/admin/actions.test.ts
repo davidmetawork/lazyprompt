@@ -15,7 +15,8 @@ const moderateComment = vi.fn();
 const resolveReport = vi.fn();
 const setUserBan = vi.fn();
 const setTrustLevel = vi.fn();
-vi.mock("@/server/moderation/actions", () => ({ moderatePrompt, moderateComment, resolveReport, setUserBan, setTrustLevel }));
+const moderatePromptVersion = vi.fn();
+vi.mock("@/server/moderation/actions", () => ({ moderatePrompt, moderateComment, moderatePromptVersion, resolveReport, setUserBan, setTrustLevel }));
 
 const { revalidatePath } = await import("next/cache");
 const actions = await import("@/actions/admin");
@@ -110,6 +111,32 @@ describe("resolveReportAction", () => {
     expect(moderateComment).not.toHaveBeenCalled();
     expect(resolveReport).toHaveBeenNthCalledWith(2, admin, "r2", "dismissed", "not an issue", { tolerateResolved: false });
   });
+  it("still resolves the report when hiding a target that is already removed, rejected or hidden (CONFLICT)", async () => {
+    moderatePrompt.mockRejectedValue(new AppError("CONFLICT", "This prompt was removed; restore it first"));
+    moderateComment.mockRejectedValue(new AppError("CONFLICT", "This comment was removed; restore it first"));
+    const p = await actions.resolveReportAction({
+      resolution: "actioned", reportId: "r1", targetType: "prompt", targetId: "p1", targetAction: "hide",
+    });
+    const c = await actions.resolveReportAction({
+      resolution: "actioned", reportId: "r2", targetType: "comment", targetId: "c1", targetAction: "hide",
+    });
+    expect(p.ok).toBe(true);
+    expect(c.ok).toBe(true);
+    expect(resolveReport).toHaveBeenCalledTimes(2);
+  });
+  it("only forgives a CONFLICT for hide: remove conflicts and other errors still abort", async () => {
+    moderatePrompt.mockRejectedValue(new AppError("CONFLICT", "nope"));
+    const remove = await actions.resolveReportAction({
+      resolution: "actioned", reportId: "r1", targetType: "prompt", targetId: "p1", targetAction: "remove",
+    });
+    expect(remove).toMatchObject({ ok: false, code: "CONFLICT" });
+    moderatePrompt.mockRejectedValue(new AppError("FORBIDDEN", "nope"));
+    const forbidden = await actions.resolveReportAction({
+      resolution: "actioned", reportId: "r1", targetType: "prompt", targetId: "p1", targetAction: "hide",
+    });
+    expect(forbidden).toMatchObject({ ok: false, code: "FORBIDDEN" });
+    expect(resolveReport).not.toHaveBeenCalled();
+  });
   it("does not resolve the report if moderating the target fails", async () => {
     moderatePrompt.mockRejectedValue(new AppError("NOT_FOUND", "gone"));
     const r = await actions.resolveReportAction({
@@ -117,6 +144,23 @@ describe("resolveReportAction", () => {
     });
     expect(r.ok).toBe(false);
     expect(resolveReport).not.toHaveBeenCalled();
+  });
+});
+
+describe("redactPromptVersionAction", () => {
+  it("requires a reason, passes the admin first and revalidates the prompt and its version history", async () => {
+    expect(await actions.redactPromptVersionAction({ promptId: "p1", version: 1, reason: "" })).toMatchObject({ ok: false, code: "VALIDATION" });
+    expect(await actions.redactPromptVersionAction({ promptId: "p1", version: 0, reason: "phone number" })).toMatchObject({ ok: false, code: "VALIDATION" });
+    expect(moderatePromptVersion).not.toHaveBeenCalled();
+    const r = await actions.redactPromptVersionAction({ promptId: "p1", slug: "hello-abc1234", version: 2, reason: "phone number" });
+    expect(r.ok).toBe(true);
+    expect(moderatePromptVersion).toHaveBeenCalledWith(admin, "p1", 2, "phone number");
+    expect(revalidatePath).toHaveBeenCalledWith("/p/hello-abc1234/versions", "layout");
+  });
+  it("is denied for non-admins", async () => {
+    requireAdminForAction.mockRejectedValue(new AppError("FORBIDDEN", "Not allowed"));
+    expect(await actions.redactPromptVersionAction({ promptId: "p1", version: 1, reason: "because" })).toMatchObject({ ok: false, code: "FORBIDDEN" });
+    expect(moderatePromptVersion).not.toHaveBeenCalled();
   });
 });
 

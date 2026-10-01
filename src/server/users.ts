@@ -6,6 +6,8 @@ import { AppError } from "@/lib/errors";
 import { profileInputSchema, type ProfileInput } from "@/lib/validation";
 import type { ProfilePage, TrustLevel, Viewer } from "@/lib/types";
 import { accountAgeDays, getActiveActor, isUniqueViolation, parseInput } from "@/server/moderation/guards";
+import { runHeuristics, stripUrls } from "@/server/moderation/screening";
+import { enforceRateLimit } from "@/server/rate-limit";
 
 export { ensureProfile } from "@/db/profiles";
 
@@ -57,9 +59,47 @@ export async function getProfileByUsername(username: string): Promise<ProfilePag
   return row ? toProfilePage(row) : null;
 }
 
+function profileError(field: "bio" | "website", messages: string[]): AppError {
+  return new AppError("VALIDATION", messages.join(" "), { [field]: messages });
+}
+
+/**
+ * The bio and website are public, followable text, so they get the same heuristics as comments.
+ * - A reject verdict (link shortener, OpenAI-style hard blocks) always fails, for everyone.
+ * - Trust 0 accounts have no profile review queue to land in, so instead of failing they have links stripped from the
+ *   bio (the saved bio is returned to the form) and keep their website only when it is a plain link (no affiliate or
+ *   tracking parameters). Contact details and jailbreak / SEO-spam wording still fail for them until trust >= 1.
+ * Returns the bio to store.
+ */
+function screenProfileText(me: { trustLevel: TrustLevel; accountAgeDays: number }, data: { bio?: string; website?: string }): string | undefined {
+  const author = { trustLevel: me.trustLevel, accountAgeDays: me.accountAgeDays };
+  let bio = data.bio;
+  if (bio) {
+    const full = runHeuristics({ kind: "comment", text: bio, author });
+    if (full.verdict === "reject") throw profileError("bio", full.reasons);
+    if (me.trustLevel === 0) {
+      bio = stripUrls(bio);
+      const rest = bio ? runHeuristics({ kind: "comment", text: bio, author }) : null;
+      if (rest && rest.verdict !== "allow") {
+        throw profileError("bio", [...rest.reasons, "New accounts can't add contact details to their profile yet."]);
+      }
+    }
+  }
+  if (data.website) {
+    // A website is a link by definition, so judge it as a trusted author would: only shorteners / affiliate links fail.
+    const v = runHeuristics({ kind: "comment", text: data.website, author: { trustLevel: 1, accountAgeDays: me.accountAgeDays } });
+    if (v.verdict === "reject" || (v.verdict === "review" && me.trustLevel === 0)) {
+      throw profileError("website", v.reasons.length ? v.reasons : ["This website can't be added to a profile"]);
+    }
+  }
+  return bio;
+}
+
 export async function updateProfile(actor: Viewer, input: ProfileInput): Promise<ProfilePage> {
   const me = await getActiveActor(actor);
   const data = parseInput(profileInputSchema, input);
+  await enforceRateLimit("profile", { userId: me.id, trustLevel: me.trustLevel });
+  const bio = screenProfileText(me, data);
   const [taken] = await db
     .select({ userId: profiles.userId })
     .from(profiles)
@@ -71,7 +111,7 @@ export async function updateProfile(actor: Viewer, input: ProfileInput): Promise
   try {
     const updated = await db
       .update(profiles)
-      .set({ username: data.username, bio: data.bio || null, website: data.website || null })
+      .set({ username: data.username, bio: bio || null, website: data.website || null })
       .where(eq(profiles.userId, me.id))
       .returning({ userId: profiles.userId });
     if (updated.length === 0) throw new AppError("NOT_FOUND", "Profile not found");
@@ -130,28 +170,47 @@ export async function recomputeTrustLevel(userId: string): Promise<TrustLevel> {
   return level;
 }
 
-/** Users with a prompt, comment, rating or approval in the last N days (default 2); returns how many changed. */
+/**
+ * Users with a prompt, comment, rating or approval in the last N days (default 2); returns how many changed.
+ * One set-based UPDATE (same rules as recomputeTrustLevel: levels 2+ and admin-set levels are left alone) instead of
+ * several queries per user.
+ */
 export async function recomputeActiveTrustLevels(sinceDays: number = 2): Promise<number> {
   const days = Number.isFinite(sinceDays) && sinceDays > 0 ? sinceDays : 2;
   const since = new Date(Date.now() - days * 86_400_000);
-  const res = await db.execute<{ uid: string }>(sql`
-    SELECT uid FROM (
-      SELECT author_id AS uid FROM prompts
-        WHERE created_at >= ${since} OR published_at >= ${since} OR reviewed_at >= ${since}
-      UNION SELECT author_id FROM comments WHERE created_at >= ${since}
-      UNION SELECT user_id FROM ratings WHERE created_at >= ${since} OR updated_at >= ${since}
-    ) active
-    WHERE uid IN (SELECT user_id FROM profiles)
-    LIMIT 20000`);
-  let changed = 0;
-  for (const { uid } of res.rows) {
-    try {
-      const before = await db.select({ t: profiles.trustLevel }).from(profiles).where(eq(profiles.userId, uid)).limit(1);
-      const after = await recomputeTrustLevel(uid);
-      if (before[0] && before[0].t !== after) changed++;
-    } catch (e) {
-      console.error("[trust] recompute failed", e instanceof Error ? e.message : "unknown");
-    }
-  }
-  return changed;
+  const res = await db.execute<{ user_id: string }>(sql`
+    WITH active AS (
+      SELECT uid FROM (
+        SELECT author_id AS uid FROM prompts
+          WHERE created_at >= ${since} OR published_at >= ${since} OR reviewed_at >= ${since}
+        UNION SELECT author_id FROM comments WHERE created_at >= ${since}
+        UNION SELECT user_id FROM ratings WHERE created_at >= ${since} OR updated_at >= ${since}
+      ) a
+      LIMIT 20000
+    ),
+    cand AS (
+      SELECT pr.user_id, pr.trust_level AS cur,
+             (c.published >= ${TRUST_MIN_PUBLISHED} OR (
+                u.created_at <= now() - make_interval(days => ${TRUST_MIN_AGE_DAYS})
+                AND c.comments >= ${TRUST_MIN_COMMENTS} AND c.upheld = 0)) AS eligible
+      FROM active a
+      JOIN profiles pr ON pr.user_id = a.uid
+      JOIN "user" u ON u.id = pr.user_id
+      CROSS JOIN LATERAL (SELECT
+        (SELECT count(*)::int FROM prompts WHERE author_id = pr.user_id AND status = 'published') AS published,
+        (SELECT count(*)::int FROM comments WHERE author_id = pr.user_id AND status = 'visible') AS comments,
+        (SELECT count(*)::int FROM reports r WHERE r.status = 'actioned' AND (
+            (r.target_type = 'user' AND r.target_id = pr.user_id)
+            OR (r.target_type = 'prompt' AND r.target_id IN (SELECT id::text FROM prompts WHERE author_id = pr.user_id))
+            OR (r.target_type = 'comment' AND r.target_id IN (SELECT id::text FROM comments WHERE author_id = pr.user_id))
+        )) AS upheld) c
+      WHERE pr.trust_level < 2
+        AND NOT EXISTS (SELECT 1 FROM moderation_actions m
+                        WHERE m.target_type = 'user' AND m.target_id = pr.user_id AND m.action = 'set_trust')
+    )
+    UPDATE profiles SET trust_level = CASE WHEN cand.eligible THEN 1 ELSE 0 END
+    FROM cand
+    WHERE profiles.user_id = cand.user_id AND profiles.trust_level <> CASE WHEN cand.eligible THEN 1 ELSE 0 END
+    RETURNING profiles.user_id`);
+  return res.rows.length;
 }

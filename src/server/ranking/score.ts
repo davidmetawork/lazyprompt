@@ -3,6 +3,8 @@ import type { TrustLevel } from "@/lib/types";
 
 export const RANKING = {
   C: 8, DEFAULT_MEAN: 4.0, MIN_RATINGS_FOR_MEAN: 50, HALF_LIFE_HOURS: 72, WINDOW_DAYS: 7, MIN_ACTORS: 3,
+  /** Anonymous web events one IP hash may contribute to a prompt's trending score per day (the events and counters still record). */
+  ANON_WEB_EVENTS_PER_PROMPT_DAY: 3,
   WEIGHTS: { copy: 1, render: 1, open: 2, worked: 2, save: 3, rating: 3, comment: 2 },
 } as const;
 

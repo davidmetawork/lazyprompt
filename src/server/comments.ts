@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db, type Tx } from "@/db";
 import { comments, moderationActions, profiles, prompts, user } from "@/db/schema";
@@ -63,31 +63,60 @@ async function loadRow(tx: Tx | typeof db, id: string): Promise<CommentRow | nul
   return (row as CommentRow | undefined) ?? null;
 }
 
+/** Most comments one prompt page loads; the thread renders a note when more exist. */
+export const COMMENT_LIST_LIMIT = 200;
+
 /**
  * Threaded comments for a prompt: visible ones, the viewer's own pending ones (status "pending", isOwn true) and
- * everything for admins. A removed/hidden top-level comment that still has listed replies stays as a "[removed]"
- * placeholder so those replies keep their context. Oldest first.
+ * everything for admins, oldest first, at most COMMENT_LIST_LIMIT (`truncated` says more exist). Filtering happens in
+ * SQL so a spam-flooded prompt never loads its hidden/removed rows. A removed/hidden top-level comment that still has
+ * listed replies stays as a "[removed]" placeholder so those replies keep their context.
  */
-export async function listComments(promptId: string, viewer: Viewer | null): Promise<CommentNode[]> {
-  if (!/^[0-9a-f-]{36}$/i.test(promptId)) return [];
-  const rows = (await db
+export async function listCommentsPage(
+  promptId: string,
+  viewer: Viewer | null,
+): Promise<{ comments: CommentNode[]; truncated: boolean }> {
+  if (!/^[0-9a-f-]{36}$/i.test(promptId)) return { comments: [], truncated: false };
+  const isAdmin = viewer?.role === "admin";
+  const viewerId = viewer?.id ?? null;
+  const visibleToViewer: SQL | undefined = isAdmin
+    ? undefined
+    : or(
+      eq(comments.status, "visible"),
+      viewerId ? and(eq(comments.status, "pending"), eq(comments.authorId, viewerId)) : undefined,
+    );
+
+  const fetched = (await db
     .select(commentColumns)
     .from(comments)
     .innerJoin(user, eq(user.id, comments.authorId))
     .leftJoin(profiles, eq(profiles.userId, user.id))
-    .where(eq(comments.promptId, promptId))
-    .orderBy(asc(comments.createdAt), asc(comments.id))) as CommentRow[];
+    .where(and(eq(comments.promptId, promptId), visibleToViewer))
+    .orderBy(asc(comments.createdAt), asc(comments.id))
+    .limit(COMMENT_LIST_LIMIT + 1)) as CommentRow[];
+  const truncated = fetched.length > COMMENT_LIST_LIMIT;
+  const rows = truncated ? fetched.slice(0, COMMENT_LIST_LIMIT) : fetched;
 
-  const isAdmin = viewer?.role === "admin";
-  const viewerId = viewer?.id ?? null;
   const canSee = (r: CommentRow) =>
     isAdmin || r.status === "visible" || (r.status === "pending" && viewerId !== null && r.authorId === viewerId);
+
+  // Parents that were filtered out in SQL (hidden/removed/someone else's pending) but still have listed replies.
+  const listedIds = new Set(rows.map((r) => r.id));
+  const missingParentIds = [...new Set(rows.map((r) => r.parentId).filter((id): id is string => id !== null && !listedIds.has(id)))];
+  const parentRows = missingParentIds.length
+    ? ((await db
+      .select(commentColumns)
+      .from(comments)
+      .innerJoin(user, eq(user.id, comments.authorId))
+      .leftJoin(profiles, eq(profiles.userId, user.id))
+      .where(and(eq(comments.promptId, promptId), inArray(comments.id, missingParentIds), sql`${comments.parentId} is null`))) as CommentRow[])
+    : [];
 
   const nodes = new Map<string, CommentNode>();
   for (const r of rows) if (canSee(r)) nodes.set(r.id, toNode(r, viewerId));
 
   const top: CommentNode[] = [];
-  const topRows = new Map(rows.filter((r) => r.parentId === null).map((r) => [r.id, r]));
+  const topRows = new Map(parentRows.map((r) => [r.id, r]));
   for (const r of rows) {
     const node = nodes.get(r.id);
     if (!node) continue;
@@ -106,9 +135,13 @@ export async function listComments(promptId: string, viewer: Viewer | null): Pro
     }
   }
   // Placeholders were appended out of order; restore chronological order of top-level comments.
-  const order = new Map(rows.map((r, i) => [r.id, i]));
-  top.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-  return top;
+  const byTime = new Map([...rows, ...parentRows].map((r) => [r.id, r.createdAt.getTime()]));
+  top.sort((a, b) => (byTime.get(a.id) ?? 0) - (byTime.get(b.id) ?? 0));
+  return { comments: top, truncated };
+}
+
+export async function listComments(promptId: string, viewer: Viewer | null): Promise<CommentNode[]> {
+  return (await listCommentsPage(promptId, viewer)).comments;
 }
 
 function screenInput(me: ActiveActor, body: string) {
@@ -168,6 +201,7 @@ export async function updateComment(actor: Viewer, commentId: string, body: stri
   const me = await getActiveActor(actor);
   const text = parseInput(commentInputSchema.shape.body, body);
   const idCheck = parseInput(uuidSchema, commentId);
+  await enforceRateLimit("comment_update", { userId: me.id, trustLevel: me.trustLevel });
 
   const existing = await loadRow(db, idCheck);
   if (!existing) throw new AppError("NOT_FOUND", "Comment not found");
@@ -206,6 +240,7 @@ export async function updateComment(actor: Viewer, commentId: string, body: stri
 export async function deleteComment(actor: Viewer, commentId: string): Promise<void> {
   const me = await getActiveActor(actor);
   const id = parseInput(uuidSchema, commentId);
+  await enforceRateLimit("delete", { userId: me.id, trustLevel: me.trustLevel });
 
   await db.transaction(async (tx) => {
     const [c] = await tx.select({

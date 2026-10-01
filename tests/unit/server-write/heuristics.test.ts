@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runHeuristics, type ScreenInput } from "@/server/moderation/screening";
+import { runHeuristics, stripUrls, type ScreenInput } from "@/server/moderation/screening";
 
 const trusted = { trustLevel: 1 as const, accountAgeDays: 30 };
 const newbie = { trustLevel: 0 as const, accountAgeDays: 0 };
@@ -162,5 +162,18 @@ describe("verdict precedence and extra text", () => {
   it("scans extraText and the title as well", () => {
     expect(runHeuristics(prompt("clean", { extraText: "see https://bit.ly/z" })).verdict).toBe("reject");
     expect(runHeuristics(prompt("clean", { title: "Undetectable writing helper" })).flags).toContain("seo_spam");
+  });
+});
+
+describe("stripUrls", () => {
+  it("removes scheme, www. and bare shortener links and tidies the spacing", () => {
+    expect(stripUrls("Best deals at https://deals.example.com/now, welcome")).toBe("Best deals at welcome");
+    expect(stripUrls("see www.example.com and bit.ly/abc123 too")).toBe("see and too");
+    expect(stripUrls("https://example.com")).toBe("");
+    expect(stripUrls("I write about cooking")).toBe("I write about cooking");
+  });
+
+  it("leaves nothing that the link heuristic still flags", () => {
+    expect(runHeuristics(comment(stripUrls("Join us https://x.example.com/a?ref=1 now"), { author: newbie })).verdict).toBe("allow");
   });
 });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getViewer } from "@/auth/viewer";
-import { listComments } from "@/server/comments";
+import { COMMENT_LIST_LIMIT, listCommentsPage } from "@/server/comments";
 import { CommentForm } from "./comment-form";
 import { CommentItem } from "./comment-item";
 import { signInHref, toCommentView } from "./helpers";
@@ -10,7 +10,7 @@ export interface CommentsSectionProps { promptId: string; slug: string; commentC
 /** Async server component: loads the thread for the current viewer (visible comments plus their own pending ones). */
 export async function CommentsSection({ promptId, slug, commentCount }: CommentsSectionProps) {
   const viewer = await getViewer();
-  const nodes = await listComments(promptId, viewer);
+  const { comments: nodes, truncated } = await listCommentsPage(promptId, viewer);
   const comments = nodes.map((n) => toCommentView(n));
   const signedIn = viewer !== null;
   const count = Math.max(commentCount, comments.length);
@@ -39,6 +39,9 @@ export async function CommentsSection({ promptId, slug, commentCount }: Comments
           ))}
         </ul>
       )}
+      {truncated ? (
+        <p role="note" className="text-sm text-muted-foreground">Showing the first {COMMENT_LIST_LIMIT} comments.</p>
+      ) : null}
     </section>
   );
 }

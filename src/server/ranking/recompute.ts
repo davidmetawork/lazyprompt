@@ -11,11 +11,14 @@ const W = RANKING.WEIGHTS;
 type Executor = Pick<Db | Tx, "execute">;
 
 /**
- * One statement. `ev` unions usage events, saves, ratings >= 4 and visible comments in the 7-day window as
- * (prompt, actor, weight, time); distinct actor = coalesce(user_id, actor_hash) for events, user id for the rest.
- * Prompts with fewer than MIN_ACTORS distinct actors score 0. The global mean is the weighted mean over published
- * prompts' ratings (4.0 below 50 ratings); every bayes score uses it. Prompts whose denormalized weight sums are unset
- * (rating_weight_sum = 0) fall back to rating_sum / rating_count with weight 1.
+ * One statement. `ev` unions usage events (minus zero-weight `not_worked`, which must not count towards MIN_ACTORS), saves,
+ * ratings >= 4 and visible comments in the 7-day window as (prompt, actor, weight, time); distinct actor =
+ * coalesce(user_id, actor_hash) for events, user id for the rest. Prompts with fewer than MIN_ACTORS distinct actors
+ * score 0. Anonymous web events beyond ANON_WEB_EVENTS_PER_PROMPT_DAY per (prompt, IP hash, day) are recorded and counted
+ * on the prompt but carry no trending weight. The global mean is the weighted mean over published prompts' ratings (4.0 below 50 ratings); every bayes
+ * score uses it. Prompts whose denormalized weight sums are unset (rating_weight_sum = 0) fall back to
+ * rating_sum / rating_count with weight 1. Only rows whose scores actually change are rewritten (an unconditional UPDATE
+ * dirties every published row and all of its indexes on each run), and `prompts` is that count.
  */
 async function runRecompute(exec: Executor): Promise<{ prompts: number; globalMean: number }> {
   const res = await exec.execute<{ prompts: number; mean: number }>(sql`
@@ -32,10 +35,17 @@ async function runRecompute(exec: Executor): Promise<{ prompts: number; globalMe
       FROM rated
     ),
     ev AS (
-      SELECT e.prompt_id, coalesce(e.user_id, e.actor_hash) AS actor, e.created_at AS at,
-             (CASE e.type WHEN 'copy' THEN ${W.copy} WHEN 'render' THEN ${W.render} WHEN 'open' THEN ${W.open}
-                          WHEN 'worked' THEN ${W.worked} ELSE 0 END)::float8 AS weight
-      FROM usage_events e WHERE e.created_at >= now() - make_interval(days => ${RANKING.WINDOW_DAYS})
+      SELECT prompt_id, actor, at, weight FROM (
+        SELECT e.prompt_id, coalesce(e.user_id, e.actor_hash) AS actor, e.created_at AS at,
+               (CASE e.type WHEN 'copy' THEN ${W.copy} WHEN 'render' THEN ${W.render} WHEN 'open' THEN ${W.open}
+                            WHEN 'worked' THEN ${W.worked} ELSE 0 END)::float8 AS weight,
+               CASE WHEN e.user_id IS NULL AND e.source = 'web'
+                    THEN row_number() OVER (PARTITION BY e.prompt_id, e.actor_hash, e.day ORDER BY e.created_at, e.id)
+                    ELSE 0 END AS anon_rank
+        FROM usage_events e
+        WHERE e.type <> 'not_worked' AND e.created_at >= now() - make_interval(days => ${RANKING.WINDOW_DAYS})
+      ) ue
+      WHERE ue.anon_rank <= ${RANKING.ANON_WEB_EVENTS_PER_PROMPT_DAY}
       UNION ALL
       SELECT s.prompt_id, s.user_id, s.created_at, ${W.save}::float8
       FROM saves s WHERE s.created_at >= now() - make_interval(days => ${RANKING.WINDOW_DAYS})
@@ -51,13 +61,17 @@ async function runRecompute(exec: Executor): Promise<{ prompts: number; globalMe
              sum(weight * power(0.5, greatest(extract(epoch FROM (now() - at)) / 3600.0, 0) / ${RANKING.HALF_LIFE_HOURS})) AS score
       FROM ev GROUP BY prompt_id
     ),
-    upd AS (
-      UPDATE prompts p SET
-        trending_score = coalesce((SELECT CASE WHEN a.actors >= ${RANKING.MIN_ACTORS} THEN a.score ELSE 0 END
-                                   FROM agg a WHERE a.prompt_id = p.id), 0),
-        bayes_score = (${RANKING.C}::float8 * (SELECT m FROM gm) + r.ws) / (${RANKING.C}::float8 + r.w)
+    calc AS (
+      SELECT r.id,
+             coalesce((SELECT CASE WHEN a.actors >= ${RANKING.MIN_ACTORS} THEN a.score ELSE 0 END
+                       FROM agg a WHERE a.prompt_id = r.id), 0)::float8 AS trending,
+             ((${RANKING.C}::float8 * (SELECT m FROM gm) + r.ws) / (${RANKING.C}::float8 + r.w))::float8 AS bayes
       FROM rated r
-      WHERE r.id = p.id
+    ),
+    upd AS (
+      UPDATE prompts p SET trending_score = c.trending, bayes_score = c.bayes
+      FROM calc c
+      WHERE c.id = p.id AND (p.trending_score, p.bayes_score) IS DISTINCT FROM (c.trending, c.bayes)
       RETURNING p.id
     ),
     s_mean AS (

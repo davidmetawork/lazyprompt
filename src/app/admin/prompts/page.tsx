@@ -73,7 +73,7 @@ export default async function AdminPromptsPage({ searchParams }: PageProps<"/adm
                     <time dateTime={p.updatedAt}>{formatAge(p.updatedAt)} ago</time>
                   </TableCell>
                   <TableCell className="whitespace-normal">
-                    <PromptRowActions id={p.id} slug={p.slug} title={p.title} status={p.status} isFeatured={p.isFeatured} />
+                    <PromptRowActions id={p.id} slug={p.slug} title={p.title} status={p.status} isFeatured={p.isFeatured} version={p.version} />
                   </TableCell>
                 </TableRow>
               ))}

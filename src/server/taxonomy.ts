@@ -1,10 +1,11 @@
 // Categories and tags (ARCHITECTURE.md sections 3, 5, 7).
 import "server-only";
 import { cache } from "react";
-import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, tags } from "@/db/schema";
 import type { CategoryWithCount, TagSummary } from "@/lib/types";
+import { MIN_TAG_PROMPTS } from "@/lib/seo/sitemap";
 import { escapeLike } from "@/server/search/like";
 
 const categoryColumns = {
@@ -49,6 +50,16 @@ export async function listPopularTags(limit?: number): Promise<TagSummary[]> {
     .where(and(isNull(tags.aliasOfId), gt(tags.promptCount, 0)))
     .orderBy(desc(tags.promptCount), asc(tags.slug))
     .limit(clamp(limit, 30, 100));
+}
+
+/** Every canonical tag worth a sitemap entry (no 100-row clamp, unlike listPopularTags). */
+export async function listTagsForSitemap(): Promise<TagSummary[]> {
+  return db
+    .select({ slug: tags.slug, name: tags.name, promptCount: tags.promptCount })
+    .from(tags)
+    .where(and(isNull(tags.aliasOfId), gte(tags.promptCount, MIN_TAG_PROMPTS)))
+    .orderBy(desc(tags.promptCount), asc(tags.slug))
+    .limit(20_000);
 }
 
 /**

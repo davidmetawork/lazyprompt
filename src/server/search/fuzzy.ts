@@ -10,7 +10,10 @@ import { pickCorrection, tokenize } from "./typo";
 export async function correctQuery(q: string): Promise<string | null> {
   const tokens = tokenize(q);
   if (tokens.length === 0) return null;
-  const res = await db.execute<{ token: string; word: string; n: number }>(sql`
+  // The vocabulary scan is unbounded in the number of prompts: cap it so a pathological query cannot hold a connection.
+  const res = await db.transaction(async (tx) => {
+    await tx.execute(sql`SET LOCAL statement_timeout = 5000`);
+    return tx.execute<{ token: string; word: string; n: number }>(sql`
     SELECT t.token, v.w AS word, count(*)::int AS n
     FROM unnest(array[${sql.join(tokens.map((t) => sql`${t}`), sql`, `)}]::text[]) AS t(token)
     JOIN (
@@ -19,6 +22,7 @@ export async function correctQuery(q: string): Promise<string | null> {
     ) v ON length(v.w) BETWEEN 3 AND 40 AND abs(length(v.w) - length(t.token)) <= 2 AND similarity(v.w, t.token) >= 0.15
     GROUP BY t.token, v.w
   `);
+  });
   const byToken = new Map<string, { word: string; n: number }[]>();
   for (const r of res.rows) {
     const list = byToken.get(r.token) ?? [];
