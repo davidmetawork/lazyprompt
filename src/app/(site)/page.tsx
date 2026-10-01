@@ -25,7 +25,7 @@ export default async function HomePage() {
   const [sections, categories] = await Promise.all([getHomeSections(), listCategories()]);
 
   const blocks = [
-    { id: "featured", title: "Featured", items: sections.featured, href: "/prompts?sort=top" },
+    { id: "featured", title: "Featured", items: sections.featured, href: null as string | null },
     { id: "trending", title: "Trending", items: sections.trending, href: "/prompts?sort=trending" },
     { id: "top", title: "Top rated", items: sections.top, href: "/prompts?sort=top" },
     { id: "new", title: "New", items: sections.latest, href: "/prompts?sort=new" },
@@ -71,15 +71,15 @@ export default async function HomePage() {
 
       <Container className="py-10 sm:py-14">
         {blocks.length === 0 ? (
-          <EmptyState title="No prompts yet" description="Run pnpm db:seed to load the starter library." />
+          <EmptyState title="No prompts yet" description="Check back soon." />
         ) : (
           blocks.map((b) => (
             <section key={b.id} aria-labelledby={`home-${b.id}`} className="mb-12 last:mb-0">
               <div className="mb-4 flex items-end justify-between gap-3">
                 <h2 id={`home-${b.id}`} className="text-xl font-semibold tracking-tight">{b.title}</h2>
-                <Link href={b.href} className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
+                {b.href ? <Link href={b.href} className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline">
                   See all <span className="sr-only">{b.title} prompts</span> <ArrowRight className="size-3.5" aria-hidden="true" />
-                </Link>
+                </Link> : null}
               </div>
               <PromptGrid prompts={b.items.slice(0, 6)} />
             </section>

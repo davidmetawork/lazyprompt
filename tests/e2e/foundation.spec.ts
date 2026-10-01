@@ -41,3 +41,27 @@ test("signing out returns to the signed-out header", async ({ page }) => {
   await page.getByRole("menuitem", { name: /sign out/i }).click();
   await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 });
+
+test("sign-in shows a message after a failed magic link or OAuth attempt", async ({ page }) => {
+  await page.goto("/sign-in?error=link&from=link");
+  await expect(page.getByRole("alert").filter({ hasText: /expired or was already used/i })).toBeVisible();
+  await page.goto("/sign-in?error=access_denied&from=oauth");
+  await expect(page.getByRole("alert").filter({ hasText: /did not complete/i })).toBeVisible();
+});
+
+test("a control-character next never leaves the site after sign-in", async ({ page }) => {
+  await signIn(page, `redirect-${Date.now()}@e2e.test`, "/\t/evil.com");
+  expect(new URL(page.url()).hostname).toBe("localhost");
+});
+
+test("phones get a Submit shortcut in the header", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto("/");
+  await expect(page.getByRole("banner").getByRole("link", { name: "Submit a prompt" })).toBeVisible();
+});
+
+test("the suspended page explains the suspension and offers sign-out", async ({ page }) => {
+  await page.goto("/suspended");
+  await expect(page.getByRole("heading", { name: /account has been suspended/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /sign out/i })).toBeVisible();
+});

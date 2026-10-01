@@ -23,7 +23,7 @@ export function OAuthSignInForm({
 
   async function social(provider: "google" | "github") {
     setError(null);
-    const { error } = await authClient.signIn.social({ provider, callbackURL: resumePath });
+    const { error } = await authClient.signIn.social({ provider, callbackURL: resumePath, errorCallbackURL: "/sign-in?error=oauth&from=oauth" });
     if (error) setError(error.message ?? "Could not start sign-in");
   }
 
@@ -31,7 +31,7 @@ export function OAuthSignInForm({
     e.preventDefault();
     setPending(true);
     setError(null);
-    const { error } = await authClient.signIn.magicLink({ email: email.trim(), callbackURL: resumePath });
+    const { error } = await authClient.signIn.magicLink({ email: email.trim(), callbackURL: resumePath, errorCallbackURL: "/sign-in?error=link&from=link" });
     setPending(false);
     if (error) {
       setError(error.message ?? "Could not send the sign-in link");

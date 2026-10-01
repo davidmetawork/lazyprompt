@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/actions/prompts", () => ({ createPromptAction: vi.fn(), updatePromptAction: vi.fn(), deletePromptAction: vi.fn() }));
 // jsdom has no ResizeObserver (Radix Checkbox measures its button).
@@ -15,6 +15,8 @@ function setup(initial = {}) {
   return screen.getByLabelText("Prompt text") as HTMLTextAreaElement;
 }
 const type = (el: HTMLElement, value: string) => fireEvent.change(el, { target: { value } });
+
+beforeEach(() => window.localStorage.clear());
 
 describe("PromptForm variable detection", () => {
   it("shows an empty state until the body has variables", () => {

@@ -12,8 +12,22 @@ describe("safeNext", () => {
   ])("accepts %s", (raw, out) => expect(safeNext(raw)).toBe(out));
 
   it.each([
+    "/\t/evil.com", "/\n/x", "/\r/x", "/ /evil.com", "/\u0000/x", "/\u007f/x", "//evil.com",
     "//evil.example", "/\\evil.example", "https://evil.example", "javascript:alert(1)", "", "evil", "\\\\evil",
+    "/.//evil.com", "/..//evil.com", "/a/..//evil.com", "/%2e%2e//evil.com", "/././/evil.com", "/a/../..//evil.com",
   ])("rejects %j", (raw) => expect(safeNext(raw)).toBe("/"));
+
+  it("keeps percent-encoded controls same-origin and normalises via URL", () => {
+    expect(safeNext("/%09/x")).toBe("/%09/x");
+    expect(safeNext("/p/foo?x=1#rate")).toBe("/p/foo?x=1#rate");
+  });
+
+  it("never returns a protocol-relative path after normalisation", () => {
+    for (const raw of ["/.//evil.com", "/..//evil.com", "/a/..//evil.com", "/%2e%2e//evil.com", "/%2E/%2e//x"]) {
+      expect(safeNext(raw).startsWith("//")).toBe(false);
+    }
+    expect(safeNext("/a/../b")).toBe("/b");
+  });
 
   it("rejects null, undefined and over-long values", () => {
     expect(safeNext(null)).toBe("/");
@@ -56,6 +70,11 @@ describe("promptInputSchema", () => {
 });
 
 describe("variableDefSchema", () => {
+  it.each(["constructor", "prototype", "__proto__", "toString", "valueOf", "hasOwnProperty",
+    "isPrototypeOf", "propertyIsEnumerable", "toLocaleString"])("rejects reserved key %s", (key) => {
+    expect(variableDefSchema.safeParse({ key, label: "A", type: "text", required: false }).success).toBe(false);
+  });
+
   it("requires options for select", () => {
     expect(variableDefSchema.safeParse({ key: "a", label: "A", type: "select", required: true }).success).toBe(false);
     expect(variableDefSchema.safeParse({ key: "a", label: "A", type: "select", options: ["x", "y"], required: true }).success).toBe(true);

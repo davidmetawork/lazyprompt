@@ -8,10 +8,12 @@ const DEFAULT_FROM = "LazyPrompt <login@lazyprompt.ai>";
 /**
  * Sends the magic-link email. Uses Resend when RESEND_API_KEY is set; otherwise logs the URL to the console.
  * When MAGIC_LINK_DEV_SINK is set (and VERCEL_ENV !== production) a JSON line {email,url,ts} is appended to that file.
- * Never logs the URL in production.
+ * Never logs the URL in production. In production without RESEND_API_KEY it throws, so the form shows an error
+ * instead of a false "check your email".
  */
 export async function sendMagicLink({ email, url }: { email: string; url: string; token?: string }): Promise<void> {
   const isProd = process.env.VERCEL_ENV === "production";
+  const isProdBuild = isProd || process.env.NODE_ENV === "production";
   const sink = process.env.MAGIC_LINK_DEV_SINK;
   if (sink && !isProd) {
     // The sink path is dynamic by design (dev/test only); keep Turbopack from tracing the whole project for it.
@@ -22,8 +24,12 @@ export async function sendMagicLink({ email, url }: { email: string; url: string
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    if (!isProd) console.info(`[magic-link] ${email} -> ${url}`);
-    else console.warn("[magic-link] RESEND_API_KEY is not set; magic link not delivered");
+    // A production build with a dev sink (the e2e server) is the only production-mode case allowed to skip email.
+    if (isProd || (isProdBuild && !sink)) {
+      console.error("[magic-link] RESEND_API_KEY is not set; sign-in email not delivered");
+      throw new Error("Sign-in email is not configured");
+    }
+    console.info(`[magic-link] ${email} -> ${url}`);
     return;
   }
 

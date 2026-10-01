@@ -64,6 +64,13 @@ describe("variable storage helpers", () => {
     expect(loadVariableValues("x", VARIABLES)).toEqual({});
   });
 
+  it("drops stale select options and non-numeric number values", () => {
+    window.localStorage.setItem(variablesStorageKey("x"), JSON.stringify({ tone: "sarcastic", words: "lots", name: "A" }));
+    expect(loadVariableValues("x", VARIABLES)).toEqual({ name: "A" });
+    window.localStorage.setItem(variablesStorageKey("x"), JSON.stringify({ tone: "formal", words: "250" }));
+    expect(loadVariableValues("x", VARIABLES)).toEqual({ tone: "formal", words: "250" });
+  });
+
   it("never throws when localStorage is unavailable", () => {
     const original = Object.getOwnPropertyDescriptor(window, "localStorage")!;
     Object.defineProperty(window, "localStorage", { configurable: true, get() { throw new Error("blocked"); } });
