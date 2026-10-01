@@ -14,11 +14,19 @@ describe("safeNext", () => {
   it.each([
     "/\t/evil.com", "/\n/x", "/\r/x", "/ /evil.com", "/\u0000/x", "/\u007f/x", "//evil.com",
     "//evil.example", "/\\evil.example", "https://evil.example", "javascript:alert(1)", "", "evil", "\\\\evil",
+    "/.//evil.com", "/..//evil.com", "/a/..//evil.com", "/%2e%2e//evil.com", "/././/evil.com", "/a/../..//evil.com",
   ])("rejects %j", (raw) => expect(safeNext(raw)).toBe("/"));
 
   it("keeps percent-encoded controls same-origin and normalises via URL", () => {
     expect(safeNext("/%09/x")).toBe("/%09/x");
     expect(safeNext("/p/foo?x=1#rate")).toBe("/p/foo?x=1#rate");
+  });
+
+  it("never returns a protocol-relative path after normalisation", () => {
+    for (const raw of ["/.//evil.com", "/..//evil.com", "/a/..//evil.com", "/%2e%2e//evil.com", "/%2E/%2e//x"]) {
+      expect(safeNext(raw).startsWith("//")).toBe(false);
+    }
+    expect(safeNext("/a/../b")).toBe("/b");
   });
 
   it("rejects null, undefined and over-long values", () => {

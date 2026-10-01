@@ -112,6 +112,8 @@ export function safeNext(raw: string | null | undefined): string {
   try {
     const u = new URL(raw, "http://x");
     if (u.origin !== "http://x") return "/";
+    // URL normalisation collapses dot segments ("/.//evil.com" -> "//evil.com"), which would be protocol-relative.
+    if (u.pathname.startsWith("//")) return "/";
     return u.pathname + u.search + u.hash;
   } catch {
     return "/";

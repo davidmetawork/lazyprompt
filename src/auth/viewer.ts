@@ -75,7 +75,7 @@ export async function requireAdmin(): Promise<Viewer> {
 export async function requireViewerForAction(): Promise<Viewer> {
   const v = await getViewer();
   if (!v) throw new AppError("UNAUTHENTICATED", "Please sign in");
-  if (v.banned) redirect("/suspended");
+  if (v.banned) throw new AppError("BANNED", "Your account has been suspended");
   return v;
 }
 

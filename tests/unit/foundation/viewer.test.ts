@@ -45,6 +45,20 @@ describe("viewer guards for anonymous callers", () => {
     await expect(requireViewer("/submit")).rejects.toMatchObject({ digest: expect.stringContaining("/suspended") });
   });
 
+  it("requireViewerForAction throws BANNED (never navigates) for a banned user", async () => {
+    getSession.mockResolvedValue({ user: { id: "u1" } });
+    const row = {
+      id: "u1", name: "N", email: "n@e.co", image: null, role: "user", banned: true, banExpires: null,
+      createdAt: new Date(), username: "n", trustLevel: 1,
+    };
+    const q: Record<string, unknown> = {};
+    for (const m of ["from", "leftJoin", "where"]) q[m] = () => q;
+    q.limit = async () => [row];
+    (await import("@/db")).db.select = (() => q) as never;
+    await expect(requireViewerForAction()).rejects.toMatchObject({ name: "AppError", code: "BANNED" });
+    await expect(requireAdminForAction()).rejects.toMatchObject({ code: "BANNED" });
+  });
+
   it("requireAdmin calls notFound()", async () => {
     await expect(requireAdmin()).rejects.toMatchObject({ digest: "NEXT_HTTP_ERROR_FALLBACK;404" });
   });
