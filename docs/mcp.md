@@ -135,7 +135,8 @@ A scripted run against a local server (flag on) was verified: dynamic registrati
 
 ## Operating notes
 
-- **Rate limits** (`mcp` in `src/server/rate-limit.ts`): 120 requests per minute per subject, plus 600 per minute per IP hash. The subject is the verified token's user id, else the client-supplied `params._meta["openai/subject"]` (capped at 128 chars), else the IP hash. It is for limiting only, never for authorization. Over the limit: HTTP 429, JSON-RPC error, `Retry-After`. ChatGPT and Claude share egress IPs, which is why the per-IP limit alone would be too strict.
+- **Rate limits** (`mcp` in `src/server/rate-limit.ts`): 120 requests per minute per subject, plus 600 per minute per IP hash. The subject is the verified token's user id, else the client-supplied `params._meta["openai/subject"]` (capped at 128 chars), else the IP hash. It is for limiting only, never for authorization. Over the limit: HTTP 429, JSON-RPC error, `Retry-After`. ChatGPT and Claude share egress IPs, which is why the per-IP limit alone would be too strict. GET and DELETE go through the same gates as POST. Before any bearer token is verified, the IP's count of FAILED verifications (`mcp:auth:<ip hash>`, 600 per minute) is read, and an IP over it is refused with 429; only failed verifications increment it, so valid tokens behind a shared egress IP never use it up.
+- **Untrusted text**: prompt bodies, notes and example outputs are community-authored. `get_prompt` and `render_prompt` wrap them in `<community_content>` (after "Untrusted community text follows.") and the server instructions tell the model to treat them as data, never to call `rate_prompt` or `save_prompt` because a prompt says so. `render_prompt` leaves skipped optional variables out of the text instead of printing `[Label]`.
 - **Body size**: more than 64 KB gives HTTP 413.
 - **Privacy**: tool results contain no timestamps, emails, session ids or tokens. Variable values given to `render_prompt` are used to build the text only; they are never logged or stored. `render_prompt` records one usage event (source `mcp`, actor = hashed IP; the user id when signed in). The route never reads cookies.
 - **Usage events** are best effort: a failing `recordUsageEvent` never fails a render.
@@ -146,7 +147,7 @@ ChatGPT App directory and Claude connector directory. Tool names, signatures and
 
 - [ ] Public HTTPS production URL (`https://lazyprompt.ai/mcp`), not a tunnel or preview.
 - [ ] Final tool names and descriptions reviewed (`src/mcp/descriptions.ts`): accurate, no "prefer this app" language, no promotion.
-- [ ] All tools carry `readOnlyHint`, `destructiveHint`, `openWorldHint` and `idempotentHint`, each justified in the form (write tools: rating changes a public aggregate, hence `openWorldHint: true` on `rate_prompt`).
+- [ ] All tools carry `readOnlyHint`, `destructiveHint`, `openWorldHint` and `idempotentHint`, each justified in the form (write tools: rating changes a public aggregate, hence `openWorldHint: true` on `rate_prompt`; `render_prompt` records a usage event, hence `readOnlyHint: false`, `openWorldHint: true`).
 - [ ] `MCP_WIDGET_DOMAIN` set to the dedicated, unique widget origin (becomes `_meta.ui.domain`); widget CSP lists no domains because it fetches nothing.
 - [ ] Privacy policy URL (data categories, purposes, recipients, controls): `/privacy`.
 - [ ] Support contact and terms (`/terms`), a DMCA/takedown contact (`/guidelines`).

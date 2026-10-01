@@ -16,7 +16,8 @@ const CORS: Record<string, string> = {
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json", "cache-control": "public, max-age=60", ...CORS },
+    // Only a good document is cacheable: a 503 must never be served from a cache after Better Auth recovers.
+    headers: { "content-type": "application/json", "cache-control": status === 200 ? "public, max-age=60" : "no-store", ...CORS },
   });
 }
 

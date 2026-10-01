@@ -3,7 +3,7 @@ import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { toPromptResult } from "../mappers";
 import { getPromptInput } from "../schemas";
-import { PROMPT_NOT_FOUND, READ_ANNOTATIONS, errorFrom, errorResult, findPublishedPrompt, okResult, toolMeta } from "./shared";
+import { PROMPT_NOT_FOUND, READ_ANNOTATIONS, communityContent, errorFrom, errorResult, findPublishedPrompt, okResult, toolMeta } from "./shared";
 import { GET_PROMPT_DESCRIPTION } from "../descriptions";
 
 export function registerGetPrompt(server: Pick<McpServer, "registerTool">): void {
@@ -25,7 +25,12 @@ export function registerGetPrompt(server: Pick<McpServer, "registerTool">): void
         const vars = prompt.variables.length === 0
           ? "No variables."
           : `Variables: ${prompt.variables.map((v) => `${v.key}${v.required ? "" : " (optional)"}`).join(", ")}.`;
-        const text = `${prompt.title} (id: ${prompt.id}, ${prompt.rating === null ? "not rated yet" : `${prompt.rating}/5 from ${prompt.ratingCount}`})\n${vars}\n\n${prompt.body}\n\n${prompt.url}`;
+        const community = [
+          prompt.body,
+          prompt.notes ? `Notes:\n${prompt.notes}` : null,
+          prompt.exampleOutput ? `Example output${prompt.exampleOutputTruncated ? " (shortened)" : ""}:\n${prompt.exampleOutput}` : null,
+        ].filter((part): part is string => part !== null).join("\n\n");
+        const text = `${prompt.title} (id: ${prompt.id}, ${prompt.rating === null ? "not rated yet" : `${prompt.rating}/5 from ${prompt.ratingCount}`})\n${vars}\n\n${communityContent(community)}\n\n${prompt.url}`;
         return okResult(text, { prompt });
       } catch (e) {
         return errorFrom(e, "get_prompt");

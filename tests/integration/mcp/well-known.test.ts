@@ -1,4 +1,5 @@
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
+import { auth } from "@/auth/server";
 import { closeDb } from "@/db";
 import { GET, OPTIONS } from "@/app/api/well-known/[...path]/route";
 import { base } from "./helpers";
@@ -44,5 +45,22 @@ describe("routing", () => {
     const opt = await OPTIONS();
     expect(opt.status).toBe(204);
     expect(opt.headers.get("access-control-allow-origin")).toBe("*");
+  });
+});
+
+describe("caching", () => {
+  it("caches good documents briefly and never caches an error", async () => {
+    const ok = await get("oauth-authorization-server");
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("cache-control")).toBe("public, max-age=60");
+
+    const spy = vi.spyOn(auth, "handler").mockResolvedValue(new Response("down", { status: 500 }));
+    try {
+      const down = await get("oauth-authorization-server");
+      expect(down.status).toBe(503);
+      expect(down.headers.get("cache-control")).toBe("no-store");
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
