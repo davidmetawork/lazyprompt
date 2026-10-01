@@ -110,3 +110,12 @@ export function authSecret(): string {
   }
   return DEV_AUTH_SECRET;
 }
+
+/**
+ * True only for the Playwright web server (playwright.config.ts sets E2E_DISABLE_RATE_LIMITS=true): the e2e suite
+ * signs in dozens of times from one IP against a production build. It can never be on in a real deployment: any
+ * Vercel runtime (VERCEL / VERCEL_ENV set) ignores it, so production and preview always keep the real limits.
+ */
+export function rateLimitsRelaxedForE2e(): boolean {
+  return process.env.E2E_DISABLE_RATE_LIMITS === "true" && !process.env.VERCEL && !process.env.VERCEL_ENV;
+}

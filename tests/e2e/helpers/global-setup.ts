@@ -2,11 +2,10 @@
 // The reset keeps `jwks` and `oauth_resource`: the running server seeds them once at startup.
 import { rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { loadTestEnv } from "../../../scripts/lib/env-files";
+import "../../../scripts/lib/load-test-env";
 import { E2E_DATABASE_URL, E2E_MAGIC_LINK_SINK } from "./constants";
 
 export default async function globalSetup() {
-  loadTestEnv();
   process.env.DATABASE_URL = E2E_DATABASE_URL;          // must be set before src/db is first used
   const { prepareDatabase } = await import("../../../scripts/lib/db-admin");
   const { resetDb } = await import("../../helpers/db");

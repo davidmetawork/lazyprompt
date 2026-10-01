@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { ensureProfile } from "../db/profiles";
-import { adminEmails, authSecret } from "../lib/env";
+import { adminEmails, authSecret, rateLimitsRelaxedForE2e } from "../lib/env";
 import { getBaseUrl } from "../lib/base-url";
 import { sendMagicLink } from "./email";
 import { mcpAuthPlugins } from "./mcp-plugins";
@@ -45,7 +45,7 @@ export const auth = betterAuth({
   emailAndPassword: { enabled: false },
   session: { cookieCache: { enabled: true, maxAge: 60 } },   // short, so bans and role changes apply within a minute
   rateLimit: {
-    enabled: process.env.NODE_ENV === "production",
+    enabled: process.env.NODE_ENV === "production" && !rateLimitsRelaxedForE2e(),
     storage: "database",
     customRules: { "/sign-in/magic-link": { window: 60, max: 3 } },
   },

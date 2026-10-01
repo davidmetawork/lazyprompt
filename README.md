@@ -71,6 +71,8 @@ pnpm test:e2e            # builds, starts on :3111, seeds fixtures, runs tests/e
 
 The same thing inline: `TEST_DATABASE_URL=postgres://localhost:5432/lazyprompt_test_x E2E_PORT=3112 pnpm test:integration`. `resetDb()` refuses to truncate a database whose name does not contain `test` or `e2e`.
 
+The Playwright web server runs a production build with `E2E_DISABLE_RATE_LIMITS=true` (set in `playwright.config.ts`), which turns off both Better Auth's rate limiter and `enforceRateLimit`: the suite signs in dozens of times from one IP. `rateLimitsRelaxedForE2e()` in `src/lib/env.ts` ignores the switch whenever `VERCEL` or `VERCEL_ENV` is set, so real deployments always keep the production limits. Env files for the e2e config are loaded by the side-effect import `scripts/lib/load-test-env.ts`, which must stay the first import of `playwright.config.ts` and `tests/e2e/helpers/constants.ts`.
+
 Playwright browsers: `pnpm exec playwright install chromium`. If a stale lock in `~/Library/Caches/ms-playwright` blocks the download, set `PLAYWRIGHT_BROWSERS_PATH` to another directory for both the install and the test run.
 
 ## Layout and conventions

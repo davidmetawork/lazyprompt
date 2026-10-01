@@ -1,3 +1,4 @@
+import "../../../scripts/lib/load-test-env";   // must stay first: the constants below read process.env at import time
 import { DEFAULT_E2E_DATABASE_URL, DEFAULT_E2E_PORT } from "../../../scripts/lib/env-files";
 
 export const E2E_PORT = Number(process.env.E2E_PORT ?? DEFAULT_E2E_PORT);

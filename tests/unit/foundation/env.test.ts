@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { parseEnv, resetEnvCache } from "@/lib/env";
+import { parseEnv, rateLimitsRelaxedForE2e, resetEnvCache } from "@/lib/env";
 import { absoluteUrl, getBaseUrl } from "@/lib/base-url";
 
 // A (nearly) empty environment: only PATH so the tsx shim can find node.
@@ -89,5 +89,29 @@ describe("getBaseUrl", () => {
   it("absoluteUrl joins paths", () => {
     expect(absoluteUrl("/p/x")).toBe("http://localhost:3000/p/x");
     expect(absoluteUrl("p/x")).toBe("http://localhost:3000/p/x");
+  });
+});
+
+describe("rateLimitsRelaxedForE2e", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("is off unless E2E_DISABLE_RATE_LIMITS is exactly true", () => {
+    vi.stubEnv("E2E_DISABLE_RATE_LIMITS", "");
+    expect(rateLimitsRelaxedForE2e()).toBe(false);
+    vi.stubEnv("E2E_DISABLE_RATE_LIMITS", "1");
+    expect(rateLimitsRelaxedForE2e()).toBe(false);
+    vi.stubEnv("E2E_DISABLE_RATE_LIMITS", "true");
+    expect(rateLimitsRelaxedForE2e()).toBe(true);
+  });
+
+  it("can never be enabled on a Vercel runtime (production or preview)", () => {
+    vi.stubEnv("E2E_DISABLE_RATE_LIMITS", "true");
+    vi.stubEnv("VERCEL", "1");
+    expect(rateLimitsRelaxedForE2e()).toBe(false);
+    vi.stubEnv("VERCEL", "");
+    vi.stubEnv("VERCEL_ENV", "production");
+    expect(rateLimitsRelaxedForE2e()).toBe(false);
+    vi.stubEnv("VERCEL_ENV", "preview");
+    expect(rateLimitsRelaxedForE2e()).toBe(false);
   });
 });

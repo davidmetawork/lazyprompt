@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
-import { env } from "@/lib/env";
+import { env, rateLimitsRelaxedForE2e } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import type { TrustLevel } from "@/lib/types";
 
@@ -82,6 +82,7 @@ export async function enforceRateLimit(
   action: LimitedAction,
   subject: { userId?: string; ip?: string; trustLevel?: TrustLevel },
 ): Promise<void> {
+  if (rateLimitsRelaxedForE2e()) return;   // Playwright web server only; ignored on Vercel
   const ipHash = subject.ip ? hashIp(subject.ip) : undefined;
   const who = subject.userId ?? (ipHash ? `ip:${ipHash}` : "anon");
 

@@ -1,11 +1,8 @@
 // Playwright (chromium). Every resource is env-overridable so parallel worktrees never collide:
 //   E2E_PORT (default 3100), TEST_DATABASE_URL_E2E (default postgres://localhost:5432/lazyprompt_e2e),
 //   E2E_MAGIC_LINK_SINK. Put per-worktree values in a gitignored .env.test.local.
+import "./scripts/lib/load-test-env";   // side-effect import, must stay first: constants.ts reads env at import time
 import { defineConfig, devices } from "@playwright/test";
-import { loadTestEnv } from "./scripts/lib/env-files";
-
-loadTestEnv();
-
 import { E2E_ADMIN_EMAIL, E2E_BASE_URL, E2E_DATABASE_URL, E2E_MAGIC_LINK_SINK, E2E_PORT } from "./tests/e2e/helpers/constants";
 
 const CI = Boolean(process.env.CI);
@@ -40,6 +37,9 @@ export default defineConfig({
       ADMIN_EMAILS: E2E_ADMIN_EMAIL,
       SEO_NOINDEX: "false",
       PORT: String(E2E_PORT),
+      // The suite signs in dozens of times from one IP against a production build; production limits stay on
+      // otherwise. Ignored on Vercel (see rateLimitsRelaxedForE2e in src/lib/env.ts).
+      E2E_DISABLE_RATE_LIMITS: "true",
     },
   },
 });
