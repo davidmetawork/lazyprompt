@@ -48,6 +48,11 @@ const URL_RE = new RegExp(
   String.raw`(?:https?:\/\/|www\.)[^\s<>"'\x60]+|\b(?:${[...SHORTENER_HOSTS, "amzn.to"].map((h) => h.replace(/\./g, "\\.")).join("|")})\/[^\s<>"'\x60]*`,
   "gi",
 );
+/** Removes every link the heuristics would flag (scheme, www. and bare shortener URLs) and tidies the whitespace left behind. */
+export function stripUrls(text: string): string {
+  return text.replace(URL_RE, " ").replace(/[ \t]{2,}/g, " ").replace(/ +([,.;:!?])/g, "$1").trim();
+}
+
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
 const PHONE_RE = /(?<![\w.])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{3}\)\s?|\d{3}[\s.-]?)\d{3}[\s.-]?\d{4}(?![\w])/;
 const CHAR_REPEAT_RE = /([\p{L}\p{N}!?$])\1{10,}/u;

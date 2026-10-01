@@ -101,6 +101,21 @@ describe("recomputeRankings: trending", () => {
     expect((await scores(p.id)).trending).toBeCloseTo(3, 1);   // not 6
   });
 
+  it("an IP hash's anonymous web events beyond 3 per prompt per day carry no trending weight (but stay recorded)", async () => {
+    const ada = await createUser();
+    const p = await createPrompt(ada);
+    const ips = ["2.2.2.1", "2.2.2.2", "2.2.2.3"];
+    // Three distinct IPs, one event of each of 4 types per IP: weight 1 + 2 + 1 + 2 = 6 uncapped, 1 + 2 + 1 = 4 capped, per IP.
+    for (const ip of ips) {
+      for (const type of ["copy", "open", "render", "worked"] as const) {
+        await recordUsageEvent({ promptId: p.id, type, source: "web", ip });
+      }
+    }
+    expect(await db.select().from(usageEvents).where(eq(usageEvents.promptId, p.id))).toHaveLength(12);
+    await recomputeRankings();
+    expect((await scores(p.id)).trending).toBeCloseTo(ips.length * 4, 1);
+  });
+
   it("zero-weight not_worked events do not count towards the 3 distinct actors", async () => {
     const ada = await createUser();
     const p = await createPrompt(ada);

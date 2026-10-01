@@ -86,17 +86,12 @@ describe("recordUsageEvent", () => {
     expect((await counters(p.id)).copy).toBe(1);
   });
 
-  it("caps anonymous web events at 3 per prompt per IP per day; other IPs, signed-in users and a new day are unaffected", async () => {
+  it("anonymous web events beyond the per-IP daily cap are still recorded and counted (the cap only limits trending weight)", async () => {
     const p = await createPrompt(await createUser());
-    const ada = await createUser();
     const types = ["copy", "open", "render", "worked", "not_worked"] as const;
-    const counted: boolean[] = [];
-    for (const type of types) counted.push((await recordUsageEvent({ promptId: p.id, type, source: "web", ip: "7.7.7.8" })).counted);
-    expect(counted).toEqual([true, true, true, false, false]);
-    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", ip: "7.7.7.9" })).counted).toBe(true);
-    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", userId: ada.id, ip: "7.7.7.8" })).counted).toBe(true);
-    await db.execute(sql`UPDATE usage_events SET day = current_date - 1`);
-    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", ip: "7.7.7.8" })).counted).toBe(true);
+    for (const type of types) expect((await recordUsageEvent({ promptId: p.id, type, source: "web", ip: "7.7.7.8" })).counted).toBe(true);
+    expect(await counters(p.id)).toMatchObject({ copy: 1, open: 1, render: 1, worked: 1 });
+    expect(await eventRows()).toHaveLength(5);
   });
 
   it("an explicit actorKey identifies the actor (MCP): same key dedupes, different keys behind one IP are distinct", async () => {

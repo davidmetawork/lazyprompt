@@ -164,12 +164,18 @@ describe("profiles", () => {
 });
 
 describe("profile screening and rate limit", () => {
-  it("trust 0 accounts cannot put links or contact details in the bio or website; plain text is fine", async () => {
+  it("trust 0 accounts get links stripped from the bio instead of an error; contact details still fail; a plain website is kept", async () => {
     const u = await createUser({ trustLevel: 0 });
-    await expect(updateProfile(u, { username: "spammy-one", bio: "Best deals at https://deals.example.com/now" }))
+    expect(await updateProfile(u, { username: "spammy-one", bio: "Best deals at https://deals.example.com/now, welcome" }))
+      .toMatchObject({ bio: "Best deals at welcome" });
+    expect(await updateProfile(u, { username: "spammy-one", bio: "https://deals.example.com" })).toMatchObject({ bio: null });
+    await expect(updateProfile(u, { username: "spammy-one", bio: "Mail me: me@example.com" }))
       .rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { bio: expect.any(Array) } });
-    await expect(updateProfile(u, { username: "spammy-one", bio: "Mail me: me@example.com" })).rejects.toMatchObject({ code: "VALIDATION" });
-    await expect(updateProfile(u, { username: "spammy-one", website: "https://deals.example.com" }))
+    expect(await updateProfile(u, { username: "spammy-one", website: "https://blog.example.com" }))
+      .toMatchObject({ website: "https://blog.example.com" });
+    await expect(updateProfile(u, { username: "spammy-one", website: "https://bit.ly/abc123" }))
+      .rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { website: expect.any(Array) } });
+    await expect(updateProfile(u, { username: "spammy-one", website: "https://shop.example.com/?ref=aff&utm_source=x&tag=me-20" }))
       .rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { website: expect.any(Array) } });
     expect(await updateProfile(u, { username: "spammy-one", bio: "I write prompts about cooking" })).toMatchObject({ bio: "I write prompts about cooking" });
   });

@@ -519,6 +519,8 @@ describe("version history gating and redaction", () => {
     expect((await promptRow(c.id)).body).toContain("extra detail");     // the live prompt is untouched
     const audit = (await logRows()).filter((l) => l.metadata && (l.metadata as { via?: string }).via === "redact_version");
     expect(audit).toMatchObject([{ actorId: admin.id, targetType: "prompt", targetId: c.id, reason: "Contains a phone number", metadata: { version: 1 } }]);
+    // The admin log shows it as a redaction, never as "prompt removed".
+    expect((await listModerationLog(admin)).items).toMatchObject([{ action: "redact_version", targetType: "prompt", targetId: c.id }]);
     await moderatePromptVersion(admin, c.id, 1, "Again");               // idempotent: no second audit row
     expect((await logRows()).filter((l) => (l.metadata as { via?: string }).via === "redact_version")).toHaveLength(1);
   });

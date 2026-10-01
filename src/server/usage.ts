@@ -19,9 +19,6 @@ export interface UsageEventRecord {
   actorKey?: string | null;
 }
 
-/** Anonymous web events one IP hash may contribute per prompt per day; the rest are dropped, not counted. */
-export const ANON_WEB_EVENTS_PER_PROMPT_DAY = 3;
-
 /** Fixed column map (never built from input): which denormalized counter each event type increments. */
 const COUNTER_COLUMN: Record<(typeof USAGE_EVENT_TYPES)[number], string> = {
   copy: "copy_count", open: "open_count", render: "render_count", worked: "worked_count", not_worked: "not_worked_count",
@@ -51,12 +48,6 @@ export async function recordUsageEvent(input: UsageEventRecord): Promise<{ count
   const column = sql.raw(COUNTER_COLUMN[type]);
 
   return db.transaction(async (tx) => {
-    if (anonWeb) {
-      const seen = await tx.execute<{ n: number }>(sql`
-        SELECT count(*)::int AS n FROM usage_events
-        WHERE prompt_id = ${promptId}::uuid AND actor_hash = ${actorHash} AND day = current_date`);
-      if (Number(seen.rows[0]?.n ?? 0) >= ANON_WEB_EVENTS_PER_PROMPT_DAY) return { counted: false };
-    }
     const res = await tx.execute<{ id: number }>(sql`
       INSERT INTO usage_events (prompt_id, type, model, source, user_id, actor_hash)
       SELECT p.id, ${type}::usage_event_type, ${model ?? null}::ai_model, ${input.source}::event_source, ${userId}, ${actorHash}

@@ -6,7 +6,7 @@ import { AppError } from "@/lib/errors";
 import { profileInputSchema, type ProfileInput } from "@/lib/validation";
 import type { ProfilePage, TrustLevel, Viewer } from "@/lib/types";
 import { accountAgeDays, getActiveActor, isUniqueViolation, parseInput } from "@/server/moderation/guards";
-import { runHeuristics } from "@/server/moderation/screening";
+import { runHeuristics, stripUrls } from "@/server/moderation/screening";
 import { enforceRateLimit } from "@/server/rate-limit";
 
 export { ensureProfile } from "@/db/profiles";
@@ -59,28 +59,47 @@ export async function getProfileByUsername(username: string): Promise<ProfilePag
   return row ? toProfilePage(row) : null;
 }
 
+function profileError(field: "bio" | "website", messages: string[]): AppError {
+  return new AppError("VALIDATION", messages.join(" "), { [field]: messages });
+}
+
 /**
- * The bio and website are public, followable text, so they get the same heuristics as comments. A reject verdict (link
- * shortener) always fails. Any other flag (links, contact details, jailbreak or SEO spam wording) is not allowed for
- * trust 0 accounts yet: there is no profile review queue, so they can add such details once their account is established.
+ * The bio and website are public, followable text, so they get the same heuristics as comments.
+ * - A reject verdict (link shortener, OpenAI-style hard blocks) always fails, for everyone.
+ * - Trust 0 accounts have no profile review queue to land in, so instead of failing they have links stripped from the
+ *   bio (the saved bio is returned to the form) and keep their website only when it is a plain link (no affiliate or
+ *   tracking parameters). Contact details and jailbreak / SEO-spam wording still fail for them until trust >= 1.
+ * Returns the bio to store.
  */
-function screenProfileText(me: { trustLevel: TrustLevel; accountAgeDays: number }, data: { bio?: string; website?: string }): void {
-  const text = [data.bio, data.website].filter(Boolean).join(" ");
-  if (!text) return;
-  const verdict = runHeuristics({ kind: "comment", text, author: { trustLevel: me.trustLevel, accountAgeDays: me.accountAgeDays } });
-  if (verdict.verdict === "reject" || (verdict.verdict === "review" && me.trustLevel === 0)) {
-    const reasons = verdict.reasons.length ? verdict.reasons : ["This can't be added to a profile"];
-    const hint = verdict.verdict === "review" ? ["New accounts can't add links or contact details to their profile yet."] : [];
-    const messages = [...reasons, ...hint];
-    throw new AppError("VALIDATION", messages.join(" "), { [data.bio ? "bio" : "website"]: messages });
+function screenProfileText(me: { trustLevel: TrustLevel; accountAgeDays: number }, data: { bio?: string; website?: string }): string | undefined {
+  const author = { trustLevel: me.trustLevel, accountAgeDays: me.accountAgeDays };
+  let bio = data.bio;
+  if (bio) {
+    const full = runHeuristics({ kind: "comment", text: bio, author });
+    if (full.verdict === "reject") throw profileError("bio", full.reasons);
+    if (me.trustLevel === 0) {
+      bio = stripUrls(bio);
+      const rest = bio ? runHeuristics({ kind: "comment", text: bio, author }) : null;
+      if (rest && rest.verdict !== "allow") {
+        throw profileError("bio", [...rest.reasons, "New accounts can't add contact details to their profile yet."]);
+      }
+    }
   }
+  if (data.website) {
+    // A website is a link by definition, so judge it as a trusted author would: only shorteners / affiliate links fail.
+    const v = runHeuristics({ kind: "comment", text: data.website, author: { trustLevel: 1, accountAgeDays: me.accountAgeDays } });
+    if (v.verdict === "reject" || (v.verdict === "review" && me.trustLevel === 0)) {
+      throw profileError("website", v.reasons.length ? v.reasons : ["This website can't be added to a profile"]);
+    }
+  }
+  return bio;
 }
 
 export async function updateProfile(actor: Viewer, input: ProfileInput): Promise<ProfilePage> {
   const me = await getActiveActor(actor);
   const data = parseInput(profileInputSchema, input);
   await enforceRateLimit("profile", { userId: me.id, trustLevel: me.trustLevel });
-  screenProfileText(me, data);
+  const bio = screenProfileText(me, data);
   const [taken] = await db
     .select({ userId: profiles.userId })
     .from(profiles)
@@ -92,7 +111,7 @@ export async function updateProfile(actor: Viewer, input: ProfileInput): Promise
   try {
     const updated = await db
       .update(profiles)
-      .set({ username: data.username, bio: data.bio || null, website: data.website || null })
+      .set({ username: data.username, bio: bio || null, website: data.website || null })
       .where(eq(profiles.userId, me.id))
       .returning({ userId: profiles.userId });
     if (updated.length === 0) throw new AppError("NOT_FOUND", "Profile not found");
