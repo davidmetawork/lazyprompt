@@ -1,0 +1,466 @@
+[
+  {
+    "category": "writing",
+    "prompts": [
+      {
+        "key": "writing-fixture-polite-decline",
+        "title": "Politely decline a request by email",
+        "description": "Write a short, warm email that says no without burning the relationship, and offers an alternative.",
+        "body": "Write a short email declining this request.\n\nRequest I received: {{request}}\nWho it is from: {{sender:text|a colleague}}\nTone: {{tone:select(warm, formal, direct)|warm}}\n\nKeep it under 120 words. Thank them, say no clearly in the first two sentences, give one honest reason, and offer one alternative.",
+        "variables": [
+          {
+            "key": "request",
+            "label": "Request",
+            "type": "long",
+            "required": true
+          },
+          {
+            "key": "sender",
+            "label": "Sender",
+            "type": "text",
+            "required": false,
+            "default": "a colleague"
+          },
+          {
+            "key": "tone",
+            "label": "Tone",
+            "type": "select",
+            "required": false,
+            "options": [
+              "warm",
+              "formal",
+              "direct"
+            ],
+            "default": "warm"
+          }
+        ],
+        "exampleOutput": "Subject: Re: Speaking at your offsite\n\nHi Sam, thank you for thinking of me for the offsite. I can't take this one on because my calendar is full through March. I'd be glad to recommend a colleague, or to join a call later in the spring. Thanks again for the invitation.\n\nBest,\nAlex",
+        "useCase": "generate",
+        "tags": [
+          "email",
+          "communication"
+        ],
+        "models": [],
+        "featured": true,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "marketing-seo",
+    "prompts": [
+      {
+        "key": "marketing-seo-fixture-meta-description",
+        "title": "Write a search result meta description",
+        "description": "Produce three meta description options under 155 characters that match the page's search intent.",
+        "body": "Write three meta descriptions (max 155 characters each) for this page.\n\nPage title: {{page_title}}\nMain keyword: {{keyword}}\nWhat the reader gets: {{benefit:text|a clear checklist they can use today}}\n\nUse the keyword once, lead with the benefit, and end with a light call to action. Do not use clickbait.",
+        "variables": [
+          {
+            "key": "page_title",
+            "label": "Page title",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "keyword",
+            "label": "Main keyword",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "benefit",
+            "label": "Benefit",
+            "type": "text",
+            "required": false,
+            "default": "a clear checklist they can use today"
+          }
+        ],
+        "exampleOutput": "1. Learn how to compare standing desks with this simple checklist covering height range, stability and warranty.\n2. Standing desk buying guide: the five specs that matter, plus a printable checklist.\n3. Not sure which standing desk to buy? Use this checklist to compare height, stability and price.",
+        "useCase": "generate",
+        "tags": [
+          "seo",
+          "copywriting"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "coding",
+    "prompts": [
+      {
+        "key": "coding-fixture-explain-error",
+        "title": "Explain this error and suggest a fix",
+        "description": "Paste a stack trace and get the likely cause, a minimal fix and how to confirm it worked.",
+        "body": "You are a senior {{language:select(TypeScript, Python, Go, Java)|TypeScript}} developer. Explain the error below.\n\nError and stack trace:\n{{error:long}}\n\nRespond with: 1) the most likely root cause in two sentences, 2) a minimal code fix, 3) one way to verify the fix, 4) one other possible cause if the first fix does not work.",
+        "variables": [
+          {
+            "key": "language",
+            "label": "Language",
+            "type": "select",
+            "required": false,
+            "options": [
+              "TypeScript",
+              "Python",
+              "Go",
+              "Java"
+            ],
+            "default": "TypeScript"
+          },
+          {
+            "key": "error",
+            "label": "Error and stack trace",
+            "type": "long",
+            "required": true
+          }
+        ],
+        "exampleOutput": "1. Root cause: `user` is undefined because the fetch has not resolved when render runs.\n2. Fix: guard with `if (!user) return null;` before reading `user.name`.\n3. Verify: reload the page; the TypeError should no longer appear.\n4. Otherwise: the API may return null for new accounts.",
+        "useCase": "analyze",
+        "tags": [
+          "debugging",
+          "code-generation"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "data-analysis",
+    "prompts": [
+      {
+        "key": "data-analysis-fixture-explain-metric",
+        "title": "Explain a metric change in plain language",
+        "description": "Turn a metric movement into a short explanation with likely causes and the checks to run first.",
+        "body": "Explain this metric change for a non-technical manager.\n\nMetric: {{metric}}\nChange: {{change}}\nContext: {{context:long|No known releases or campaigns this week.}}\n\nGive a two-sentence summary, three possible causes ranked by likelihood, and the first check for each. State what data you would need to be sure.",
+        "variables": [
+          {
+            "key": "metric",
+            "label": "Metric",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "change",
+            "label": "Change",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "context",
+            "label": "Context",
+            "type": "long",
+            "required": false,
+            "default": "No known releases or campaigns this week."
+          }
+        ],
+        "exampleOutput": "Summary: Weekly signups fell 12%, mostly on mobile. Likely causes: 1) a slower signup page, 2) a seasonal dip, 3) lower paid traffic. First checks: page speed, last year's same week, ad spend.",
+        "useCase": "analyze",
+        "tags": [
+          "analytics",
+          "data-analysis"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "business-strategy",
+    "prompts": [
+      {
+        "key": "business-strategy-fixture-decision-memo",
+        "title": "Draft a one-page decision memo",
+        "description": "Structure a decision into context, options, a recommendation and the risks that would change it.",
+        "body": "Write a one-page decision memo.\n\nDecision to make: {{decision}}\nOptions: {{options:long}}\nConstraints: {{constraints:text|Budget is fixed; decide by Friday.}}\n\nUse the headings Context, Options, Recommendation, Risks and What would change my mind. Keep it under 350 words.",
+        "variables": [
+          {
+            "key": "decision",
+            "label": "Decision",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "options",
+            "label": "Options",
+            "type": "long",
+            "required": true
+          },
+          {
+            "key": "constraints",
+            "label": "Constraints",
+            "type": "text",
+            "required": false,
+            "default": "Budget is fixed; decide by Friday."
+          }
+        ],
+        "exampleOutput": "Context: We must choose a support tool by Friday.\nOptions: A (cheap, basic), B (mid, integrations).\nRecommendation: B.\nRisks: setup time.\nWhat would change my mind: a failed pilot.",
+        "useCase": "plan",
+        "tags": [
+          "strategy",
+          "decision-making"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "research-learning",
+    "prompts": [
+      {
+        "key": "research-learning-fixture-explain-simply",
+        "title": "Explain a concept at three levels",
+        "description": "Get a concept explained for a child, a student and an expert, with one analogy and one common mistake.",
+        "body": "Explain {{topic}} at three levels: a ten-year-old, a first-year student and a practitioner. Add one analogy and one common misconception for each level. Keep each level under 80 words.",
+        "variables": [
+          {
+            "key": "topic",
+            "label": "Topic",
+            "type": "text",
+            "required": true
+          }
+        ],
+        "exampleOutput": "Ten-year-old: Compound interest is when your savings earn money, and then that money earns money too.\nStudent: Interest is added to the balance each period, so growth is exponential.\nPractitioner: Frequency of compounding changes the effective annual rate.",
+        "useCase": "tutor",
+        "tags": [
+          "learning",
+          "study"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "productivity",
+    "prompts": [
+      {
+        "key": "productivity-fixture-weekly-plan",
+        "title": "Plan my week from a messy list",
+        "description": "Turn a brain dump into a realistic weekly plan with priorities and protected focus time.",
+        "body": "Turn my list into a plan for the week.\n\nMy list: {{tasks:long}}\nHours available per day: {{hours:number|6}}\n\nPick three priorities, put them in the best days, group small tasks into one block and leave one empty buffer slot per day. Show the plan as a table by day.",
+        "variables": [
+          {
+            "key": "tasks",
+            "label": "Task list",
+            "type": "long",
+            "required": true
+          },
+          {
+            "key": "hours",
+            "label": "Hours per day",
+            "type": "number",
+            "required": false,
+            "default": "6"
+          }
+        ],
+        "exampleOutput": "Priorities: 1) finish budget draft, 2) client call prep, 3) hire shortlist.\nMon: budget draft (3h), small tasks (1h), buffer.\nTue: call prep (2h), shortlist (2h), buffer.",
+        "useCase": "plan",
+        "tags": [
+          "planning",
+          "time-management"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "career",
+    "prompts": [
+      {
+        "key": "career-fixture-interview-answer",
+        "title": "Tighten an interview answer",
+        "description": "Improve a rambling interview answer into a clear story with a result and a lesson.",
+        "body": "Rewrite my interview answer so it is clear and under 90 seconds spoken.\n\nQuestion: {{question}}\nMy answer: {{answer:long}}\n\nUse situation, action, result. Keep my facts; do not invent numbers. Then list two follow-up questions an interviewer might ask.",
+        "variables": [
+          {
+            "key": "question",
+            "label": "Question",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "answer",
+            "label": "My answer",
+            "type": "long",
+            "required": true
+          }
+        ],
+        "exampleOutput": "Situation: Our onboarding emails had a low open rate. Action: I rewrote subject lines and tested three versions. Result: opens rose from 22% to 31%. Follow-ups: How did you pick the winner? What would you test next?",
+        "useCase": "rewrite",
+        "tags": [
+          "interview-prep",
+          "career"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "customer-support",
+    "prompts": [
+      {
+        "key": "customer-support-fixture-reply-angry",
+        "title": "Reply to an upset customer",
+        "description": "Draft a calm reply that acknowledges the problem, owns the next step and sets a clear time.",
+        "body": "Draft a reply to this customer message.\n\nCustomer message: {{message:long}}\nWhat we can offer: {{offer:text|a refund or a free replacement}}\n\nAcknowledge the problem in the first sentence, avoid blame and jargon, state one concrete next step with a time, and keep it under 110 words.",
+        "variables": [
+          {
+            "key": "message",
+            "label": "Customer message",
+            "type": "long",
+            "required": true
+          },
+          {
+            "key": "offer",
+            "label": "What we can offer",
+            "type": "text",
+            "required": false,
+            "default": "a refund or a free replacement"
+          }
+        ],
+        "exampleOutput": "Hi Dana, I'm sorry the order arrived damaged. I've sent a replacement today and you'll get tracking by 5 pm. If you would prefer a refund instead, just reply and I'll process it right away.",
+        "useCase": "generate",
+        "tags": [
+          "customer-support",
+          "communication"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "creative-fiction",
+    "prompts": [
+      {
+        "key": "creative-fiction-fixture-character-sketch",
+        "title": "Create a vivid character sketch",
+        "description": "Build a character with a want, a flaw, a secret and a few concrete habits you can use in a scene.",
+        "body": "Create a character sketch for a {{genre:text|mystery}} story.\n\nRole in the story: {{role}}\n\nInclude their name, what they want, what stands in their way, a flaw, a secret, three specific habits, and one line of dialogue that shows their voice.",
+        "variables": [
+          {
+            "key": "genre",
+            "label": "Genre",
+            "type": "text",
+            "required": false,
+            "default": "mystery"
+          },
+          {
+            "key": "role",
+            "label": "Role in the story",
+            "type": "text",
+            "required": true
+          }
+        ],
+        "exampleOutput": "Name: Ines Calder, harbor clerk. Wants: to be believed. Flaw: counts everything. Secret: she forged a ledger. Habits: hums off-key, ties knots in receipts. Voice: \"I've counted twice, and the boat is still missing.\"",
+        "useCase": "brainstorm",
+        "tags": [
+          "creative-writing",
+          "worldbuilding"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "personal-life",
+    "prompts": [
+      {
+        "key": "personal-life-fixture-meal-plan",
+        "title": "Plan a week of simple dinners",
+        "description": "Get five dinners, one shopping list and a prep tip around your time and diet.",
+        "body": "Plan five weeknight dinners for {{people:number|2}} people.\n\nDietary needs: {{diet:text|no restrictions}}\nTime per meal: {{minutes:number|30}} minutes\n\nGive a one-line description for each dinner, one combined shopping list grouped by aisle, and one prep tip for Sunday.",
+        "variables": [
+          {
+            "key": "people",
+            "label": "People",
+            "type": "number",
+            "required": false,
+            "default": "2"
+          },
+          {
+            "key": "diet",
+            "label": "Dietary needs",
+            "type": "text",
+            "required": false,
+            "default": "no restrictions"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes per meal",
+            "type": "number",
+            "required": false,
+            "default": "30"
+          }
+        ],
+        "exampleOutput": "Mon: lemon chicken with rice. Tue: veggie chili. Wed: pasta with spinach. Thu: tacos. Fri: sheet-pan salmon.\nShopping: produce (spinach, lemons), protein, pantry (rice, pasta).",
+        "useCase": "plan",
+        "tags": [
+          "cooking",
+          "planning"
+        ],
+        "models": [],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  },
+  {
+    "category": "image-video",
+    "prompts": [
+      {
+        "key": "image-video-fixture-product-photo",
+        "title": "Product photo prompt for an image model",
+        "description": "A structured text-to-image prompt for a clean product shot with lighting, lens and background specified.",
+        "body": "Create a text-to-image prompt for a product photo.\n\nProduct: {{product}}\nStyle: {{style:select(minimal studio, lifestyle, dramatic)|minimal studio}}\n\nSpecify the surface, background, lighting direction, lens and aspect ratio. Output one paragraph plus a short negative prompt.",
+        "variables": [
+          {
+            "key": "product",
+            "label": "Product",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "style",
+            "label": "Style",
+            "type": "select",
+            "required": false,
+            "options": [
+              "minimal studio",
+              "lifestyle",
+              "dramatic"
+            ],
+            "default": "minimal studio"
+          }
+        ],
+        "exampleOutput": "A ceramic coffee mug on a pale oak table, soft window light from the left, 85mm lens, shallow depth of field, neutral grey backdrop, 4:5. Negative: text, watermark, blurry edges.",
+        "useCase": "generate",
+        "tags": [
+          "image-generation",
+          "branding"
+        ],
+        "models": [
+          "midjourney",
+          "stable_diffusion"
+        ],
+        "featured": false,
+        "license": "cc0"
+      }
+    ]
+  }
+]

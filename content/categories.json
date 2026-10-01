@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "writing",
+    "name": "Writing",
+    "description": "Emails, edits, rewrites, outlines and summaries for everyday professional writing, with the tone and audience set by you.",
+    "icon": "pen-line",
+    "sortOrder": 1
+  },
+  {
+    "slug": "marketing-seo",
+    "name": "Marketing & SEO",
+    "description": "Positioning, ad and landing page copy, content briefs, keyword work and launch messaging that stays honest and specific.",
+    "icon": "megaphone",
+    "sortOrder": 2
+  },
+  {
+    "slug": "coding",
+    "name": "Coding",
+    "description": "Code review, debugging, tests, refactors, SQL, API design and migration plans for working developers.",
+    "icon": "code",
+    "sortOrder": 3
+  },
+  {
+    "slug": "data-analysis",
+    "name": "Data & Analysis",
+    "description": "Plan an analysis, clean data, write queries and formulas, check A/B results and explain the numbers plainly.",
+    "icon": "chart-column",
+    "sortOrder": 4
+  },
+  {
+    "slug": "business-strategy",
+    "name": "Business & Strategy",
+    "description": "Competitor teardowns, pricing options, OKRs, decision memos, pre-mortems and meeting prep with clear structure.",
+    "icon": "compass",
+    "sortOrder": 5
+  },
+  {
+    "slug": "research-learning",
+    "name": "Research & Learning",
+    "description": "Summarize papers, compare sources, build study plans and quizzes, and get concepts explained at your level.",
+    "icon": "graduation-cap",
+    "sortOrder": 6
+  },
+  {
+    "slug": "productivity",
+    "name": "Productivity",
+    "description": "Plan your week, triage your inbox, run better meetings and turn messy notes into clear next steps.",
+    "icon": "zap",
+    "sortOrder": 7
+  },
+  {
+    "slug": "career",
+    "name": "Career",
+    "description": "Resumes, cover letters, interview practice, performance reviews, negotiation and career moves.",
+    "icon": "briefcase",
+    "sortOrder": 8
+  },
+  {
+    "slug": "customer-support",
+    "name": "Customer Support",
+    "description": "Reply drafts, macros, FAQ and help-center articles, bug-report triage and de-escalation scripts.",
+    "icon": "headset",
+    "sortOrder": 9
+  },
+  {
+    "slug": "creative-fiction",
+    "name": "Creative & Fiction",
+    "description": "Story ideas, characters, worldbuilding, dialogue, poetry and roleplay setups for writers and storytellers.",
+    "icon": "wand-sparkles",
+    "sortOrder": 10
+  },
+  {
+    "slug": "personal-life",
+    "name": "Personal & Life",
+    "description": "Meal plans, trips, budgets, workouts, gift ideas and everyday planning for home and family.",
+    "icon": "heart",
+    "sortOrder": 11
+  },
+  {
+    "slug": "image-video",
+    "name": "Image & Video Gen",
+    "description": "Structured prompts for image and video models: style, framing, lighting, consistency and shot lists.",
+    "icon": "clapperboard",
+    "sortOrder": 12
+  }
+]

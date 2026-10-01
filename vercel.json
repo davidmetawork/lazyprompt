@@ -1,0 +1,4 @@
+{
+  "buildCommand": "pnpm vercel-build",
+  "crons": [{ "path": "/api/cron/recompute", "schedule": "0 4 * * *" }]
+}
