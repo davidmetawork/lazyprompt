@@ -1,7 +1,7 @@
 import { useId, useMemo, useRef, useState } from "react";
 import { renderTemplate } from "@lp/template";
 import { host } from "./bridge";
-import { needsSignIn, ratingLabel, siteFallbackUrl } from "./model";
+import { modelLabel, needsSignIn, ratingLabel, siteFallbackUrl } from "./model";
 import type { ListState, PromptData, VariableDef } from "./types";
 
 function Stars({ rating, count }: { rating: number | null; count: number }) {
@@ -79,11 +79,13 @@ export function Card({
   const manualRef = useRef<HTMLTextAreaElement>(null);
 
   const rendered = useMemo(() => renderTemplate(prompt.body, prompt.variables, values, { unfilled: "label" }), [prompt, values]);
+  // "Use in chat", Copy and the manual-copy box send text without "[Label]" for optional variables left blank.
+  const outgoing = useMemo(() => renderTemplate(prompt.body, prompt.variables, values, { unfilled: "label", placeholders: "empty" }).text, [prompt, values]);
   const complete = rendered.missing.length === 0;
   const say = (text: string, tone: "ok" | "error" = "ok") => setStatus({ text, tone });
 
   async function copy() {
-    const ok = await copyToClipboard(rendered.text);
+    const ok = await copyToClipboard(outgoing);
     setManual(!ok);
     if (ok) say("Copied to your clipboard.");
     else {
@@ -95,7 +97,7 @@ export function Card({
   async function sendToChat() {
     setBusy("send");
     try {
-      const res = await host.sendMessage(rendered.text);
+      const res = await host.sendMessage(outgoing);
       if (res.isError) say("The chat could not take the prompt. Use Copy instead.", "error");
       else say("Sent to the chat.");
     } catch {
@@ -140,7 +142,7 @@ export function Card({
         <div className="meta">
           <Stars rating={prompt.rating} count={prompt.ratingCount} />
           <span className="badge">{prompt.category.name}</span>
-          {prompt.models.slice(0, 3).map((m) => <span key={m} className="badge subtle">{m}</span>)}
+          {prompt.models.slice(0, 3).map((m) => <span key={m} className="badge subtle">{modelLabel(m)}</span>)}
         </div>
         <p className="desc">{prompt.description}</p>
       </header>
@@ -162,7 +164,7 @@ export function Card({
               : <span key={i} className="chip">{seg.text}</span>)}
         </div>
         {manual ? (
-          <textarea ref={manualRef} className="manual" readOnly rows={4} value={rendered.text} aria-label="Prompt text to copy" />
+          <textarea ref={manualRef} className="manual" readOnly rows={4} value={outgoing} aria-label="Prompt text to copy" />
         ) : null}
       </section>
 

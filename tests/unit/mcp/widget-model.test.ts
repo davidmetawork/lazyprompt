@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asStringMap, interpretResult, needsSignIn, ratingLabel, siteFallbackUrl, siteOrigin, textOf } from "../../../widget/src/model";
+import { asStringMap, interpretResult, modelLabel, needsSignIn, ratingLabel, siteFallbackUrl, siteOrigin, textOf } from "../../../widget/src/model";
 
 const prompt = { id: "abc1234", title: "T", variables: [], body: "b", url: "https://lazyprompt.ai/p/t-abc1234" };
 
@@ -61,5 +61,15 @@ describe("helpers", () => {
     expect(needsSignIn({ isError: true, _meta: { "mcp/www_authenticate": ["Bearer ..."] } })).toBe(true);
     expect(needsSignIn({ isError: true, _meta: {} })).toBe(false);
     expect(needsSignIn({ _meta: { "mcp/www_authenticate": ["x"] } })).toBe(false);
+  });
+});
+
+describe("modelLabel", () => {
+  it("maps model ids to friendly names and humanizes unknown ids", () => {
+    expect(modelLabel("chatgpt")).toBe("ChatGPT");
+    expect(modelLabel("stable_diffusion")).toBe("Stable Diffusion");
+    expect(modelLabel("deepseek")).toBe("DeepSeek");
+    expect(modelLabel("some_new-model")).toBe("Some new model");
+    expect(modelLabel("constructor")).toBe("Constructor");
   });
 });

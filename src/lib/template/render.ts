@@ -69,16 +69,59 @@ export function normalizeTemplate(
 }
 
 /**
+ * Drops lines that only became blank because an optional variable on them rendered as "". Lines the author left blank
+ * on purpose (no emptied variable on them) are kept.
+ */
+function collapseEmptiedLines(segments: RenderSegment[], emptied: ReadonlySet<RenderSegment>): RenderSegment[] {
+  const lines: RenderSegment[][] = [[]];
+  for (const seg of segments) {
+    if (seg.kind === "text") {
+      seg.text.split("\n").forEach((part, i) => {
+        if (i > 0) lines.push([]);
+        if (part) lines[lines.length - 1]!.push({ kind: "text", text: part });
+      });
+    } else {
+      lines[lines.length - 1]!.push(seg);
+    }
+  }
+  const kept = lines.filter((line) => {
+    if (!line.some((s) => emptied.has(s))) return true;
+    return !line.every((s) => emptied.has(s) || (s.kind === "text" && s.text.trim() === ""));
+  });
+  const out: RenderSegment[] = [];
+  const pushText = (t: string) => {
+    if (!t) return;
+    const last = out[out.length - 1];
+    if (last && last.kind === "text") last.text += t;
+    else out.push({ kind: "text", text: t });
+  };
+  kept.forEach((line, i) => {
+    if (i > 0) pushText("\n");
+    for (const s of line) {
+      if (s.kind === "text") pushText(s.text);
+      else out.push(s);
+    }
+  });
+  return out;
+}
+
+/**
  * Fills `{{key}}` placeholders. Inserted values are never re-parsed. `\{{` renders as a literal `{{`.
  * `unfilled`: "label" -> [Label] (default), "keep" -> {{key}}, "empty" -> "".
+ * `placeholders`: "bracket" (default) leaves unfilled variables as `unfilled` says. "empty" renders unfilled OPTIONAL
+ * variables as "" (and drops lines that become blank because of it), so copied or sent text never carries "[Label]" for
+ * something the user chose to skip. Unfilled required variables still follow `unfilled`.
+ * Only own keys of `values` count: a variable named `constructor` or `__proto__` never reads Object.prototype.
  */
 export function renderTemplate(
   body: string,
   defs: VariableDef[],
   values: Record<string, string>,
-  opts: { unfilled?: "label" | "keep" | "empty" } = {},
+  opts: { unfilled?: "label" | "keep" | "empty"; placeholders?: "bracket" | "empty" } = {},
 ): { text: string; missing: string[]; segments: RenderSegment[] } {
   const unfilled = opts.unfilled ?? "label";
+  const emptyOptional = opts.placeholders === "empty";
+  const emptied = new Set<RenderSegment>();
   const defByKey = new Map(defs.map((d) => [d.key, d]));
   const segments: RenderSegment[] = [];
   const missing: string[] = [];
@@ -94,10 +137,10 @@ export function renderTemplate(
     pushText(unescape(body.slice(cursor, tok.start)));
     cursor = tok.end;
     const def = defByKey.get(tok.key);
-    const raw = values[tok.key];
+    const raw = Object.hasOwn(values, tok.key) ? values[tok.key] : undefined;
     const label = def?.label ?? labelFromKey(tok.key);
     let value: string | undefined;
-    if (raw !== undefined && raw.trim() !== "") value = raw;
+    if (typeof raw === "string" && raw.trim() !== "") value = raw;
     else if (def?.default !== undefined && def.default !== "") value = def.default;
     else if (tok.default !== undefined) value = tok.default;
 
@@ -106,10 +149,14 @@ export function renderTemplate(
     } else {
       const isRequired = def ? def.required : true;
       if (isRequired && !missing.includes(tok.key)) missing.push(tok.key);
-      const text = unfilled === "label" ? `[${label}]` : unfilled === "keep" ? `{{${tok.key}}}` : "";
-      segments.push({ kind: "var", text, key: tok.key, filled: false });
+      const dropped = emptyOptional && !isRequired;
+      const text = dropped ? "" : unfilled === "label" ? `[${label}]` : unfilled === "keep" ? `{{${tok.key}}}` : "";
+      const seg: RenderSegment = { kind: "var", text, key: tok.key, filled: false };
+      if (dropped) emptied.add(seg);
+      segments.push(seg);
     }
   }
   pushText(unescape(body.slice(cursor)));
-  return { text: segments.map((s) => s.text).join(""), missing, segments };
+  const final = emptied.size > 0 ? collapseEmptiedLines(segments, emptied) : segments;
+  return { text: final.map((s) => s.text).join(""), missing, segments: final };
 }
