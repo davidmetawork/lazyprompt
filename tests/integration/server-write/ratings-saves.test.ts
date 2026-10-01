@@ -89,6 +89,20 @@ describe("ratePrompt", () => {
   });
 });
 
+describe("concurrency", () => {
+  it("concurrent ratings and saves leave counters equal to the source rows", async () => {
+    const author = await createUser({ trustLevel: 1 });
+    const p = await seedPrompt(author, { categorySlug: "writing" });
+    const users = await Promise.all(Array.from({ length: 8 }, () => createUser({ trustLevel: 1 })));
+    await Promise.all(users.map((u, i) => ratePrompt(u, p.id, ((i % 5) + 1))));
+    await Promise.all(users.map((u) => setSaved(u, p.id, true)));
+    const row = await promptRow(p.id);
+    expect(row.ratingCount).toBe(8);
+    expect(row.ratingSum).toBe(users.reduce((acc, _u, i) => acc + ((i % 5) + 1), 0));
+    expect(row.saveCount).toBe(8);
+  });
+});
+
 describe("setSaved / listSavedPrompts", () => {
   it("is idempotent and keeps save_count equal to the number of rows", async () => {
     const author = await createUser({ trustLevel: 1 });
