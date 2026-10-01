@@ -253,7 +253,7 @@ export function fieldMessages(fieldErrors: Record<string, string[]> | undefined,
 /** Rewrites zod's default length messages into plain language; anything else is returned unchanged. */
 export function friendlyMessage(msg: string): string {
   let m = /^Too small: expected string to have >=(\d+) characters?/.exec(msg);
-  if (m) return `Use at least ${m[1]} characters`;
+  if (m) return m[1] === "1" ? "Choose an option" : `Use at least ${m[1]} characters`;
   m = /^Too big: expected string to have <=(\d+) characters?/.exec(msg);
   if (m) return `Use at most ${m[1]} characters`;
   m = /^Too small: expected array to have >=(\d+) items?/.exec(msg);
