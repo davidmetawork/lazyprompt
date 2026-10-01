@@ -1,4 +1,4 @@
-// NO "server-only". OAuth 2.1 provider plugins for the MCP connector (ARCHITECTURE.md section 12).
+// CLI safe (import-graph rule). OAuth 2.1 provider plugins for the MCP connector (ARCHITECTURE.md section 12).
 // Owned by the MCP package after the foundation lands.
 import type { BetterAuthPlugin } from "better-auth";
 import { jwt } from "better-auth/plugins";

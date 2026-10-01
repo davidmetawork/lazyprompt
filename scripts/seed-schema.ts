@@ -1,4 +1,4 @@
-// Zod schemas + validation for seed content (ARCHITECTURE.md section 16). No DB, no server-only.
+// Zod schemas + validation for seed content (ARCHITECTURE.md section 16). No DB access.
 import { z } from "zod";
 import { AI_MODELS, LICENSES, USE_CASES } from "../src/lib/constants";
 import { normalizeTag } from "../src/lib/slug";

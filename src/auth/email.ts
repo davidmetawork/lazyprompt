@@ -1,4 +1,4 @@
-// NO "server-only": imported by src/auth/server.ts which must load under tsx and the Better Auth CLI.
+// CLI safe (import-graph rule): imported by src/auth/server.ts which must load under tsx and the Better Auth CLI.
 import { appendFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { Resend } from "resend";

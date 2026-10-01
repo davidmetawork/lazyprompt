@@ -1,5 +1,5 @@
 // Drizzle + pg Pool, cached on globalThis (survives HMR and shared across route modules).
-// Created lazily so importing this module never needs DATABASE_URL. No "server-only" (tsx/CLI safe).
+// Created lazily so importing this module never needs DATABASE_URL. CLI safe (see the import-graph rule in the README).
 import { Pool } from "pg";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { attachDatabasePool } from "@vercel/functions";

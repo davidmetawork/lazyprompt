@@ -150,7 +150,7 @@ export const jwks = pgTable("jwks", {                 // jwt() plugin
 });
 ```
 
-`src/db/schema/auth-oauth.ts` is **generated verbatim** by `npx auth@latest generate` for the `@better-auth/mcp` (OAuth 2.1 provider) plugin. It contains `oauthClient`, `oauthAccessToken`, `oauthRefreshToken`, `oauthConsent` and `oauthClientAssertion` (the last comes from cimd). Do not hand-edit it except to fix snake_case names and import paths. If the plugin cannot be loaded, the file is created as an empty module with a comment, and §12 falls back to anonymous-only MCP.
+`src/db/schema/auth-oauth.ts` is **generated verbatim** by `npx auth@latest generate` for the `@better-auth/mcp` (OAuth 2.1 provider) plugin. It contains `oauthClient`, `oauthResource`, `oauthClientResource`, `oauthAccessToken`, `oauthRefreshToken`, `oauthConsent` and `oauthClientAssertion` (the last comes from cimd). **Foundation status: these are real tables, included in `0001_init.sql`** (the plugin queries `oauth_resource` while initializing, so the tables must exist whenever the plugin is loaded; there is no empty fallback). The CLI also adds `alg`/`crv` columns to `jwks`. Do not hand-edit it except to fix snake_case names and import paths. If the plugin cannot be loaded, the file is created as an empty module with a comment, and §12 falls back to anonymous-only MCP.
 
 **Single schema exception.** If the foundation ships that empty fallback, the MCP package (and only it) may later add the generated tables to `src/db/schema/auth-oauth.ts` plus a new `drizzle/0002_oauth.sql` migration (with its snapshot). No other package touches the schema or migrations during the parallel phase.
 
@@ -584,6 +584,7 @@ export const profileInputSchema;       // {username /^[a-z0-9][a-z0-9_-]{2,29}$/
 export const usageEventInputSchema;    // {promptId uuid, type, model? }
 export function safeNext(raw: string | null | undefined): string;  // returns raw iff it matches ^/(?![/\\]) and is <= 512 chars, else "/"
 export type PromptInput = z.infer<typeof promptInputSchema>; // ...etc for each
+// Exception: `ListPromptsInput = z.input<typeof listPromptsInputSchema>` so callers may omit page/pageSize (defaults are applied by the schema).
 // src/lib/errors.ts
 export class AppError extends Error { constructor(public code: ErrorCode, message: string, public fieldErrors?: Record<string, string[]>) }
 export function toActionResult<T>(fn: () => Promise<T>): Promise<ActionResult<T>>;
@@ -724,6 +725,8 @@ export type LimitedAction = "prompt_create" | "prompt_update" | "comment" | "rat
 export async function checkRateLimit(key: string, limit: number, windowSeconds: number): Promise<{ ok: boolean; remaining: number; retryAfterSeconds: number }>;
 export async function enforceRateLimit(action: LimitedAction, subject: { userId?: string; ip?: string; trustLevel?: TrustLevel }): Promise<void>; // throws RATE_LIMITED
 export function clientIp(headers: Headers): string | null;  // x-real-ip, then first x-forwarded-for
+// enforceRateLimit subject: `userId` when signed in, else a salted hash of `ip` (raw IPs are never stored). For "mcp", `userId` carries the
+// rate-limit SUBJECT (verified token user id, else params._meta["openai/subject"]); the 600/min per-IP-hash ceiling applies whenever `ip` is given.
 // rate-limit.ts is implemented FOR REAL by the foundation (it is small and fully specified in §11 and the data-write
 // instructions) because both data packages, /api/events, /api/tags/suggest and /mcp depend on it.
 ```
@@ -1036,6 +1039,7 @@ Field rules:
 | `DATABASE_URL` | all | pooled on Neon; local `postgres://localhost:5432/lazyprompt` |
 | `DATABASE_URL_UNPOOLED` | migrate/seed | direct; falls back to DATABASE_URL |
 | `TEST_DATABASE_URL` | tests | `postgres://localhost:5432/lazyprompt_test` |
+| `TEST_DATABASE_URL_E2E`, `E2E_PORT`, `E2E_MAGIC_LINK_SINK` | e2e | `postgres://localhost:5432/lazyprompt_e2e`, `3100`, `.data/e2e-magic-links-$E2E_PORT.jsonl`. All test resources are env-overridable per worktree via a gitignored `.env.test.local` (README "Parallel worktrees"); `pnpm db:test:prepare` creates and migrates both databases |
 | `BETTER_AUTH_SECRET` | all | 32+ random bytes |
 | `BETTER_AUTH_URL` | optional | overrides base URL |
 | `NEXT_PUBLIC_SITE_URL` | prod | canonical origin `https://lazyprompt.ai` |
@@ -1086,7 +1090,7 @@ Field rules:
   ```
 - **Playwright** (chromium):
   - `webServer`: `pnpm build && pnpm start -p 3100` with env `DATABASE_URL=$TEST_DATABASE_URL_E2E` (`lazyprompt_e2e`), `MAGIC_LINK_DEV_SINK=.data/e2e-magic-links.jsonl`, `ADMIN_EMAILS=admin@e2e.test` and `SEO_NOINDEX=false`.
-  - `globalSetup` migrates, resets, and seeds `--fixtures`.
+  - The `webServer` command is `pnpm db:test:prepare && pnpm build && pnpm start -p $E2E_PORT` (migrate first, because `next build` loads the auth plugins). `globalSetup` runs after the server is up: it migrates, resets and seeds `--fixtures`. The reset keeps `jwks` and `oauth_resource`, which the running server seeds once at startup. Port, DB and sink file come from `E2E_PORT`, `TEST_DATABASE_URL_E2E` and `E2E_MAGIC_LINK_SINK`.
   - Helper `signIn(page, email)` in `tests/e2e/helpers/auth.ts` submits the magic-link form, reads the sink file and visits the link.
   - Spec files: one per package, `tests/e2e/<pkg>.spec.ts`.
 - **What to test:**
@@ -1122,7 +1126,7 @@ Scripts:
 - App: `dev`, `build`, `start`, `vercel-build` (`pnpm db:migrate && ([ "$SEED_ON_BUILD" = true ] && pnpm db:seed || true) && next build`).
 - Quality: `lint` (`eslint .`), `typecheck` (`next typegen && tsc --noEmit`), `test`, `test:unit`, `test:integration`, `test:e2e`.
 - Database: `db:generate`, `db:migrate` (`tsx scripts/migrate.ts`), `db:seed`, `seed:check`, `db:seed:demo`, `db:reset` (local only).
-- Other: `widget:build`, `auth:generate` (`npx auth@latest generate --config src/auth/server.ts --output src/db/schema/auth-generated.ts`, for diffing only).
+- Other: `widget:build`, `db:test:prepare`, `auth:generate` (`npx auth@latest generate --config src/auth/server.ts --output .data/auth-generated.ts`, for diffing only; the output must stay outside `src/db/schema/` because drizzle-kit loads every file in that directory).
 
 ## 20. Vercel preview deployment (captain)
 

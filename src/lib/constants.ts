@@ -1,5 +1,5 @@
 // Single source of enum values; imported by the DB schema, zod validation and the UI.
-// Must stay free of `server-only` and of any import from src/server (see ARCHITECTURE.md section 7).
+// Must stay CLI safe: no server-side-only marker import and nothing from src/server (ARCHITECTURE.md section 7).
 export const AI_MODELS = ["chatgpt","claude","gemini","perplexity","grok","copilot","mistral","deepseek","llama",
   "midjourney","stable_diffusion","flux","sora","veo"] as const;
 export const USE_CASES = ["generate","rewrite","summarize","extract","analyze","brainstorm","plan","critique",

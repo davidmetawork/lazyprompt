@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // LAZY environment access. `env` is a Proxy that parses process.env on first property access and memoizes the
 // result. It never throws at import time, so tsx scripts, drizzle-kit and the Better Auth CLI can import modules
-// that reference it. Must not import "server-only".
+// that reference it. Must stay CLI safe (import-graph rule in the README).
 
 const DEV_AUTH_SECRET = "dev-insecure-better-auth-secret-0123456789abcdef";
 const DEV_IP_SALT = "dev-insecure-ip-hash-salt";

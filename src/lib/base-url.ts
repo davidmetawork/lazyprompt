@@ -1,5 +1,5 @@
 // Resolution order (ARCHITECTURE.md section 17); the final localhost fallback honors PORT (default 3000)
-// so parallel worktrees on other ports resolve their own origin. Reads process.env directly (never throws; no server-only).
+// so parallel worktrees on other ports resolve their own origin. Reads process.env directly (never throws).
 function strip(u: string): string {
   return u.replace(/\/+$/, "");
 }

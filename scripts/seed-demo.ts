@@ -3,8 +3,10 @@
 import { eq, sql } from "drizzle-orm";
 import { closeDb, db } from "../src/db";
 import { comments, profiles, prompts, ratings, user } from "../src/db/schema";
-import { bayesianScore, RANKING } from "../src/server/ranking/score";
 import { isLocalDatabaseUrl, isMain, loadDevEnv } from "./lib/env-files";
+
+// Same formula as src/server/ranking/score.ts (scripts must not import from src/server): C = 8, default mean 4.0.
+const bayes = (weightedSum: number, weightSum: number) => (8 * 4.0 + weightedSum) / (8 + weightSum);
 
 const NAMES = ["Ada", "Bruno", "Chen", "Dara", "Eli", "Fatima", "Gus", "Hana"];
 const COMMENTS = [
@@ -63,7 +65,7 @@ async function main() {
   const rows = await db.select({ id: prompts.id, ws: prompts.ratingWeightedSum, w: prompts.ratingWeightSum }).from(prompts);
   for (const r of rows) {
     await db.update(prompts)
-      .set({ bayesScore: bayesianScore(r.ws, r.w, RANKING.DEFAULT_MEAN) })
+      .set({ bayesScore: bayes(r.ws, r.w) })
       .where(eq(prompts.id, r.id));
   }
   console.log(`demo data: ${users.length} users, ${ratingRows} ratings considered across ${published.length} prompts`);

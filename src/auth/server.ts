@@ -1,4 +1,4 @@
-// NO "server-only": loaded by tsx, drizzle-kit and `npx auth@latest generate`.
+// CLI safe (import-graph rule): loaded by tsx, drizzle-kit and `npx auth@latest generate`.
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { admin, magicLink } from "better-auth/plugins";

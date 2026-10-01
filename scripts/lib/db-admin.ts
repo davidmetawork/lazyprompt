@@ -1,5 +1,5 @@
 // Create-if-missing + extensions + migrate for a database URL. Used by db:test:prepare, db:reset and the
-// vitest / Playwright global setups. No server-only, no src/server imports.
+// vitest / Playwright global setups. CLI safe: nothing from src/server.
 import { Pool } from "pg";
 import { adminUrlFor } from "./env-files";
 import { runMigrations } from "../migrate";

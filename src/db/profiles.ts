@@ -1,4 +1,4 @@
-// NO "server-only": used by Better Auth hooks, seed scripts and the Better Auth CLI import graph.
+// Import-graph rule (README): CLI safe. Used by Better Auth hooks, seed scripts and the Better Auth CLI import graph.
 import { db } from "./index";
 import { profiles } from "./schema";
 import { generateUsername } from "../lib/slug";
