@@ -1,8 +1,10 @@
 // Server read layer for prompts (ARCHITECTURE.md sections 5, 7). Reads take plain arguments and return DTOs with ISO dates.
 import "server-only";
 import { cache } from "react";
-import { and, asc, desc, eq, gt, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, gt, gte, ne, sql, desc, type SQL } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
+import { headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { categories, profiles, promptModels, prompts, promptVersions, ratings, saves, user } from "@/db/schema";
@@ -12,7 +14,8 @@ import { listPromptsInputSchema, type ListPromptsInput } from "@/lib/validation"
 import type {
   Paginated, PromptCard, PromptDetail, PromptStatus, PromptVersionDetail, PromptVersionSummary, Viewer, ViewerPromptState,
 } from "@/lib/types";
-import { allOf, correctQuery, filterConditions, matchCondition, rankExpression } from "@/server/search";
+import { enforceRateLimit, clientIp } from "@/server/rate-limit";
+import { allOf, correctQuery, filterConditions, matchCondition, rankExpression, tokenize } from "@/server/search";
 import {
   promptCardColumns, promptDetailColumns, toAuthorSummary, toPromptCard, toPromptDetail,
   type PromptCardRow, type PromptDetailRow,
@@ -20,18 +23,26 @@ import {
 
 // ---------- shared helpers ----------
 
-function cardQuery<E extends Record<string, SQL | SQL.Aliased | PgColumn>>(extra?: E) {
+/** `withTotal: false` skips the `count(*) over()` window (home rows, related prompts never read the total). */
+function cardQuery<E extends Record<string, SQL | SQL.Aliased | PgColumn>>(extra?: E, withTotal: boolean = true) {
   return db
-    .select({ ...promptCardColumns, total: sql<number>`count(*) over()::int`, ...(extra ?? ({} as E)) })
+    .select({
+      ...promptCardColumns,
+      total: withTotal ? sql<number>`count(*) over()::int` : sql<number>`0::int`,
+      ...(extra ?? ({} as E)),
+    })
     .from(prompts)
     .innerJoin(categories, eq(categories.id, prompts.categoryId))
     .innerJoin(user, eq(user.id, prompts.authorId))
     .leftJoin(profiles, eq(profiles.userId, user.id));
 }
 
-const topOrder = () => [desc(prompts.bayesScore), desc(prompts.isFeatured), desc(prompts.copyCount), desc(prompts.publishedAt), asc(prompts.id)];
-const newOrder = () => [desc(prompts.publishedAt), desc(prompts.createdAt), asc(prompts.id)];
-const trendingOrder = () => [desc(prompts.trendingScore), ...topOrder()];
+// Explicit NULLS LAST: Drizzle's index `.desc()` is DESC NULLS LAST while a bare `DESC` sort is NULLS FIRST, which
+// would stop the ordering indexes (prompts_top_idx, prompts_trending_idx, prompts_new_idx) from being used.
+const descLast = (col: PgColumn): SQL => sql`${col} desc nulls last`;
+const topOrder = () => [descLast(prompts.bayesScore), descLast(prompts.isFeatured), descLast(prompts.copyCount), descLast(prompts.publishedAt), asc(prompts.id)];
+const newOrder = () => [descLast(prompts.publishedAt), descLast(prompts.createdAt), asc(prompts.id)];
+const trendingOrder = () => [descLast(prompts.trendingScore), ...topOrder()];
 
 const uuidSchema = z.uuid();
 function assertUuid(value: string, field: string): void {
@@ -136,14 +147,41 @@ async function runList(p: ParsedList, q: string | undefined): Promise<Paginated<
  * Browse + search (section 5). With `q`: websearch_to_tsquery + trigram + escaped ILIKE, ranked by relevance. When the
  * query matches nothing, tokens are corrected against the title/tag vocabulary (typo tolerance) and the search is retried.
  */
-export async function listPrompts(input: ListPromptsInput): Promise<Paginated<PromptCard>> {
+export async function listPrompts(input: ListPromptsInput, opts?: { ip?: string | null }): Promise<Paginated<PromptCard>> {
   const p = listPromptsInputSchema.parse(input);
   const result = await runList(p, p.q);
-  if (p.q && result.total === 0 && p.page === 1) {
-    const corrected = await correctQuery(p.q);
+  if (p.q && result.total === 0 && p.page === 1 && worthCorrecting(p.q)) {
+    const corrected = await correctWithinBudget(p.q, opts?.ip);
     if (corrected) return runList(p, corrected);
   }
   return result;
+}
+
+/** Typo correction scans the whole title/tag vocabulary, so only short queries qualify. */
+const CORRECTION_MAX_TOKENS = 3;
+const CORRECTION_MAX_CHARS = 40;
+const worthCorrecting = (q: string) => q.length <= CORRECTION_MAX_CHARS && tokenize(q).length <= CORRECTION_MAX_TOKENS;
+
+/** Rate-limited (per IP hash) typo correction; a limit hit or a failure just means "no correction". */
+async function correctWithinBudget(q: string, ip: string | null | undefined): Promise<string | null> {
+  try {
+    let who = ip;
+    if (who === undefined) {
+      try {
+        who = clientIp(await headers());
+      } catch (e) {
+        unstable_rethrow(e);   // keep Next's dynamic-rendering signals; "no request scope" (scripts, tests) is fine
+        who = null;
+      }
+    }
+    await enforceRateLimit("search", { ip: who ?? undefined });
+    return await correctQuery(q);
+  } catch (e) {
+    if (e instanceof AppError && e.code === "RATE_LIMITED") return null;
+    unstable_rethrow(e);
+    console.error("[search] typo correction failed", e instanceof Error ? e.message : "unknown");
+    return null;
+  }
 }
 
 const HOME_FEATURED = 6;
@@ -154,7 +192,7 @@ export async function getHomeSections(): Promise<{
 }> {
   const pub = eq(prompts.status, "published");
   const run = async (where: SQL, order: SQL[], limit: number) =>
-    (await cardQuery().where(where).orderBy(...order).limit(limit)).map(asCard);
+    (await cardQuery(undefined, false).where(where).orderBy(...order).limit(limit)).map(asCard);
   const [featured, trendingRaw, topPool, latest] = await Promise.all([
     run(and(pub, eq(prompts.isFeatured, true))!, topOrder(), HOME_FEATURED),
     run(and(pub, gt(prompts.trendingScore, 0))!, trendingOrder(), HOME_ROW),
@@ -178,7 +216,7 @@ export async function getRelatedPrompts(promptId: string, limit: number = 6): Pr
   const rows = await cardQuery({
     shared: sql<number>`(select count(*) from prompt_tags a join prompt_tags b on b.tag_id = a.tag_id
       where a.prompt_id = ${promptId}::uuid and b.prompt_id = ${prompts.id})::int`.as("shared"),
-  })
+  }, false)
     .where(and(
       eq(prompts.status, "published"),
       ne(prompts.id, promptId),
@@ -198,6 +236,10 @@ export async function getRelatedPrompts(promptId: string, limit: number = 6): Pr
 // ---------- versions ----------
 // Callers (the /p/[slug]/versions pages) gate on prompt visibility via getPromptByShortId first.
 
+/** Versions below the one first made public (never approved, or edited out before approval) are not served. */
+const approvedVersions = (promptId: string) =>
+  gte(promptVersions.version, sql`coalesce((select ${prompts.approvedFromVersion} from ${prompts} where ${prompts.id} = ${promptId}::uuid), 1)`);
+
 export async function listPromptVersions(promptId: string): Promise<PromptVersionSummary[]> {
   assertUuid(promptId, "promptId");
   const rows = await db
@@ -210,7 +252,7 @@ export async function listPromptVersions(promptId: string): Promise<PromptVersio
     .from(promptVersions)
     .leftJoin(user, eq(user.id, promptVersions.editorId))
     .leftJoin(profiles, eq(profiles.userId, user.id))
-    .where(eq(promptVersions.promptId, promptId))
+    .where(and(eq(promptVersions.promptId, promptId), approvedVersions(promptId)))
     .orderBy(desc(promptVersions.version));
   return rows.map((r) => ({
     version: r.version,
@@ -240,7 +282,7 @@ export async function getPromptVersion(promptId: string, version: number): Promi
     .from(promptVersions)
     .leftJoin(user, eq(user.id, promptVersions.editorId))
     .leftJoin(profiles, eq(profiles.userId, user.id))
-    .where(and(eq(promptVersions.promptId, promptId), eq(promptVersions.version, version)))
+    .where(and(eq(promptVersions.promptId, promptId), eq(promptVersions.version, version), approvedVersions(promptId)))
     .limit(1);
   if (!r) return null;
   return {

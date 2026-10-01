@@ -1,41 +1,29 @@
 import type { MetadataRoute } from "next";
 import { buildSitemap } from "@/lib/seo/sitemap";
-import { listPrompts, listSitemapEntries } from "@/server/prompts/queries";
-import { listCategories, listPopularTags } from "@/server/taxonomy";
+import { listSitemapEntries } from "@/server/prompts/queries";
+import { listCategories, listTagsForSitemap } from "@/server/taxonomy";
 
-// Prerendered at build and refreshed hourly. Every data call degrades to the static entries (build safety).
+// Prerendered at build and refreshed hourly.
 export const revalidate = 3600;
 
-async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+/**
+ * Only the production build (which may run without a reachable database) degrades to the static entries. At runtime a
+ * database error is rethrown so the last good ISR copy keeps being served instead of caching a degraded sitemap for an hour.
+ */
+async function load<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
-  } catch {
-    return fallback;
-  }
-}
-
-async function promptEntries(): Promise<{ slug: string; updatedAt: string }[]> {
-  try {
-    return await listSitemapEntries();
-  } catch {
-    // listSitemapEntries unavailable (or failing): fall back to paging the public list, and to nothing if that fails too.
-    return safe(async () => {
-      const out: { slug: string; updatedAt: string }[] = [];
-      for (let page = 1; page <= 50; page++) {
-        const res = await listPrompts({ sort: "new", page, pageSize: 48 });
-        out.push(...res.items.map((p) => ({ slug: p.slug, updatedAt: p.updatedAt })));
-        if (!res.hasMore) break;
-      }
-      return out;
-    }, []);
+  } catch (e) {
+    if (process.env.NEXT_PHASE === "phase-production-build") return fallback;
+    throw e;
   }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, tags, prompts] = await Promise.all([
-    safe(() => listCategories(), []),
-    safe(() => listPopularTags(500), []),
-    promptEntries(),
+    load(() => listCategories(), []),
+    load(() => listTagsForSitemap(), []),
+    load(() => listSitemapEntries(), []),
   ]);
   return buildSitemap({ categories, tags, prompts });
 }

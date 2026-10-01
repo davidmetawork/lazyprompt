@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const queries = vi.hoisted(() => ({ listPrompts: vi.fn(), listSitemapEntries: vi.fn() }));
-const taxonomy = vi.hoisted(() => ({ listCategories: vi.fn(), listPopularTags: vi.fn() }));
+const taxonomy = vi.hoisted(() => ({ listCategories: vi.fn(), listTagsForSitemap: vi.fn() }));
 vi.mock("@/server/prompts/queries", () => queries);
 vi.mock("@/server/taxonomy", () => taxonomy);
 
@@ -33,12 +33,20 @@ describe("degradation when the server calls throw", () => {
     expect(xml).not.toContain("<item>");
   });
 
-  it("sitemap returns the static pages", async () => {
+  it("sitemap rethrows database errors at runtime so the last good ISR copy keeps being served", async () => {
     queries.listSitemapEntries.mockRejectedValue(new Error("nope"));
-    queries.listPrompts.mockRejectedValue(new Error("nope"));
+    taxonomy.listCategories.mockResolvedValue([]);
+    taxonomy.listTagsForSitemap.mockResolvedValue([]);
+    await expect(sitemap()).rejects.toThrow("nope");
+  });
+
+  it("sitemap returns the static pages when the production build has no database", async () => {
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+    queries.listSitemapEntries.mockRejectedValue(new Error("nope"));
     taxonomy.listCategories.mockRejectedValue(new Error("nope"));
-    taxonomy.listPopularTags.mockRejectedValue(new Error("nope"));
+    taxonomy.listTagsForSitemap.mockRejectedValue(new Error("nope"));
     const entries = await sitemap();
+    vi.unstubAllEnvs();
     const urls = entries.map((e) => e.url);
     expect(urls.some((u) => u.endsWith("/prompts"))).toBe(true);
     expect(urls.some((u) => u.endsWith("/privacy"))).toBe(true);
@@ -48,7 +56,7 @@ describe("degradation when the server calls throw", () => {
   it("sitemap lists prompts, categories and only tags with >= 5 prompts", async () => {
     queries.listSitemapEntries.mockResolvedValue([{ slug: "hello-abc1234", updatedAt: "2026-01-02T00:00:00Z" }]);
     taxonomy.listCategories.mockResolvedValue([{ slug: "coding" }]);
-    taxonomy.listPopularTags.mockResolvedValue([{ slug: "big", promptCount: 5 }, { slug: "small", promptCount: 4 }]);
+    taxonomy.listTagsForSitemap.mockResolvedValue([{ slug: "big", promptCount: 5 }, { slug: "small", promptCount: 4 }]);
     const urls = (await sitemap()).map((e) => e.url);
     expect(urls.some((u) => u.endsWith("/p/hello-abc1234"))).toBe(true);
     expect(urls.some((u) => u.endsWith("/c/coding"))).toBe(true);

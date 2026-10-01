@@ -12,16 +12,24 @@ import type { AiModel, EventSource, UsageEventType } from "@/lib/types";
 export interface UsageEventRecord {
   promptId: string; type: UsageEventType; model?: AiModel | null; source: EventSource;
   userId?: string | null; ip?: string | null; userAgent?: string | null;
+  /**
+   * Explicit actor identity for callers that know better than ip/ua (MCP: the verified user id, else a stable
+   * `o:<openai/subject>` key). Hashed like a user id; it wins over `userId`/`ip`/`userAgent`.
+   */
+  actorKey?: string | null;
 }
+
+/** Anonymous web events one IP hash may contribute per prompt per day; the rest are dropped, not counted. */
+export const ANON_WEB_EVENTS_PER_PROMPT_DAY = 3;
 
 /** Fixed column map (never built from input): which denormalized counter each event type increments. */
 const COUNTER_COLUMN: Record<(typeof USAGE_EVENT_TYPES)[number], string> = {
   copy: "copy_count", open: "open_count", render: "render_count", worked: "worked_count", not_worked: "not_worked_count",
 };
 
-/** sha256 hex of `(userId | ip + "|" + ua) + "|" + IP_HASH_SALT`. No raw IP or UA is ever stored. */
-export function hashActor(input: { userId?: string | null; ip?: string | null; userAgent?: string | null }): string {
-  const subject = input.userId ? input.userId : `${input.ip ?? ""}|${input.userAgent ?? ""}`;
+/** sha256 hex of `(actorKey | userId | ip + "|" + ua) + "|" + IP_HASH_SALT`. No raw IP or UA is ever stored. */
+export function hashActor(input: { userId?: string | null; ip?: string | null; userAgent?: string | null; actorKey?: string | null }): string {
+  const subject = input.actorKey ? `k:${input.actorKey}` : input.userId ? input.userId : `${input.ip ?? ""}|${input.userAgent ?? ""}`;
   return createHash("sha256").update(`${subject}|${env.IP_HASH_SALT}`).digest("hex");
 }
 
@@ -36,10 +44,19 @@ export async function recordUsageEvent(input: UsageEventRecord): Promise<{ count
   if (!(EVENT_SOURCES as readonly string[]).includes(input.source)) throw new AppError("VALIDATION", "Invalid event source");
   const { promptId, type, model } = parsed.data;
   const userId = input.userId ?? null;
-  const actorHash = hashActor({ userId, ip: input.ip, userAgent: input.userAgent });
+  // Anonymous WEB visitors hash the IP only: rotating the user agent must not mint a fresh actor per event.
+  // (MCP callers without an actorKey keep ip+ua; they should pass an actorKey.)
+  const anonWeb = !userId && !input.actorKey && input.source === "web";
+  const actorHash = hashActor({ userId, ip: input.ip, userAgent: anonWeb ? null : input.userAgent, actorKey: input.actorKey });
   const column = sql.raw(COUNTER_COLUMN[type]);
 
   return db.transaction(async (tx) => {
+    if (anonWeb) {
+      const seen = await tx.execute<{ n: number }>(sql`
+        SELECT count(*)::int AS n FROM usage_events
+        WHERE prompt_id = ${promptId}::uuid AND actor_hash = ${actorHash} AND day = current_date`);
+      if (Number(seen.rows[0]?.n ?? 0) >= ANON_WEB_EVENTS_PER_PROMPT_DAY) return { counted: false };
+    }
     const res = await tx.execute<{ id: number }>(sql`
       INSERT INTO usage_events (prompt_id, type, model, source, user_id, actor_hash)
       SELECT p.id, ${type}::usage_event_type, ${model ?? null}::ai_model, ${input.source}::event_source, ${userId}, ${actorHash}

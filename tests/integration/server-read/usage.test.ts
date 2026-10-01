@@ -42,7 +42,7 @@ describe("recordUsageEvent", () => {
     expect(await counters(p.id)).toMatchObject({ copy: 1, open: 0, render: 0, worked: 0, notWorked: 0 });
     const [row] = await eventRows();
     expect(row).toMatchObject({ promptId: p.id, type: "copy", source: "web", userId: null, model: null });
-    expect(row!.actorHash).toBe(hashActor({ ip: "9.9.9.9", userAgent: "x" }));
+    expect(row!.actorHash).toBe(hashActor({ ip: "9.9.9.9" }));   // anonymous web visitors hash the IP only
   });
 
   it("dedupes the same actor copying twice on one day", async () => {
@@ -62,7 +62,7 @@ describe("recordUsageEvent", () => {
     await recordUsageEvent({ ...base, type: "copy", ip: "1.1.1.2", userAgent: "a" });
     await recordUsageEvent({ ...base, type: "open", ip: "1.1.1.1", userAgent: "a", model: "claude" });
     await recordUsageEvent({ ...base, type: "render", ip: "1.1.1.1", userAgent: "a" });
-    await recordUsageEvent({ ...base, type: "worked", ip: "1.1.1.1", userAgent: "a" });
+    await recordUsageEvent({ ...base, type: "worked", ip: "1.1.1.4", userAgent: "a" });
     await recordUsageEvent({ ...base, type: "not_worked", ip: "1.1.1.3", userAgent: "a" });
     expect(await counters(p.id)).toEqual({ copy: 2, open: 1, render: 1, worked: 1, notWorked: 1 });
     expect((await eventRows()).find((r) => r.type === "open")?.model).toBe("claude");
@@ -76,6 +76,38 @@ describe("recordUsageEvent", () => {
     const rows = await eventRows();
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ userId: ada.id, source: "web", actorHash: hashActor({ userId: ada.id }) });
+  });
+
+  it("anonymous web visitors dedupe by IP only: rotating the user agent does not mint new actors", async () => {
+    const p = await createPrompt(await createUser());
+    const base = { promptId: p.id, type: "copy" as const, source: "web" as const, ip: "7.7.7.7" };
+    expect((await recordUsageEvent({ ...base, userAgent: "UA/1" })).counted).toBe(true);
+    for (const ua of ["UA/2", "UA/3", "UA/4"]) expect((await recordUsageEvent({ ...base, userAgent: ua })).counted).toBe(false);
+    expect((await counters(p.id)).copy).toBe(1);
+  });
+
+  it("caps anonymous web events at 3 per prompt per IP per day; other IPs, signed-in users and a new day are unaffected", async () => {
+    const p = await createPrompt(await createUser());
+    const ada = await createUser();
+    const types = ["copy", "open", "render", "worked", "not_worked"] as const;
+    const counted: boolean[] = [];
+    for (const type of types) counted.push((await recordUsageEvent({ promptId: p.id, type, source: "web", ip: "7.7.7.8" })).counted);
+    expect(counted).toEqual([true, true, true, false, false]);
+    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", ip: "7.7.7.9" })).counted).toBe(true);
+    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", userId: ada.id, ip: "7.7.7.8" })).counted).toBe(true);
+    await db.execute(sql`UPDATE usage_events SET day = current_date - 1`);
+    expect((await recordUsageEvent({ promptId: p.id, type: "worked", source: "web", ip: "7.7.7.8" })).counted).toBe(true);
+  });
+
+  it("an explicit actorKey identifies the actor (MCP): same key dedupes, different keys behind one IP are distinct", async () => {
+    const p = await createPrompt(await createUser());
+    const base = { promptId: p.id, type: "render" as const, source: "mcp" as const, ip: "198.51.100.1", userAgent: "chatgpt" };
+    expect((await recordUsageEvent({ ...base, actorKey: "o:subject-a" })).counted).toBe(true);
+    expect((await recordUsageEvent({ ...base, actorKey: "o:subject-a" })).counted).toBe(false);
+    for (const key of ["o:subject-b", "o:subject-c", "o:subject-d", "o:subject-e"]) {
+      expect((await recordUsageEvent({ ...base, actorKey: key })).counted).toBe(true);   // no anonymous cap for keyed actors
+    }
+    expect(hashActor({ actorKey: "o:subject-a" })).not.toBe(hashActor({ userId: "o:subject-a" }));
   });
 
   it("counts again on a new day", async () => {

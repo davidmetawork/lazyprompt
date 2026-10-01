@@ -1,6 +1,6 @@
 import "server-only";
 import { and, eq, sql } from "drizzle-orm";
-import { db } from "@/db";
+import { db, type Tx } from "@/db";
 import { comments, moderationActions, profiles, prompts, reports, user } from "@/db/schema";
 import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
@@ -13,12 +13,21 @@ import { getActiveActor, isUniqueViolation, parseInput } from "@/server/moderati
 import { enforceRateLimit } from "@/server/rate-limit";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Reporters this new (and untrusted) do not count toward the auto-hide threshold: one person cannot sockpuppet a takedown. */
+const REPORTER_MIN_AGE_DAYS = 7;
 const duplicateReport = () => new AppError("CONFLICT", "You have already reported this");
+
+async function authorTrust(tx: Tx, authorId: string): Promise<number> {
+  const [row] = await tx.select({ t: profiles.trustLevel }).from(profiles).where(eq(profiles.userId, authorId)).limit(1);
+  return row?.t ?? 0;
+}
 
 /**
  * One open report per reporter and target. Fills reports.prompt_id for prompt and comment targets, keeps
  * open_report_count right and auto-hides the target once REPORT_AUTOHIDE_THRESHOLD distinct reporters have an open
- * report on it (the audit row has a null actor and action auto_hide). Reports on users only go to the queue.
+ * report on it (the audit row has a null actor and action auto_hide). Only established reporters (trust level 1+ or an
+ * account older than 7 days) count, and featured prompts or content by trust 2+ authors are never auto-hidden: they stay
+ * in the queue through open_report_count. Reports on users only go to the queue.
  */
 export async function createReport(actor: Viewer, input: ReportInput): Promise<{ id: string; autoHidden: boolean }> {
   const me = await getActiveActor(actor);
@@ -30,14 +39,16 @@ export async function createReport(actor: Viewer, input: ReportInput): Promise<{
   try {
     return await db.transaction(async (tx) => {
       let promptId: string | null = null;
+      let protectedTarget = false;   // never auto-hide: featured prompt or trusted author
 
       if (data.targetType === "prompt") {
         if (!UUID_RE.test(data.targetId)) throw notFound();
-        const [p] = await tx.select({ id: prompts.id, authorId: prompts.authorId, status: prompts.status })
+        const [p] = await tx.select({ id: prompts.id, authorId: prompts.authorId, status: prompts.status, isFeatured: prompts.isFeatured })
           .from(prompts).where(eq(prompts.id, data.targetId)).for("update").limit(1);
         if (!p || p.status !== "published") throw notFound();
         if (p.authorId === me.id) throw new AppError("FORBIDDEN", "You can't report your own content");
         promptId = p.id;
+        protectedTarget = p.isFeatured || (await authorTrust(tx, p.authorId)) >= 2;
       } else if (data.targetType === "comment") {
         if (!UUID_RE.test(data.targetId)) throw notFound();
         const [c0] = await tx.select({ promptId: comments.promptId }).from(comments).where(eq(comments.id, data.targetId)).limit(1);
@@ -49,6 +60,7 @@ export async function createReport(actor: Viewer, input: ReportInput): Promise<{
         if (!c || c.status !== "visible") throw notFound();
         if (c.authorId === me.id) throw new AppError("FORBIDDEN", "You can't report your own content");
         promptId = c0.promptId;
+        protectedTarget = (await authorTrust(tx, c.authorId)) >= 2;
       } else {
         const [u] = await tx.select({ id: user.id }).from(user).innerJoin(profiles, eq(profiles.userId, user.id))
           .where(eq(user.id, data.targetId)).limit(1);
@@ -71,10 +83,14 @@ export async function createReport(actor: Viewer, input: ReportInput): Promise<{
       if (data.targetType !== "user") {
         await recountOpenReports(tx, data.targetType, data.targetId);
         const res = await tx.execute<{ n: number }>(sql`
-          SELECT count(DISTINCT reporter_id)::int AS n FROM reports
-          WHERE target_type = ${data.targetType} AND target_id = ${data.targetId} AND status = 'open'`);
+          SELECT count(DISTINCT r.reporter_id)::int AS n
+          FROM reports r
+          JOIN "user" u ON u.id = r.reporter_id
+          LEFT JOIN profiles pr ON pr.user_id = r.reporter_id
+          WHERE r.target_type = ${data.targetType} AND r.target_id = ${data.targetId} AND r.status = 'open'
+            AND (coalesce(pr.trust_level, 0) >= 1 OR u.created_at < now() - make_interval(days => ${REPORTER_MIN_AGE_DAYS}))`);
         const distinct = Number(res.rows[0]?.n ?? 0);
-        if (distinct >= threshold) {
+        if (distinct >= threshold && !protectedTarget) {
           if (data.targetType === "prompt") {
             const hidden = await tx.update(prompts)
               .set({ status: "hidden", autoHiddenAt: new Date() })

@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "@/db";
 import { tags } from "@/db/schema";
-import { getTagBySlug, listPopularTags, suggestTags } from "@/server/taxonomy";
+import { getTagBySlug, listPopularTags, listTagsForSitemap, suggestTags } from "@/server/taxonomy";
 import { resetDb } from "../../helpers/db";
 import { createPrompt, createUser } from "../../helpers/factories";
 
@@ -14,6 +14,21 @@ async function seedTags(spec: Record<string, number>) {
     await db.insert(tags).values({ slug, name: slug.replace(/-/g, " "), promptCount });
   }
 }
+
+describe("listTagsForSitemap", () => {
+  it("returns every canonical tag with at least 5 prompts, without the 100-row popular-tags clamp", async () => {
+    const spec: Record<string, number> = { "tiny-tag": 4, "alias-tag": 9 };
+    for (let i = 0; i < 130; i++) spec[`bulk-${String(i).padStart(3, "0")}`] = 5 + (i % 7);
+    await seedTags(spec);
+    const [canon] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, "bulk-000"));
+    await db.update(tags).set({ aliasOfId: canon!.id }).where(eq(tags.slug, "alias-tag"));
+    const slugs = (await listTagsForSitemap()).map((t) => t.slug);
+    expect(slugs).toHaveLength(130);
+    expect(slugs).not.toContain("tiny-tag");
+    expect(slugs).not.toContain("alias-tag");
+    expect(await listPopularTags(500)).toHaveLength(100);        // the clamp the sitemap used to hit
+  });
+});
 
 describe("getTagBySlug", () => {
   it("returns a tag summary and null for unknown or invalid slugs", async () => {

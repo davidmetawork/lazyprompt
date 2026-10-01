@@ -111,6 +111,9 @@ describe("rate-limit policy (section 11)", () => {
     ["report", { userId: "u", trustLevel: 0 }, 20],
     ["event", { ip: "203.0.113.5" }, 300],
     ["tag_suggest", { ip: "203.0.113.6" }, 60],
+    ["delete", { userId: "u", trustLevel: 0 }, 60],
+    ["profile", { userId: "u", trustLevel: 1 }, 10],
+    ["search", { ip: "203.0.113.7" }, 30],
   ];
   it.each(table)("%s allows exactly %i calls per window", async (action, subject, limit) => {
     for (let i = 0; i < limit; i++) await enforceRateLimit(action, subject);
@@ -130,8 +133,32 @@ describe("rate-limit policy (section 11)", () => {
     }
   });
 
-  it("mcp: 600/min per IP ceiling applies across different subjects", async () => {
-    for (let i = 0; i < 600; i++) await enforceRateLimit("mcp", { userId: `subject-${i}`, ip: "198.51.100.77" });
-    await expect(enforceRateLimit("mcp", { userId: "another-subject", ip: "198.51.100.77" })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+  it("comment_update: 30/day with a 5 second burst limit", async () => {
+    const { db } = await import("@/db");
+    const { sql } = await import("drizzle-orm");
+    await enforceRateLimit("comment_update", { userId: "cu", trustLevel: 1 });
+    await expect(enforceRateLimit("comment_update", { userId: "cu", trustLevel: 1 })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    await db.execute(sql`DELETE FROM app_rate_limits WHERE key LIKE 'comment_update%'`);
+    for (let i = 0; i < 30; i++) {
+      await db.execute(sql`DELETE FROM app_rate_limits WHERE key = ${"comment_update_burst:cu"}`);
+      await enforceRateLimit("comment_update", { userId: "cu", trustLevel: 1 });
+    }
+    await db.execute(sql`DELETE FROM app_rate_limits WHERE key = ${"comment_update_burst:cu"}`);
+    await expect(enforceRateLimit("comment_update", { userId: "cu", trustLevel: 1 })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+  });
+
+  it("mcp: the per-IP ceiling is 600/min without a subject and 3000/min (own counter) with one", async () => {
+    const { db } = await import("@/db");
+    const { sql } = await import("drizzle-orm");
+    const { hashIp } = await import("@/server/rate-limit");
+    const seed = (key: string, count: number) =>
+      db.execute(sql`INSERT INTO app_rate_limits (key, window_start, count) VALUES (${key}, now(), ${count})`);
+    const ip = "198.51.100.77";
+    await seed(`mcp:ip:${hashIp(ip)}`, 600);
+    await expect(enforceRateLimit("mcp", { ip })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    // Subject-carrying requests ignore the anonymous counter, so a shared egress IP serving many users keeps working.
+    for (let i = 0; i < 5; i++) await enforceRateLimit("mcp", { userId: `subject-${i}`, ip });
+    await db.execute(sql`UPDATE app_rate_limits SET count = 3000 WHERE key = ${`mcp:ipu:${hashIp(ip)}`}`);
+    await expect(enforceRateLimit("mcp", { userId: "another-subject", ip })).rejects.toMatchObject({ code: "RATE_LIMITED" });
   });
 });

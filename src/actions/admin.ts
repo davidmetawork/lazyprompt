@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdminForAction } from "@/auth/viewer";
-import { toActionResult } from "@/lib/errors";
+import { AppError, toActionResult } from "@/lib/errors";
 import type { ActionResult } from "@/lib/types";
-import { moderateComment, moderatePrompt, resolveReport, setTrustLevel, setUserBan } from "@/server/moderation/actions";
+import {
+  moderateComment, moderatePrompt, moderatePromptVersion, resolveReport, setTrustLevel, setUserBan,
+} from "@/server/moderation/actions";
 
 const id = z.string().trim().min(1).max(64);
 const slug = z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/, "Invalid slug").optional();
@@ -37,6 +39,29 @@ export async function moderatePromptAction(input: z.input<typeof promptActionSch
     await moderatePrompt(admin, v.promptId, v.action, v.reason);
   });
   if (r.ok) revalidate(promptSlug);
+  return r;
+}
+
+const redactSchema = z.object({
+  promptId: id,
+  slug,
+  version: z.number().int().min(1).max(1_000_000),
+  reason: requiredReason,
+});
+
+/** Replaces the text of one historical version with "[redacted]" (never the current version). */
+export async function redactPromptVersionAction(input: z.input<typeof redactSchema>): Promise<ActionResult> {
+  let promptSlug: string | undefined;
+  const r = await toActionResult(async () => {
+    const admin = await requireAdminForAction();
+    const v = redactSchema.parse(input);
+    promptSlug = v.slug;
+    await moderatePromptVersion(admin, v.promptId, v.version, v.reason);
+  });
+  if (r.ok) {
+    revalidate(promptSlug);
+    if (promptSlug) revalidatePath(`/p/${promptSlug}/versions`, "layout");
+  }
   return r;
 }
 
@@ -85,8 +110,13 @@ export async function resolveReportAction(input: z.input<typeof resolveSchema>):
     const v = resolveSchema.parse(input);
     promptSlug = v.slug;
     if (v.resolution === "actioned" && v.targetAction !== "none") {
-      if (v.targetType === "prompt") await moderatePrompt(admin, v.targetId, v.targetAction, v.note);
-      else if (v.targetType === "comment") await moderateComment(admin, v.targetId, v.targetAction, v.note);
+      try {
+        if (v.targetType === "prompt") await moderatePrompt(admin, v.targetId, v.targetAction, v.note);
+        else if (v.targetType === "comment") await moderateComment(admin, v.targetId, v.targetAction, v.note);
+      } catch (e) {
+        // Hiding something that is already removed or rejected conflicts, but the report must still be closable.
+        if (!(v.targetAction === "hide" && e instanceof AppError && e.code === "CONFLICT")) throw e;
+      }
     }
     // After a hide/remove the report may already be closed (moderation side effects, a double click, another admin):
     // that is success, not an error, and must not log a second resolve_report entry.

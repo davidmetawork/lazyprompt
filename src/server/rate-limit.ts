@@ -7,7 +7,8 @@ import { AppError } from "@/lib/errors";
 import type { TrustLevel } from "@/lib/types";
 
 export type LimitedAction =
-  | "prompt_create" | "prompt_update" | "comment" | "rating" | "save" | "report" | "event" | "mcp" | "tag_suggest";
+  | "prompt_create" | "prompt_update" | "comment" | "comment_update" | "delete" | "profile" | "rating" | "save" | "report"
+  | "event" | "mcp" | "tag_suggest" | "search";
 
 const MAX_KEY = 200;
 
@@ -55,7 +56,7 @@ export function hashIp(ip: string): string {
 interface Rule { limit: number; windowSeconds: number }
 const DAY = 86_400;
 
-const POLICY: Record<Exclude<LimitedAction, "mcp" | "comment">, { low: Rule; high: Rule }> = {
+const POLICY: Record<Exclude<LimitedAction, "mcp" | "comment" | "comment_update">, { low: Rule; high: Rule }> = {
   prompt_create: { low: { limit: 3, windowSeconds: DAY }, high: { limit: 15, windowSeconds: DAY } },
   prompt_update: { low: { limit: 30, windowSeconds: DAY }, high: { limit: 30, windowSeconds: DAY } },
   rating: { low: { limit: 200, windowSeconds: DAY }, high: { limit: 200, windowSeconds: DAY } },
@@ -63,6 +64,10 @@ const POLICY: Record<Exclude<LimitedAction, "mcp" | "comment">, { low: Rule; hig
   report: { low: { limit: 20, windowSeconds: DAY }, high: { limit: 20, windowSeconds: DAY } },
   event: { low: { limit: 300, windowSeconds: 3600 }, high: { limit: 300, windowSeconds: 3600 } },
   tag_suggest: { low: { limit: 60, windowSeconds: 60 }, high: { limit: 60, windowSeconds: 60 } },
+  delete: { low: { limit: 60, windowSeconds: DAY }, high: { limit: 60, windowSeconds: DAY } },
+  profile: { low: { limit: 10, windowSeconds: DAY }, high: { limit: 10, windowSeconds: DAY } },
+  // Typo-correction scans (zero-result searches), keyed by IP hash.
+  search: { low: { limit: 30, windowSeconds: 60 }, high: { limit: 30, windowSeconds: 60 } },
 };
 
 async function enforce(key: string, rule: Rule, what: string): Promise<void> {
@@ -76,7 +81,9 @@ async function enforce(key: string, rule: Rule, what: string): Promise<void> {
  * Applies the section 11 policy; throws AppError RATE_LIMITED.
  * Subject: `userId` when signed in, otherwise a hash of `ip`. `ip` may be raw; it is salted+hashed before use.
  * For "mcp", `userId` is the rate-limit SUBJECT (verified token user id, else params._meta["openai/subject"]);
- * when absent the IP hash is the subject. A 600/min per-IP-hash ceiling always applies when `ip` is known.
+ * when absent the IP hash is the subject. The per-IP-hash ceiling is 600/min when no subject was resolved (anonymous
+ * traffic) and 3000/min (a separate counter) when one was, so shared ChatGPT/Claude egress IPs serving many
+ * authenticated users are not throttled as one client.
  */
 export async function enforceRateLimit(
   action: LimitedAction,
@@ -88,7 +95,10 @@ export async function enforceRateLimit(
 
   if (action === "mcp") {
     await enforce(`mcp:s:${who}`, { limit: 120, windowSeconds: 60 }, "requests");
-    if (ipHash) await enforce(`mcp:ip:${ipHash}`, { limit: 600, windowSeconds: 60 }, "requests");
+    if (ipHash) {
+      if (subject.userId) await enforce(`mcp:ipu:${ipHash}`, { limit: 3000, windowSeconds: 60 }, "requests");
+      else await enforce(`mcp:ip:${ipHash}`, { limit: 600, windowSeconds: 60 }, "requests");
+    }
     return;
   }
 
@@ -98,6 +108,13 @@ export async function enforceRateLimit(
     const rule = trusted ? { limit: 100, windowSeconds: DAY } : { limit: 20, windowSeconds: DAY };
     await enforce(`comment_burst:${who}`, { limit: 1, windowSeconds: 15 }, "comments");
     await enforce(`comment:${who}`, rule, "comments");
+    return;
+  }
+
+  if (action === "comment_update") {
+    // Every edit is re-screened (possibly an OpenAI call) and locks the prompt row, so it is limited like creating one.
+    await enforce(`comment_update_burst:${who}`, { limit: 1, windowSeconds: 5 }, "comment edits");
+    await enforce(`comment_update:${who}`, { limit: 30, windowSeconds: DAY }, "comment edits");
     return;
   }
 

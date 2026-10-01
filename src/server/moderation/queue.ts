@@ -257,7 +257,7 @@ export async function listAdminUsers(
 export async function listAdminPrompts(
   admin: Viewer,
   input: { q?: string; status?: PromptStatus; page?: number },
-): Promise<Paginated<PromptCard & { status: PromptStatus; moderationFlags: string[] }>> {
+): Promise<Paginated<PromptCard & { status: PromptStatus; moderationFlags: string[]; version: number }>> {
   assertAdmin(admin);
   const pg = pageOf(input.page);
   const q = input.q?.trim().slice(0, 100);
@@ -272,7 +272,7 @@ export async function listAdminPrompts(
   }
   const rows = await db
     .select({
-      ...promptCardColumns, status: prompts.status, moderationFlags: prompts.moderationFlags,
+      ...promptCardColumns, status: prompts.status, moderationFlags: prompts.moderationFlags, version: prompts.version,
       total: sql<number>`count(*) over()::int`,
     })
     .from(prompts)
@@ -283,7 +283,7 @@ export async function listAdminPrompts(
     .orderBy(desc(prompts.createdAt), asc(prompts.id))
     .limit(QUEUE_PAGE_SIZE).offset((pg - 1) * QUEUE_PAGE_SIZE);
   const items = rows.map((r) => ({
-    ...toPromptCard(r as unknown as PromptCardRow), status: r.status, moderationFlags: r.moderationFlags ?? [],
+    ...toPromptCard(r as unknown as PromptCardRow), status: r.status, moderationFlags: r.moderationFlags ?? [], version: r.version,
   }));
   return paginated(items, rows[0]?.total ?? 0, pg, QUEUE_PAGE_SIZE);
 }

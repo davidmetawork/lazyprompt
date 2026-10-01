@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
  */
 export function ReasonDialog({
   trigger, title, description, confirmLabel, reasonLabel = "Reason", reasonHelp, reasonRequired = false,
-  destructive = true, busy = false, onConfirm,
+  destructive = true, busy = false, onConfirm, children,
 }: {
   trigger: ReactNode;
   title: string;
@@ -27,6 +27,8 @@ export function ReasonDialog({
   destructive?: boolean;
   busy?: boolean;
   onConfirm: (reason: string) => Promise<boolean>;
+  /** Extra fields rendered above the reason (for example a version number). */
+  children?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -56,6 +58,7 @@ export function ReasonDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         <div className="grid gap-1.5">
           <Label htmlFor={fieldId}>{reasonLabel}{reasonRequired ? "" : " (optional)"}</Label>
           <Textarea

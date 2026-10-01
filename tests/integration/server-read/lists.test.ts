@@ -12,6 +12,18 @@ import { createPrompt, createUser } from "../../helpers/factories";
 afterAll(async () => { await closeDb(); });
 beforeEach(async () => { await resetDb(); });
 
+describe("ordering", () => {
+  it("sort=new and sort=top put NULL published_at last (matching the DESC NULLS LAST indexes)", async () => {
+    const { listPrompts } = await import("@/server/prompts/queries");
+    const ada = await createUser();
+    const noDate = await createPrompt(ada, { title: "Published without a date", bayesScore: 1 });
+    const dated = await createPrompt(ada, { title: "Published with a date", bayesScore: 1 });
+    await db.update(prompts).set({ publishedAt: null }).where(eq(prompts.id, noDate.id));
+    expect((await listPrompts({ sort: "new" })).items.map((i) => i.id)).toEqual([dated.id, noDate.id]);
+    expect((await listPrompts({ sort: "top" })).items.map((i) => i.id)).toEqual([dated.id, noDate.id]);
+  });
+});
+
 describe("getHomeSections", () => {
   it("caps featured at 6 and top/latest at 12", async () => {
     const ada = await createUser();

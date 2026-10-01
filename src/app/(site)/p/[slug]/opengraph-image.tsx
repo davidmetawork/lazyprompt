@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
 import { SITE_NAME } from "@/lib/constants";
 import { parseShortIdFromSlug } from "@/lib/slug";
@@ -13,12 +14,15 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const fonts = await loadOgFonts();
   let prompt = null;
+  let dbError = false;
   try {
     const shortId = parseShortIdFromSlug(slug);
     prompt = shortId ? await getPromptByShortId(shortId) : null;
   } catch {
-    prompt = null; // DB error: serve the brand card rather than a broken image
+    dbError = true; // DB error: serve the brand card rather than a broken image
   }
+  // Unknown, unpublished or removed prompts are a 404, not a 200 image that crawlers would index.
+  if (!prompt && !dbError) notFound();
   return new ImageResponse(
     prompt
       ? <PromptCard title={prompt.title} category={prompt.category.name} ratingAvg={prompt.ratingAvg} ratingCount={prompt.ratingCount} />

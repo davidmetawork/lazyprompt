@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, db } from "@/db";
 import { comments, moderationActions } from "@/db/schema";
-import { createComment, deleteComment, listComments, updateComment } from "@/server/comments";
+import { COMMENT_LIST_LIMIT, createComment, deleteComment, listComments, listCommentsPage, updateComment } from "@/server/comments";
 import { resetDb } from "../../helpers/db";
 import { createPrompt as seedPrompt, createUser } from "../../helpers/factories";
 import { clearRateLimits, commentRow, ensureCategory, promptRow } from "./helpers";
@@ -93,13 +93,16 @@ describe("updateComment", () => {
     const { p } = await setup();
     const u = await createUser({ trustLevel: 0 });
     const c = await createComment(u, { promptId: p.id, body: "Original text" });
+    await clearRateLimits();
     const e = await updateComment(u, c.id, "Edited text");
     expect(e).toMatchObject({ body: "Edited text", status: "visible" });
     expect(e.editedAt).not.toBeNull();
     expect(await count(p.id)).toBe(1);
+    await clearRateLimits();
     const e2 = await updateComment(u, c.id, "Now see https://example.com/page");
     expect(e2.status).toBe("pending");
     expect(await count(p.id)).toBe(0);
+    await clearRateLimits();
     await expect(updateComment(u, c.id, "see bit.ly/abc")).rejects.toMatchObject({ code: "VALIDATION" });
     expect((await commentRow(c.id)).body).toBe("Now see https://example.com/page");
   });
@@ -111,13 +114,39 @@ describe("updateComment", () => {
     const c = await createComment(u, { promptId: p.id, body: "Original text" });
     await expect(updateComment(other, c.id, "hijack")).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(updateComment(u, c.id, "")).rejects.toMatchObject({ code: "VALIDATION" });
+    await clearRateLimits();
     await expect(updateComment(u, "00000000-0000-4000-8000-000000000000", "x")).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await clearRateLimits();
     await db.execute(sql`UPDATE comments SET created_at = now() - interval '25 hours' WHERE id = ${c.id}`);
     await expect(updateComment(u, c.id, "too late")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await clearRateLimits();
     await db.execute(sql`UPDATE comments SET created_at = now(), status = 'removed' WHERE id = ${c.id}`);
     await expect(updateComment(u, c.id, "gone")).rejects.toMatchObject({ code: "FORBIDDEN" });
     const banned = await createUser({ banned: true });
     await expect(updateComment(banned, c.id, "hello")).rejects.toMatchObject({ code: "BANNED" });
+  });
+});
+
+describe("edit and delete rate limits", () => {
+  it("updateComment: 1 per 5 seconds (every edit is re-screened) and 30/day", async () => {
+    const { p } = await setup();
+    const u = await createUser({ trustLevel: 1 });
+    const c = await createComment(u, { promptId: p.id, body: "Original text" });
+    await updateComment(u, c.id, "Edit one");
+    await expect(updateComment(u, c.id, "Edit two right away")).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    expect((await commentRow(c.id)).body).toBe("Edit one");
+    await db.execute(sql`DELETE FROM app_rate_limits WHERE key = ${`comment_update_burst:${u.id}`}`);
+    await db.execute(sql`UPDATE app_rate_limits SET count = 30 WHERE key = ${`comment_update:${u.id}`}`);
+    await expect(updateComment(u, c.id, "Edit past the daily cap")).rejects.toMatchObject({ code: "RATE_LIMITED" });
+  });
+
+  it("deleteComment is limited to 60/day", async () => {
+    const { p } = await setup();
+    const u = await createUser({ trustLevel: 1 });
+    const c = await createComment(u, { promptId: p.id, body: "Delete me" });
+    await db.execute(sql`INSERT INTO app_rate_limits (key, window_start, count) VALUES (${`delete:${u.id}`}, now(), 60)`);
+    await expect(deleteComment(u, c.id)).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    expect((await commentRow(c.id)).status).toBe("visible");
   });
 });
 
@@ -143,6 +172,43 @@ describe("deleteComment", () => {
     await expect(deleteComment(u, "00000000-0000-4000-8000-000000000000")).rejects.toMatchObject({ code: "NOT_FOUND" });
     const banned = await createUser({ banned: true });
     await expect(deleteComment(banned, c.id)).rejects.toMatchObject({ code: "BANNED" });
+  });
+});
+
+describe("listCommentsPage", () => {
+  it("filters hidden/removed rows in SQL and caps the list at 200 with a truncated flag, oldest first", async () => {
+    const { author, p } = await setup();
+    const rows = Array.from({ length: COMMENT_LIST_LIMIT + 5 }, (_, i) => ({
+      promptId: p.id, authorId: author.id, body: `Comment ${i}`, status: "visible" as const,
+      createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, i)),
+    }));
+    await db.insert(comments).values(rows);
+    await db.insert(comments).values(Array.from({ length: 30 }, (_, i) => ({
+      promptId: p.id, authorId: author.id, body: `Spam ${i}`, status: "removed" as const, createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, i)),
+    })));
+    const page = await listCommentsPage(p.id, null);
+    expect(page.truncated).toBe(true);
+    expect(page.comments).toHaveLength(COMMENT_LIST_LIMIT);
+    expect(page.comments[0]!.body).toBe("Comment 0");
+    expect(page.comments.every((c) => c.body.startsWith("Comment"))).toBe(true);
+    // Removed rows no longer eat into the page: a thread with only visible comments below the cap is not truncated.
+    await db.delete(comments).where(sql`${comments.body} like 'Comment 19%' or ${comments.body} like 'Comment 2%'`);
+    expect((await listCommentsPage(p.id, null)).truncated).toBe(false);
+    // Admins see the moderated rows too.
+    const admin = await createUser({ role: "admin" });
+    expect((await listCommentsPage(p.id, admin)).comments.some((c) => c.status === "removed")).toBe(true);
+  });
+
+  it("keeps a placeholder parent for a hidden top-level comment whose replies are visible", async () => {
+    const { p } = await setup();
+    const a = await createUser({ trustLevel: 1 });
+    const top = await createComment(a, { promptId: p.id, body: "Soon hidden" });
+    await clearRateLimits();
+    await createComment(a, { promptId: p.id, parentId: top.id, body: "Still visible reply" });
+    await db.update(comments).set({ status: "hidden" }).where(eq(comments.id, top.id));
+    const page = await listCommentsPage(p.id, null);
+    expect(page.truncated).toBe(false);
+    expect(page.comments).toMatchObject([{ body: "[removed]", status: "hidden", replies: [{ body: "Still visible reply" }] }]);
   });
 });
 

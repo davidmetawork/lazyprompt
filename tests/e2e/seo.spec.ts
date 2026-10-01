@@ -39,6 +39,10 @@ test("OG images are 1200x630 PNGs, including the per-prompt one", async ({ reque
   const img = await request.get(new URL(og!).pathname);
   expect(img.ok()).toBe(true);
   expect(img.headers()["content-type"]).toContain("image/png");
+
+  // An unknown prompt is a 404, not a 200 brand card that crawlers would index under a dead URL.
+  const ghost = await request.get(new URL(og!).pathname.replace(slug!, "no-such-prompt-zzzzzzz"));
+  expect(ghost.status()).toBe(404);
 });
 
 test("/feed.xml is valid RSS and /llms.txt is plain text", async ({ request }) => {

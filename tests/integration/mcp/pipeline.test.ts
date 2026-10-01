@@ -56,15 +56,23 @@ describe("rate limiting", () => {
     expect(other.json?.result?.isError).toBeFalsy();
   });
 
-  it("applies a 600/min per-IP ceiling regardless of subject", async () => {
+  it("applies a 600/min per-IP ceiling to requests without a subject", async () => {
     const ip = "198.51.100.9";
     await seed(`mcp:ip:${hashIp(ip)}`, 599);
-    const last = await ping({ "x-real-ip": ip }, { "openai/subject": "fresh-1" });
+    const last = await ping({ "x-real-ip": ip });
     expect(last.status).toBe(200);
-    const over = await ping({ "x-real-ip": ip }, { "openai/subject": "fresh-2" });
+    const over = await ping({ "x-real-ip": ip });
     expect(over.status).toBe(429);
     // a different IP is fine
-    expect((await ping({ "x-real-ip": "198.51.100.10" }, { "openai/subject": "fresh-2" })).status).toBe(200);
+    expect((await ping({ "x-real-ip": "198.51.100.10" })).status).toBe(200);
+  });
+
+  it("lets requests that carry a subject through a busy shared egress IP (3000/min ceiling, separate counter)", async () => {
+    const ip = "198.51.100.19";
+    await seed(`mcp:ip:${hashIp(ip)}`, 5000);              // anonymous traffic already exhausted the 600/min ceiling
+    expect((await ping({ "x-real-ip": ip }, { "openai/subject": "fresh-1" })).status).toBe(200);
+    await db.execute(sql`UPDATE app_rate_limits SET count = 3000 WHERE key = ${`mcp:ipu:${hashIp(ip)}`}`);
+    expect((await ping({ "x-real-ip": ip }, { "openai/subject": "fresh-2" })).status).toBe(429);
   });
 
   it("falls back to the IP hash as the subject when no subject is given", async () => {

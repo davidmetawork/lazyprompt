@@ -6,6 +6,8 @@ import { AppError } from "@/lib/errors";
 import { profileInputSchema, type ProfileInput } from "@/lib/validation";
 import type { ProfilePage, TrustLevel, Viewer } from "@/lib/types";
 import { accountAgeDays, getActiveActor, isUniqueViolation, parseInput } from "@/server/moderation/guards";
+import { runHeuristics } from "@/server/moderation/screening";
+import { enforceRateLimit } from "@/server/rate-limit";
 
 export { ensureProfile } from "@/db/profiles";
 
@@ -57,9 +59,28 @@ export async function getProfileByUsername(username: string): Promise<ProfilePag
   return row ? toProfilePage(row) : null;
 }
 
+/**
+ * The bio and website are public, followable text, so they get the same heuristics as comments. A reject verdict (link
+ * shortener) always fails. Any other flag (links, contact details, jailbreak or SEO spam wording) is not allowed for
+ * trust 0 accounts yet: there is no profile review queue, so they can add such details once their account is established.
+ */
+function screenProfileText(me: { trustLevel: TrustLevel; accountAgeDays: number }, data: { bio?: string; website?: string }): void {
+  const text = [data.bio, data.website].filter(Boolean).join(" ");
+  if (!text) return;
+  const verdict = runHeuristics({ kind: "comment", text, author: { trustLevel: me.trustLevel, accountAgeDays: me.accountAgeDays } });
+  if (verdict.verdict === "reject" || (verdict.verdict === "review" && me.trustLevel === 0)) {
+    const reasons = verdict.reasons.length ? verdict.reasons : ["This can't be added to a profile"];
+    const hint = verdict.verdict === "review" ? ["New accounts can't add links or contact details to their profile yet."] : [];
+    const messages = [...reasons, ...hint];
+    throw new AppError("VALIDATION", messages.join(" "), { [data.bio ? "bio" : "website"]: messages });
+  }
+}
+
 export async function updateProfile(actor: Viewer, input: ProfileInput): Promise<ProfilePage> {
   const me = await getActiveActor(actor);
   const data = parseInput(profileInputSchema, input);
+  await enforceRateLimit("profile", { userId: me.id, trustLevel: me.trustLevel });
+  screenProfileText(me, data);
   const [taken] = await db
     .select({ userId: profiles.userId })
     .from(profiles)
@@ -130,28 +151,47 @@ export async function recomputeTrustLevel(userId: string): Promise<TrustLevel> {
   return level;
 }
 
-/** Users with a prompt, comment, rating or approval in the last N days (default 2); returns how many changed. */
+/**
+ * Users with a prompt, comment, rating or approval in the last N days (default 2); returns how many changed.
+ * One set-based UPDATE (same rules as recomputeTrustLevel: levels 2+ and admin-set levels are left alone) instead of
+ * several queries per user.
+ */
 export async function recomputeActiveTrustLevels(sinceDays: number = 2): Promise<number> {
   const days = Number.isFinite(sinceDays) && sinceDays > 0 ? sinceDays : 2;
   const since = new Date(Date.now() - days * 86_400_000);
-  const res = await db.execute<{ uid: string }>(sql`
-    SELECT uid FROM (
-      SELECT author_id AS uid FROM prompts
-        WHERE created_at >= ${since} OR published_at >= ${since} OR reviewed_at >= ${since}
-      UNION SELECT author_id FROM comments WHERE created_at >= ${since}
-      UNION SELECT user_id FROM ratings WHERE created_at >= ${since} OR updated_at >= ${since}
-    ) active
-    WHERE uid IN (SELECT user_id FROM profiles)
-    LIMIT 20000`);
-  let changed = 0;
-  for (const { uid } of res.rows) {
-    try {
-      const before = await db.select({ t: profiles.trustLevel }).from(profiles).where(eq(profiles.userId, uid)).limit(1);
-      const after = await recomputeTrustLevel(uid);
-      if (before[0] && before[0].t !== after) changed++;
-    } catch (e) {
-      console.error("[trust] recompute failed", e instanceof Error ? e.message : "unknown");
-    }
-  }
-  return changed;
+  const res = await db.execute<{ user_id: string }>(sql`
+    WITH active AS (
+      SELECT uid FROM (
+        SELECT author_id AS uid FROM prompts
+          WHERE created_at >= ${since} OR published_at >= ${since} OR reviewed_at >= ${since}
+        UNION SELECT author_id FROM comments WHERE created_at >= ${since}
+        UNION SELECT user_id FROM ratings WHERE created_at >= ${since} OR updated_at >= ${since}
+      ) a
+      LIMIT 20000
+    ),
+    cand AS (
+      SELECT pr.user_id, pr.trust_level AS cur,
+             (c.published >= ${TRUST_MIN_PUBLISHED} OR (
+                u.created_at <= now() - make_interval(days => ${TRUST_MIN_AGE_DAYS})
+                AND c.comments >= ${TRUST_MIN_COMMENTS} AND c.upheld = 0)) AS eligible
+      FROM active a
+      JOIN profiles pr ON pr.user_id = a.uid
+      JOIN "user" u ON u.id = pr.user_id
+      CROSS JOIN LATERAL (SELECT
+        (SELECT count(*)::int FROM prompts WHERE author_id = pr.user_id AND status = 'published') AS published,
+        (SELECT count(*)::int FROM comments WHERE author_id = pr.user_id AND status = 'visible') AS comments,
+        (SELECT count(*)::int FROM reports r WHERE r.status = 'actioned' AND (
+            (r.target_type = 'user' AND r.target_id = pr.user_id)
+            OR (r.target_type = 'prompt' AND r.target_id IN (SELECT id::text FROM prompts WHERE author_id = pr.user_id))
+            OR (r.target_type = 'comment' AND r.target_id IN (SELECT id::text FROM comments WHERE author_id = pr.user_id))
+        )) AS upheld) c
+      WHERE pr.trust_level < 2
+        AND NOT EXISTS (SELECT 1 FROM moderation_actions m
+                        WHERE m.target_type = 'user' AND m.target_id = pr.user_id AND m.action = 'set_trust')
+    )
+    UPDATE profiles SET trust_level = CASE WHEN cand.eligible THEN 1 ELSE 0 END
+    FROM cand
+    WHERE profiles.user_id = cand.user_id AND profiles.trust_level <> CASE WHEN cand.eligible THEN 1 ELSE 0 END
+    RETURNING profiles.user_id`);
+  return res.rows.length;
 }

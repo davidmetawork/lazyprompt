@@ -1,16 +1,17 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "@/db";
-import { moderationActions, profiles, reports, session, usageEvents, user } from "@/db/schema";
+import { comments, moderationActions, profiles, promptVersions, reports, session, usageEvents, user } from "@/db/schema";
 import { createComment } from "@/server/comments";
-import { createPrompt } from "@/server/prompts/mutations";
+import { createPrompt, updatePrompt } from "@/server/prompts/mutations";
+import { getPromptVersion, listPromptVersions } from "@/server/prompts/queries";
 import { createReport } from "@/server/reports";
 import { ratePrompt } from "@/server/ratings";
 import {
   getAdminStats, getModerationQueue, listAdminPrompts, listAdminUsers, listModerationLog, listReports,
 } from "@/server/moderation/queue";
 import {
-  moderateComment, moderatePrompt, resolveReport, setTrustLevel, setUserBan,
+  moderateComment, moderatePrompt, moderatePromptVersion, resolveReport, setTrustLevel, setUserBan,
 } from "@/server/moderation/actions";
 import { resetDb } from "../../helpers/db";
 import { createPrompt as seedPrompt, createUser } from "../../helpers/factories";
@@ -366,7 +367,7 @@ describe("auto-hide then moderation", () => {
     const admin = await createUser({ role: "admin" });
     const author = await createUser({ trustLevel: 1 });
     const p = await seedPrompt(author, { categorySlug: "writing" });
-    for (let i = 0; i < 3; i++) await createReport(await createUser(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    for (let i = 0; i < 3; i++) await createReport(await createUser({ trustLevel: 1 }), { targetType: "prompt", targetId: p.id, reason: "spam" });
     expect((await promptRow(p.id)).status).toBe("hidden");
     await moderatePrompt(admin, p.id, "restore");
     expect(await promptRow(p.id)).toMatchObject({ status: "published", autoHiddenAt: null });
@@ -374,3 +375,151 @@ describe("auto-hide then moderation", () => {
   });
 });
 
+
+const trusted = () => createUser({ trustLevel: 1 });
+
+describe("report lifecycle", () => {
+  it("restoring an auto-hidden prompt dismisses its open reports, so one new report cannot re-hide it", async () => {
+    const admin = await createUser({ role: "admin" });
+    const p = await seedPrompt(await trusted(), { categorySlug: "writing" });
+    for (let i = 0; i < 3; i++) await createReport(await trusted(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    expect((await promptRow(p.id)).status).toBe("hidden");
+
+    await moderatePrompt(admin, p.id, "restore");
+    const rows = await db.select().from(reports).where(eq(reports.targetId, p.id));
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.status === "dismissed" && r.resolvedById === admin.id && r.resolvedAt !== null)).toBe(true);
+    expect(await promptRow(p.id)).toMatchObject({ status: "published", openReportCount: 0, autoHiddenAt: null });
+    expect((await logRows()).find((l) => l.action === "restore")?.metadata).toMatchObject({ dismissedReports: 3 });
+
+    const again = await createReport(await trusted(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    expect(again.autoHidden).toBe(false);
+    expect((await promptRow(p.id)).status).toBe("published");
+  });
+
+  it("approving a rejected prompt dismisses stale open reports and records the approved version", async () => {
+    const admin = await createUser({ role: "admin" });
+    const p = await seedPrompt(await trusted(), { categorySlug: "writing", status: "rejected" });
+    await db.insert(reports).values({ reporterId: (await trusted()).id, targetType: "prompt", targetId: p.id, promptId: p.id, reason: "spam" });
+    await moderatePrompt(admin, p.id, "approve");
+    expect(await promptRow(p.id)).toMatchObject({ status: "published", openReportCount: 0, approvedFromVersion: 1 });
+    expect((await db.select().from(reports))[0]).toMatchObject({ status: "dismissed", resolvedById: admin.id });
+  });
+
+  it("dismissing the reports of an auto-hidden prompt puts it back (and logs a restore)", async () => {
+    const admin = await createUser({ role: "admin" });
+    const p = await seedPrompt(await trusted(), { categorySlug: "writing" });
+    const first = await createReport(await trusted(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    for (let i = 0; i < 2; i++) await createReport(await trusted(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    expect((await promptRow(p.id)).status).toBe("hidden");
+    expect(await categoryCount("writing")).toBe(0);
+
+    await resolveReport(admin, first.id, "dismissed", "False alarm");
+    expect(await promptRow(p.id)).toMatchObject({ status: "published", autoHiddenAt: null, openReportCount: 0 });
+    expect(await categoryCount("writing")).toBe(1);
+    expect((await logRows()).map((l) => l.action).sort()).toEqual(["auto_hide", "dismiss_report", "restore"]);
+  });
+
+  it("a dismissal never un-hides content an admin hid, nor an auto-hide the admin confirmed", async () => {
+    const admin = await createUser({ role: "admin" });
+    const manual = await seedPrompt(await trusted(), { categorySlug: "writing" });
+    const r1 = await createReport(await trusted(), { targetType: "prompt", targetId: manual.id, reason: "spam" });
+    await moderatePrompt(admin, manual.id, "hide", "Spammy");
+    await resolveReport(admin, r1.id, "dismissed");
+    expect((await promptRow(manual.id)).status).toBe("hidden");
+
+    const auto = await seedPrompt(await trusted(), { categorySlug: "writing" });
+    let last = r1;
+    for (let i = 0; i < 3; i++) last = await createReport(await trusted(), { targetType: "prompt", targetId: auto.id, reason: "spam" });
+    expect((await promptRow(auto.id)).status).toBe("hidden");
+    await moderatePrompt(admin, auto.id, "hide", "Confirmed");   // takes ownership of the automatic hide
+    expect((await promptRow(auto.id)).autoHiddenAt).toBeNull();
+    await resolveReport(admin, last.id, "dismissed");
+    expect((await promptRow(auto.id)).status).toBe("hidden");
+  });
+
+  it("comments: dismissing un-hides an auto-hidden comment, restore dismisses its reports, admin hides stay hidden", async () => {
+    const admin = await createUser({ role: "admin" });
+    const p = await seedPrompt(await trusted(), { categorySlug: "writing" });
+    const commenter = await trusted();
+    const mk = async (body: string) => { await clearRateLimits(); return createComment(commenter, { promptId: p.id, body }); };
+
+    const a = await mk("Auto-hidden then dismissed");
+    const ra = await createReport(await trusted(), { targetType: "comment", targetId: a.id, reason: "spam" });
+    for (let i = 0; i < 2; i++) await createReport(await trusted(), { targetType: "comment", targetId: a.id, reason: "spam" });
+    expect((await commentRow(a.id)).status).toBe("hidden");
+    await resolveReport(admin, ra.id, "dismissed");
+    expect(await commentRow(a.id)).toMatchObject({ status: "visible", openReportCount: 0 });
+    expect((await promptRow(p.id)).commentCount).toBe(1);
+
+    const b = await mk("Auto-hidden then restored");
+    for (let i = 0; i < 3; i++) await createReport(await trusted(), { targetType: "comment", targetId: b.id, reason: "spam" });
+    expect((await commentRow(b.id)).status).toBe("hidden");
+    await moderateComment(admin, b.id, "restore");
+    expect(await commentRow(b.id)).toMatchObject({ status: "visible", openReportCount: 0 });
+    expect((await db.select().from(reports).where(eq(reports.targetId, b.id))).every((r) => r.status === "dismissed")).toBe(true);
+
+    const c = await mk("Hidden by an admin");
+    const rc = await createReport(await trusted(), { targetType: "comment", targetId: c.id, reason: "spam" });
+    await moderateComment(admin, c.id, "hide");
+    await resolveReport(admin, rc.id, "dismissed");
+    expect((await commentRow(c.id)).status).toBe("hidden");
+    expect(await db.select().from(comments).where(eq(comments.promptId, p.id))).toHaveLength(3);
+  });
+});
+
+describe("version history gating and redaction", () => {
+  it("never serves versions from before the first approval; a trusted author's clean publish serves them all", async () => {
+    const admin = await createUser({ role: "admin" });
+    const author = await createUser({ trustLevel: 0 });
+    const input = promptInput();
+    const c = await createPrompt(author, input);
+    expect(c.status).toBe("pending");
+    expect((await promptRow(c.id)).approvedFromVersion).toBeNull();
+    await clearRateLimits();
+    await updatePrompt(author, c.id, { ...input, body: `${input.body} Also mention the deadline.` });
+    expect((await promptRow(c.id)).version).toBe(2);
+
+    await moderatePrompt(admin, c.id, "approve");
+    expect((await promptRow(c.id)).approvedFromVersion).toBe(2);
+    expect((await listPromptVersions(c.id)).map((v) => v.version)).toEqual([2]);
+    expect(await getPromptVersion(c.id, 1)).toBeNull();
+    expect((await getPromptVersion(c.id, 2))?.version).toBe(2);
+    // Approving again (or restoring later) never moves the boundary.
+    await moderatePrompt(admin, c.id, "hide");
+    await moderatePrompt(admin, c.id, "restore");
+    expect((await promptRow(c.id)).approvedFromVersion).toBe(2);
+
+    const t = await createUser({ trustLevel: 1 });
+    const direct = await createPrompt(t, promptInput());
+    expect(direct.status).toBe("published");
+    expect((await promptRow(direct.id)).approvedFromVersion).toBe(1);
+    await clearRateLimits();
+    await updatePrompt(t, direct.id, { ...promptInput(), title: "A brand new title for v2" });
+    expect((await listPromptVersions(direct.id)).map((v) => v.version)).toEqual([2, 1]);
+  });
+
+  it("moderatePromptVersion redacts an earlier version, audits it and refuses the current version", async () => {
+    const admin = await createUser({ role: "admin" });
+    const author = await createUser({ trustLevel: 1 });
+    const input = promptInput({ notes: "Original notes" });
+    const c = await createPrompt(author, input);
+    await clearRateLimits();
+    await updatePrompt(author, c.id, { ...input, body: `${input.body} Now with extra detail added.`, changeNote: "More detail" });
+
+    await expect(moderatePromptVersion(author, c.id, 1, "I want it gone")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(moderatePromptVersion(admin, c.id, 2, "Current version")).rejects.toMatchObject({ code: "CONFLICT" });
+    await expect(moderatePromptVersion(admin, c.id, 9, "No such version")).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(moderatePromptVersion(admin, c.id, 1, "x")).rejects.toMatchObject({ code: "VALIDATION" });
+
+    await moderatePromptVersion(admin, c.id, 1, "Contains a phone number");
+    const [v1] = await db.select().from(promptVersions).where(eq(promptVersions.promptId, c.id)).orderBy(promptVersions.version);
+    expect(v1).toMatchObject({ version: 1, title: "[redacted]", body: "[redacted]", notes: "[redacted]", changeNote: "[redacted]", variables: [] });
+    expect(await getPromptVersion(c.id, 1)).toMatchObject({ body: "[redacted]", changeNote: "[redacted]" });
+    expect((await promptRow(c.id)).body).toContain("extra detail");     // the live prompt is untouched
+    const audit = (await logRows()).filter((l) => l.metadata && (l.metadata as { via?: string }).via === "redact_version");
+    expect(audit).toMatchObject([{ actorId: admin.id, targetType: "prompt", targetId: c.id, reason: "Contains a phone number", metadata: { version: 1 } }]);
+    await moderatePromptVersion(admin, c.id, 1, "Again");               // idempotent: no second audit row
+    expect((await logRows()).filter((l) => (l.metadata as { via?: string }).via === "redact_version")).toHaveLength(1);
+  });
+});

@@ -57,11 +57,14 @@ async function findCategoryId(tx: Tx | typeof db, slug: string): Promise<string>
   return c.id;
 }
 
-function screeningText(input: ContentInput, body: string) {
+/** Everything a user typed that becomes public: variable labels/help/defaults/options and the change note included. */
+function screeningText(input: ContentInput, body: string, variables: VariableDef[]) {
+  const changeNote = "changeNote" in input ? input.changeNote : undefined;
+  const variableText = variables.flatMap((v) => [v.label, v.help, v.default, ...(v.options ?? [])]);
   return {
     title: input.title,
     text: body,
-    extraText: [input.description, input.notes, input.exampleOutput].filter(Boolean).join("\n\n"),
+    extraText: [input.description, input.notes, input.exampleOutput, changeNote, ...variableText].filter(Boolean).join("\n\n"),
   };
 }
 
@@ -89,7 +92,7 @@ export async function createPrompt(
   }
 
   const verdict = await screenContent({
-    kind: "prompt", ...screeningText(data, tpl.body),
+    kind: "prompt", ...screeningText(data, tpl.body, tpl.variables),
     author: { trustLevel: me.trustLevel, accountAgeDays: me.accountAgeDays },
     excludePromptId: parent?.id,
   });
@@ -116,18 +119,19 @@ export async function createPrompt(
 
     const [row] = await tx.insert(prompts).values({
       shortId, slug, authorId: me.id, title: data.title, description: data.description, body: tpl.body,
-      variables: tpl.variables, exampleOutput: data.exampleOutput ?? null, notes: data.notes ?? null,
+      variables: tpl.variables, exampleOutput: data.exampleOutput || null, notes: data.notes || null,
       categoryId, useCase: data.useCase, license: data.license, status, version: 1,
       forkedFromId: parent?.id ?? null, forkedFromVersion: parent?.version ?? null,
       tagsText: tagRows.map((t) => t.name).join(" "),
       moderationFlags: verdict.flags, duplicateOfId: verdict.duplicateOfId ?? null,
       publishedAt: status === "published" ? now : null,
+      approvedFromVersion: status === "published" ? 1 : null,
     }).returning({ id: prompts.id });
     const id = row!.id;
 
     await tx.insert(promptVersions).values({
       promptId: id, version: 1, title: data.title, description: data.description, body: tpl.body,
-      variables: tpl.variables, exampleOutput: data.exampleOutput ?? null, notes: data.notes ?? null, editorId: me.id,
+      variables: tpl.variables, exampleOutput: data.exampleOutput || null, notes: data.notes || null, editorId: me.id,
     });
     if (tagRows.length) await tx.insert(promptTags).values(tagRows.map((t) => ({ promptId: id, tagId: t.id })));
     const models = [...new Set(data.models)];
@@ -139,10 +143,11 @@ export async function createPrompt(
 }
 
 /**
- * Author or admin. A material change (title, description, body, variables) creates version N+1; a title change
- * rewrites the slug (the old slug still resolves through the shortId). A published prompt whose trust-0 author
- * edits it into a `review` verdict goes back to `pending`. A `rejected` prompt edited by its author is resubmitted
- * (pending, or published for trusted authors with a clean verdict). Admin edits are not screened.
+ * Author or admin. A material change (title, description, body, variables, example output, notes) creates version N+1;
+ * a title change rewrites the slug (the old slug still resolves through the shortId). A published prompt whose author
+ * edits it into a `review` verdict goes back to `pending` (any trust level, like createPrompt). A `rejected` prompt
+ * edited by its author is resubmitted as `pending` (never straight to published); a no-op save keeps it rejected.
+ * Admin edits are not screened.
  */
 export async function updatePrompt(
   actor: Viewer,
@@ -172,7 +177,7 @@ export async function updatePrompt(
   let verdict: ScreeningResult | null = null;
   if (me.role !== "admin") {
     verdict = await screenContent({
-      kind: "prompt", ...screeningText(data, tpl.body),
+      kind: "prompt", ...screeningText(data, tpl.body, tpl.variables),
       author: { trustLevel: authorTrust, accountAgeDays: accountAgeDays(current.authorCreatedAt) },
       excludePromptId: id,
     });
@@ -188,6 +193,7 @@ export async function updatePrompt(
 
     const material =
       p.title !== data.title || p.description !== data.description || p.body !== tpl.body ||
+      (p.exampleOutput || null) !== (data.exampleOutput || null) || (p.notes || null) !== (data.notes || null) ||
       stableJson(p.variables) !== stableJson(tpl.variables);
     const version = material ? p.version + 1 : p.version;
     const slug = p.title !== data.title ? buildPromptSlug(data.title, p.shortId) : p.slug;
@@ -195,22 +201,24 @@ export async function updatePrompt(
     let status: PromptStatus = p.status;
     let publishedAt = p.publishedAt;
     if (verdict && isAuthor) {
-      if (p.status === "published" && verdict.verdict === "review" && authorTrust === 0) status = "pending";
-      else if (p.status === "rejected") status = verdict.verdict === "review" || authorTrust === 0 ? "pending" : "published";
+      // An admin-rejected prompt only returns through the admin Approve action: a material edit resubmits it for
+      // review, a no-op save leaves it rejected. A `review` verdict on a published prompt re-queues it at any trust level.
+      if (p.status === "rejected") status = material ? "pending" : p.status;
+      else if (p.status === "published" && verdict.verdict === "review") status = "pending";
     }
     if (status === "published" && !publishedAt) publishedAt = new Date();
 
     if (material) {
       await tx.insert(promptVersions).values({
         promptId: id, version, title: data.title, description: data.description, body: tpl.body,
-        variables: tpl.variables, exampleOutput: data.exampleOutput ?? null, notes: data.notes ?? null,
+        variables: tpl.variables, exampleOutput: data.exampleOutput || null, notes: data.notes || null,
         changeNote: data.changeNote || null, editorId: me.id,
       });
     }
 
     await tx.update(prompts).set({
       title: data.title, slug, description: data.description, body: tpl.body, variables: tpl.variables,
-      exampleOutput: data.exampleOutput ?? null, notes: data.notes ?? null, categoryId: newCategoryId,
+      exampleOutput: data.exampleOutput || null, notes: data.notes || null, categoryId: newCategoryId,
       useCase: data.useCase, license: data.license, version, status, publishedAt,
       tagsText: tagRows.map((t) => t.name).join(" "),
       ...(verdict ? { moderationFlags: verdict.flags, duplicateOfId: verdict.duplicateOfId ?? null } : {}),
@@ -240,6 +248,7 @@ export async function updatePrompt(
 export async function deletePrompt(actor: Viewer, promptId: string): Promise<void> {
   const me = await getActiveActor(actor);
   const id = parseInput(z.uuid(), promptId);
+  await enforceRateLimit("delete", { userId: me.id, trustLevel: me.trustLevel });
 
   await db.transaction(async (tx) => {
     const [p] = await tx.select().from(prompts).where(eq(prompts.id, id)).for("update").limit(1);

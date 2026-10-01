@@ -101,6 +101,32 @@ describe("recomputeRankings: trending", () => {
     expect((await scores(p.id)).trending).toBeCloseTo(3, 1);   // not 6
   });
 
+  it("zero-weight not_worked events do not count towards the 3 distinct actors", async () => {
+    const ada = await createUser();
+    const p = await createPrompt(ada);
+    await addAnonEvents(p.id, 2, { type: "copy" });
+    await addAnonEvents(p.id, 3, { type: "not_worked" });
+    await recomputeRankings();
+    expect((await scores(p.id)).trending).toBe(0);               // two real actors only
+    await addAnonEvents(p.id, 1, { type: "open", tag: "third" });
+    await recomputeRankings();
+    expect((await scores(p.id)).trending).toBeGreaterThan(0);
+  });
+
+  it("only rewrites rows whose scores changed (no dead tuples for untouched prompts) and still reports the count", async () => {
+    const ada = await createUser();
+    const quiet = await createPrompt(ada, { title: "Quiet", ratingCount: 10, ratingSum: 40 });
+    const busy = await createPrompt(ada, { title: "Busy" });
+    await addAnonEvents(busy.id, 3);
+    const xmin = async (id: string) =>
+      String((await db.execute<{ x: string }>(sql`SELECT xmin::text AS x FROM prompts WHERE id = ${id}::uuid`)).rows[0]!.x);
+    expect((await recomputeRankings()).prompts).toBe(2);         // first run: both rows change
+    const before = await xmin(quiet.id);
+    const second = await recomputeRankings();
+    expect(await xmin(quiet.id)).toBe(before);                    // identical scores: row untouched
+    expect(second.prompts).toBe(1);                               // only the decaying prompt moved
+  });
+
   it("ignores non-published prompts and resets nothing it should not touch", async () => {
     const ada = await createUser();
     const pend = await createPrompt(ada, { status: "pending" });

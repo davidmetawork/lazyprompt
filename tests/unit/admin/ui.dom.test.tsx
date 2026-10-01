@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ReasonDialog } from "@/components/admin/reason-dialog";
+import { PromptRowActions } from "@/components/admin/prompt-row-actions";
 import { UserBanControl } from "@/components/admin/user-row-actions";
 
 vi.mock("@/actions/admin", () => ({
   setUserBanAction: vi.fn(), setTrustLevelAction: vi.fn(), moderatePromptAction: vi.fn(),
-  moderateCommentAction: vi.fn(), resolveReportAction: vi.fn(),
+  moderateCommentAction: vi.fn(), resolveReportAction: vi.fn(), redactPromptVersionAction: vi.fn(),
 }));
 
 describe("ReasonDialog", () => {
@@ -38,5 +39,34 @@ describe("UserBanControl", () => {
     expect(screen.getByRole("button", { name: /ban/i })).toBeInTheDocument();
     rerender(<UserBanControl userId="b" username="x" banned isSelf={false} />);
     expect(screen.getByRole("button", { name: "Unban" })).toBeInTheDocument();
+  });
+});
+
+describe("PromptRowActions", () => {
+  const row = (status: Parameters<typeof PromptRowActions>[0]["status"], version = 1) =>
+    render(<PromptRowActions id="p1" slug="s-abc1234" title="Title" status={status} isFeatured={false} version={version} />);
+
+  it("offers Approve (never Restore) for rejected prompts: restore only works on hidden or removed ones", () => {
+    row("rejected");
+    expect(screen.getByRole("button", { name: /Approve/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Restore/ })).toBeNull();
+  });
+  it("offers Approve for pending, Restore for hidden and removed", () => {
+    const { unmount } = row("pending");
+    expect(screen.getByRole("button", { name: /Approve/ })).toBeInTheDocument();
+    unmount();
+    const hidden = row("hidden");
+    expect(screen.getByRole("button", { name: /Restore/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Approve/ })).toBeNull();
+    hidden.unmount();
+    row("removed");
+    expect(screen.getByRole("button", { name: /Restore/ })).toBeInTheDocument();
+  });
+  it("offers Redact version only when there is an earlier version", () => {
+    const { unmount } = row("published", 1);
+    expect(screen.queryByRole("button", { name: /Redact version/ })).toBeNull();
+    unmount();
+    row("published", 3);
+    expect(screen.getByRole("button", { name: /Redact version/ })).toBeInTheDocument();
   });
 });

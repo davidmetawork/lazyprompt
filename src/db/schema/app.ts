@@ -104,6 +104,8 @@ export const prompts = pgTable("prompts", {
   reviewedById: text("reviewed_by_id").references(() => user.id, { onDelete: "set null" }),
   reviewedAt: ts("reviewed_at"),
   autoHiddenAt: ts("auto_hidden_at"),
+  /** First version an admin (or a trusted author's clean publish) made public; earlier versions never appear in history. */
+  approvedFromVersion: integer("approved_from_version"),
   createdAt: ts("created_at").notNull().defaultNow(),
   updatedAt: ts("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
   publishedAt: ts("published_at"),
@@ -111,7 +113,7 @@ export const prompts = pgTable("prompts", {
 }, (t) => [
   index("prompts_search_idx").using("gin", t.search),
   index("prompts_title_trgm_idx").using("gin", sql`${t.title} gin_trgm_ops`),
-  index("prompts_top_idx").on(t.bayesScore.desc(), t.copyCount.desc()).where(sql`${t.status} = 'published'`),
+  index("prompts_top_idx").on(t.bayesScore.desc(), t.isFeatured.desc(), t.copyCount.desc()).where(sql`${t.status} = 'published'`),
   index("prompts_trending_idx").on(t.trendingScore.desc()).where(sql`${t.status} = 'published'`),
   index("prompts_new_idx").on(t.publishedAt.desc()).where(sql`${t.status} = 'published'`),
   index("prompts_category_status_idx").on(t.categoryId, t.status),
