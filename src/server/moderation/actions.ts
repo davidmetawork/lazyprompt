@@ -122,12 +122,15 @@ export async function moderateComment(
 /**
  * Resolves every open report on the same target as `reportId` ("actioned" or "dismissed"), recounts the target's
  * open_report_count and logs resolve_report / dismiss_report.
+ * Resolving an already-resolved report throws CONFLICT, unless `opts.tolerateResolved` is set (used right after a
+ * moderate* call): then it returns quietly and writes no second audit entry.
  */
 export async function resolveReport(
   admin: Viewer,
   reportId: string,
   resolution: "actioned" | "dismissed",
   note?: string,
+  opts?: { tolerateResolved?: boolean },
 ): Promise<void> {
   const me = await requireActiveAdmin(admin);
   const id = parseInput(uuidSchema, reportId);
@@ -138,7 +141,10 @@ export async function resolveReport(
     const [r] = await tx.select({ id: reports.id, targetType: reports.targetType, targetId: reports.targetId, status: reports.status })
       .from(reports).where(eq(reports.id, id)).limit(1);
     if (!r) throw new AppError("NOT_FOUND", "Report not found");
-    if (r.status !== "open") throw new AppError("CONFLICT", "This report was already resolved");
+    if (r.status !== "open") {
+      if (opts?.tolerateResolved) return;
+      throw new AppError("CONFLICT", "This report was already resolved");
+    }
 
     const resolved = await tx.update(reports).set({
       status: res, resolvedById: me.id, resolvedAt: new Date(), resolutionNote: text || null,

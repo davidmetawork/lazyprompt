@@ -32,6 +32,39 @@ function authorOf(r: {
   return { id: r.authorId, username: r.authorUsername ?? "", name: r.authorName, image: r.authorImage, isSystem: r.authorIsSystem ?? false };
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type ResolvedTarget = { label: string; href: string; status: string };
+const DELETED_TARGET: ResolvedTarget = { label: "(deleted)", href: "/", status: "deleted" };
+const pickLabelHref = ({ label, href }: ResolvedTarget) => ({ label, href });
+
+/** Label, link and status for report / moderation-log targets, keyed `${targetType}:${targetId}`. Missing targets are absent. */
+async function resolveTargets(rows: { targetType: "prompt" | "comment" | "user"; targetId: string }[]): Promise<Map<string, ResolvedTarget>> {
+  const ids = (t: "prompt" | "comment" | "user") => [...new Set(rows.filter((r) => r.targetType === t).map((r) => r.targetId))];
+  const promptIds = ids("prompt").filter((x) => UUID_RE.test(x));
+  const commentIds = ids("comment").filter((x) => UUID_RE.test(x));
+  const userIds = ids("user");
+  const [promptRows, commentRows, userRows] = await Promise.all([
+    promptIds.length
+      ? db.select({ id: prompts.id, title: prompts.title, slug: prompts.slug, status: prompts.status }).from(prompts).where(inArray(prompts.id, promptIds))
+      : [],
+    commentIds.length
+      ? db.select({ id: comments.id, body: comments.body, status: comments.status, slug: prompts.slug })
+          .from(comments).innerJoin(prompts, eq(prompts.id, comments.promptId)).where(inArray(comments.id, commentIds))
+      : [],
+    userIds.length
+      ? db.select({ id: user.id, name: user.name, username: profiles.username, banned: user.banned })
+          .from(user).leftJoin(profiles, eq(profiles.userId, user.id)).where(inArray(user.id, userIds))
+      : [],
+  ]);
+  const out = new Map<string, ResolvedTarget>();
+  for (const p of promptRows) out.set(`prompt:${p.id}`, { label: p.title, href: `/p/${p.slug}`, status: p.status });
+  for (const c of commentRows) out.set(`comment:${c.id}`, { label: excerptOf(c.body, 120), href: `/p/${c.slug}#comment-${c.id}`, status: c.status });
+  for (const u of userRows) {
+    out.set(`user:${u.id}`, { label: u.username ?? u.name, href: u.username ? `/u/${u.username}` : "/", status: u.banned ? "banned" : "active" });
+  }
+  return out;
+}
+
 /** Pending prompts or comments, oldest first. */
 export async function getModerationQueue(
   admin: Viewer,
@@ -47,7 +80,8 @@ export async function getModerationQueue(
         id: prompts.id, title: prompts.title, description: prompts.description, flags: prompts.moderationFlags,
         createdAt: prompts.createdAt, slug: prompts.slug, openReportCount: prompts.openReportCount,
         authorId: user.id, authorUsername: profiles.username, authorName: user.name, authorImage: user.image,
-        authorIsSystem: profiles.isSystem, trustLevel: profiles.trustLevel, total: sql<number>`count(*) over()::int`,
+        authorIsSystem: profiles.isSystem, trustLevel: profiles.trustLevel, authorCreatedAt: user.createdAt,
+        total: sql<number>`count(*) over()::int`,
       })
       .from(prompts)
       .innerJoin(user, eq(user.id, prompts.authorId))
@@ -57,7 +91,7 @@ export async function getModerationQueue(
       .limit(QUEUE_PAGE_SIZE).offset(offset);
     const items: ModerationQueueItem[] = rows.map((r) => ({
       kind: "prompt", id: r.id, title: r.title, excerpt: excerptOf(r.description), flags: r.flags ?? [],
-      author: { ...authorOf(r), trustLevel: (r.trustLevel ?? 0) as TrustLevel },
+      author: { ...authorOf(r), trustLevel: (r.trustLevel ?? 0) as TrustLevel, accountCreatedAt: r.authorCreatedAt.toISOString() },
       createdAt: r.createdAt.toISOString(), promptSlug: r.slug, openReportCount: r.openReportCount,
     }));
     return paginated(items, rows[0]?.total ?? 0, page, QUEUE_PAGE_SIZE);
@@ -68,7 +102,8 @@ export async function getModerationQueue(
       id: comments.id, body: comments.body, flags: comments.moderationFlags, createdAt: comments.createdAt,
       openReportCount: comments.openReportCount, promptTitle: prompts.title, promptSlug: prompts.slug,
       authorId: user.id, authorUsername: profiles.username, authorName: user.name, authorImage: user.image,
-      authorIsSystem: profiles.isSystem, trustLevel: profiles.trustLevel, total: sql<number>`count(*) over()::int`,
+      authorIsSystem: profiles.isSystem, trustLevel: profiles.trustLevel, authorCreatedAt: user.createdAt,
+      total: sql<number>`count(*) over()::int`,
     })
     .from(comments)
     .innerJoin(prompts, eq(prompts.id, comments.promptId))
@@ -79,7 +114,7 @@ export async function getModerationQueue(
     .limit(QUEUE_PAGE_SIZE).offset(offset);
   const items: ModerationQueueItem[] = rows.map((r) => ({
     kind: "comment", id: r.id, title: r.promptTitle, excerpt: excerptOf(r.body), flags: r.flags ?? [],
-    author: { ...authorOf(r), trustLevel: (r.trustLevel ?? 0) as TrustLevel },
+    author: { ...authorOf(r), trustLevel: (r.trustLevel ?? 0) as TrustLevel, accountCreatedAt: r.authorCreatedAt.toISOString() },
     createdAt: r.createdAt.toISOString(), promptSlug: r.promptSlug, openReportCount: r.openReportCount,
   }));
   return paginated(items, rows[0]?.total ?? 0, page, QUEUE_PAGE_SIZE);
@@ -112,41 +147,10 @@ export async function listReports(
     .orderBy(status === "open" ? asc(reports.createdAt) : desc(reports.createdAt), asc(reports.id))
     .limit(QUEUE_PAGE_SIZE).offset(offset);
 
-  const ids = (t: "prompt" | "comment" | "user") => [...new Set(rows.filter((r) => r.targetType === t).map((r) => r.targetId))];
-  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const promptIds = ids("prompt").filter((x) => uuid.test(x));
-  const commentIds = ids("comment").filter((x) => uuid.test(x));
-  const userIds = ids("user");
-
-  const [promptRows, commentRows, userRows] = await Promise.all([
-    promptIds.length
-      ? db.select({ id: prompts.id, title: prompts.title, slug: prompts.slug, status: prompts.status }).from(prompts).where(inArray(prompts.id, promptIds))
-      : [],
-    commentIds.length
-      ? db.select({ id: comments.id, body: comments.body, status: comments.status, slug: prompts.slug })
-          .from(comments).innerJoin(prompts, eq(prompts.id, comments.promptId)).where(inArray(comments.id, commentIds))
-      : [],
-    userIds.length
-      ? db.select({ id: user.id, name: user.name, username: profiles.username, banned: user.banned })
-          .from(user).leftJoin(profiles, eq(profiles.userId, user.id)).where(inArray(user.id, userIds))
-      : [],
-  ]);
-  const pMap = new Map(promptRows.map((p) => [p.id, p]));
-  const cMap = new Map(commentRows.map((c) => [c.id, c]));
-  const uMap = new Map(userRows.map((u) => [u.id, u]));
+  const targets = await resolveTargets(rows);
 
   const items: ReportItem[] = rows.map((r) => {
-    let target: ReportItem["target"] = { label: "(deleted)", href: "/", status: "deleted" };
-    if (r.targetType === "prompt") {
-      const p = pMap.get(r.targetId);
-      if (p) target = { label: p.title, href: `/p/${p.slug}`, status: p.status };
-    } else if (r.targetType === "comment") {
-      const c = cMap.get(r.targetId);
-      if (c) target = { label: excerptOf(c.body, 120), href: `/p/${c.slug}#comment-${c.id}`, status: c.status };
-    } else {
-      const u = uMap.get(r.targetId);
-      if (u) target = { label: u.username ?? u.name, href: u.username ? `/u/${u.username}` : "/", status: u.banned ? "banned" : "active" };
-    }
+    const target = targets.get(`${r.targetType}:${r.targetId}`) ?? DELETED_TARGET;
     return {
       id: r.id, targetType: r.targetType, targetId: r.targetId, reason: r.reason, details: r.details, status: r.status,
       reporter: authorOf(r), target, createdAt: r.createdAt.toISOString(), sameTargetOpenCount: Number(r.sameTargetOpenCount),
@@ -203,12 +207,14 @@ export async function listModerationLog(admin: Viewer, page?: number): Promise<P
     .leftJoin(profiles, eq(profiles.userId, user.id))
     .orderBy(desc(moderationActions.createdAt), desc(moderationActions.id))
     .limit(LOG_PAGE_SIZE).offset((pg - 1) * LOG_PAGE_SIZE);
+  const targets = await resolveTargets(rows);
   const items: ModerationLogItem[] = rows.map((r) => ({
     id: r.id,
     actor: r.actorId
       ? { id: r.actorId, username: r.actorUsername ?? "", name: r.actorName ?? "", image: r.actorImage, isSystem: r.actorIsSystem ?? false }
       : null,
     targetType: r.targetType, targetId: r.targetId, action: r.action, reason: r.reason, createdAt: r.createdAt.toISOString(),
+    target: pickLabelHref(targets.get(`${r.targetType}:${r.targetId}`) ?? DELETED_TARGET),
   }));
   return paginated(items, rows[0]?.total ?? 0, pg, LOG_PAGE_SIZE);
 }

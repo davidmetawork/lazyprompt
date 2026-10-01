@@ -557,7 +557,7 @@ export type ScreeningFlag = "link" | "too_many_links" | "shortener" | "affiliate
   | "shouting" | "repetition" | "duplicate" | "openai_flagged" | "new_user";
 export interface ScreeningResult { verdict: "allow" | "review" | "reject"; flags: ScreeningFlag[]; reasons: string[]; duplicateOfId?: string }
 export interface ModerationQueueItem { kind: "prompt" | "comment"; id: string; title: string; excerpt: string;
-  author: AuthorSummary & { trustLevel: TrustLevel }; flags: string[]; createdAt: string; promptSlug: string; openReportCount: number }
+  author: AuthorSummary & { trustLevel: TrustLevel; accountCreatedAt: string }; flags: string[]; createdAt: string; promptSlug: string; openReportCount: number }
 export interface ReportItem { id: string; targetType: ReportTarget; targetId: string; reason: ReportReason; details: string | null;
   status: ReportStatus; reporter: AuthorSummary; target: { label: string; href: string; status: string }; createdAt: string; sameTargetOpenCount: number }
 export interface AdminStats { pendingPrompts: number; pendingComments: number; openReports: number; hiddenPrompts: number;
@@ -565,7 +565,7 @@ export interface AdminStats { pendingPrompts: number; pendingComments: number; o
 export interface AdminUserRow { id: string; email: string; name: string; username: string; role: string; trustLevel: TrustLevel;
   banned: boolean; createdAt: string; promptCount: number }
 export interface ModerationLogItem { id: string; actor: AuthorSummary | null; targetType: ReportTarget; targetId: string;
-  action: string; reason: string | null; createdAt: string }
+  action: string; reason: string | null; createdAt: string; target: { label: string; href: string } }
 export type ActionResult<T = void> = { ok: true; data: T } | { ok: false; code: ErrorCode; message: string; fieldErrors?: Record<string, string[]> };
 export type ErrorCode = "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "VALIDATION" | "RATE_LIMITED" | "CONFLICT" | "BANNED" | "INTERNAL";
 ```

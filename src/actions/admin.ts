@@ -88,7 +88,9 @@ export async function resolveReportAction(input: z.input<typeof resolveSchema>):
       if (v.targetType === "prompt") await moderatePrompt(admin, v.targetId, v.targetAction, v.note);
       else if (v.targetType === "comment") await moderateComment(admin, v.targetId, v.targetAction, v.note);
     }
-    await resolveReport(admin, v.reportId, v.resolution, v.note);
+    // After a hide/remove the report may already be closed (moderation side effects, a double click, another admin):
+    // that is success, not an error, and must not log a second resolve_report entry.
+    await resolveReport(admin, v.reportId, v.resolution, v.note, { tolerateResolved: v.resolution === "actioned" });
   });
   if (r.ok) revalidate(promptSlug);
   return r;

@@ -93,7 +93,7 @@ describe("resolveReportAction", () => {
     expect(r.ok).toBe(true);
     expect(calls).toEqual(["moderate", "resolve"]);
     expect(moderatePrompt).toHaveBeenCalledWith(admin, "p1", "hide", "spam");
-    expect(resolveReport).toHaveBeenCalledWith(admin, "r1", "actioned", "spam");
+    expect(resolveReport).toHaveBeenCalledWith(admin, "r1", "actioned", "spam", { tolerateResolved: true });
   });
   it("moderates comments through moderateComment", async () => {
     await actions.resolveReportAction({
@@ -108,7 +108,7 @@ describe("resolveReportAction", () => {
     await actions.resolveReportAction({ resolution: "dismissed", reportId: "r2", note: "not an issue" });
     expect(moderatePrompt).not.toHaveBeenCalled();
     expect(moderateComment).not.toHaveBeenCalled();
-    expect(resolveReport).toHaveBeenNthCalledWith(2, admin, "r2", "dismissed", "not an issue");
+    expect(resolveReport).toHaveBeenNthCalledWith(2, admin, "r2", "dismissed", "not an issue", { tolerateResolved: false });
   });
   it("does not resolve the report if moderating the target fails", async () => {
     moderatePrompt.mockRejectedValue(new AppError("NOT_FOUND", "gone"));

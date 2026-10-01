@@ -62,7 +62,7 @@ describe("queue reads", () => {
     expect(q.items.map((i) => i.title)).toEqual(["First pending prompt", "Second pending prompt"]);
     expect(q.items[0]).toMatchObject({
       kind: "prompt", id: first.id, promptSlug: first.slug, flags: ["new_user"], openReportCount: 0,
-      author: { id: t0.id, username: t0.username, trustLevel: 0 },
+      author: { id: t0.id, username: t0.username, trustLevel: 0, accountCreatedAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT/) },
     });
 
     const commenter = await createUser({ trustLevel: 0 });
@@ -114,7 +114,10 @@ describe("queue reads", () => {
     });
 
     const log = await listModerationLog(admin);
-    expect(log.items).toMatchObject([{ action: "feature", targetType: "prompt", targetId: pub.id, actor: { id: admin.id } }]);
+    expect(log.items).toMatchObject([{
+      action: "feature", targetType: "prompt", targetId: pub.id, actor: { id: admin.id },
+      target: { label: "Published searchable prompt", href: `/p/${pub.slug}` },
+    }]);
 
     const users = await listAdminUsers(admin, { q: "findme" });
     expect(users.items).toMatchObject([{ id: u.id, email: "findme@test.local", promptCount: 3, role: "user", banned: false }]);
@@ -267,6 +270,19 @@ describe("resolveReport", () => {
     expect((await promptRow(other.id)).openReportCount).toBe(1);
     expect(await logRows()).toMatchObject([{ action: "resolve_report", targetType: "prompt", targetId: p.id, reason: "Confirmed spam", metadata: { resolvedReports: 2 } }]);
     await expect(resolveReport(admin, r1.id, "dismissed")).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("tolerateResolved makes the moderate-then-resolve sequence safe: no throw and no second audit entry", async () => {
+    const admin = await createUser({ role: "admin" });
+    const author = await createUser({ trustLevel: 1 });
+    const p = await seedPrompt(author, { categorySlug: "writing" });
+    const r1 = await createReport(await createUser(), { targetType: "prompt", targetId: p.id, reason: "spam" });
+    await moderatePrompt(admin, p.id, "hide", "Spam");
+    await resolveReport(admin, r1.id, "actioned", "Spam", { tolerateResolved: true });
+    // Something else already closed the report (another admin, a double click): still no error, still one entry.
+    await resolveReport(admin, r1.id, "actioned", "Spam", { tolerateResolved: true });
+    expect((await logRows()).map((l) => l.action).sort()).toEqual(["hide", "resolve_report"]);
+    await expect(resolveReport(admin, r1.id, "actioned")).rejects.toMatchObject({ code: "CONFLICT" });   // strict by default
   });
 
   it("dismissed logs dismiss_report; works for comments and users; denies non-admins; 404s unknown", async () => {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireAdmin } from "@/auth/viewer";
 import { actionLabel, formatDateTime, pageParam } from "@/components/admin/helpers";
 import { PageHeader } from "@/components/admin/page-header";
@@ -42,6 +43,11 @@ export default async function AdminLogPage({ searchParams }: PageProps<"/admin/l
                   <TableCell><Badge variant="secondary">{actionLabel(l.action)}</Badge></TableCell>
                   <TableCell className="whitespace-normal">
                     <span className="capitalize">{l.targetType}</span>{" "}
+                    {l.target.href === "/" ? (
+                      <span className="break-words text-muted-foreground">{l.target.label}</span>
+                    ) : (
+                      <Link href={l.target.href} className="break-words text-primary underline-offset-4 hover:underline">{l.target.label}</Link>
+                    )}{" "}
                     <code className="text-xs text-muted-foreground" title={l.targetId}>{l.targetId.slice(0, 8)}</code>
                   </TableCell>
                   <TableCell className="max-w-sm whitespace-normal break-words">{l.reason ?? <span className="text-muted-foreground">-</span>}</TableCell>
