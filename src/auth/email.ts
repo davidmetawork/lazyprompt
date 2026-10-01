@@ -14,7 +14,8 @@ export async function sendMagicLink({ email, url }: { email: string; url: string
   const isProd = process.env.VERCEL_ENV === "production";
   const sink = process.env.MAGIC_LINK_DEV_SINK;
   if (sink && !isProd) {
-    const file = resolve(process.cwd(), sink);
+    // The sink path is dynamic by design (dev/test only); keep Turbopack from tracing the whole project for it.
+    const file = resolve(/*turbopackIgnore: true*/ process.cwd(), sink);
     mkdirSync(dirname(file), { recursive: true });
     appendFileSync(file, `${JSON.stringify({ email, url, ts: Date.now() })}\n`);
   }

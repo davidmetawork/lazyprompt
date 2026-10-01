@@ -40,3 +40,13 @@ export function adminUrlFor(url: string): { adminUrl: string; dbName: string } {
   u.pathname = "/postgres";
   return { adminUrl: u.toString(), dbName };
 }
+
+/** True for localhost / loopback / unix-socket (empty host) connection strings. */
+export function isLocalDatabaseUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.replace(/^\[|\]$/g, "");
+    return host === "" || host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+}

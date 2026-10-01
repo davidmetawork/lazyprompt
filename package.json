@@ -25,7 +25,7 @@
     "db:seed:demo": "tsx scripts/seed-demo.ts",
     "db:reset": "tsx scripts/db-reset.ts",
     "widget:build": "vite build --config widget/vite.config.ts && tsx scripts/embed-widget.ts",
-    "auth:generate": "npx auth@latest generate --config src/auth/server.ts --output src/db/schema/auth-generated.ts"
+    "auth:generate": "npx auth@latest generate --config src/auth/server.ts --output .data/auth-generated.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
