@@ -1,4 +1,4 @@
-// Minimal real implementation; the seo package owns this file afterwards (signatures frozen, section 22).
+// JSON-LD builders (ARCHITECTURE.md section 14). Every URL is absolute; user text is escaped by <JsonLd> at render time.
 import type { PromptCard, PromptDetail } from "../types";
 import { absoluteUrl } from "../base-url";
 import { SITE_NAME } from "../constants";
