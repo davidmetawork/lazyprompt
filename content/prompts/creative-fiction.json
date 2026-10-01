@@ -1,0 +1,1021 @@
+{
+  "category": "creative-fiction",
+  "prompts": [
+    {
+      "key": "creative-fiction-story-premise-constraints",
+      "title": "Story premise generator with creative constraints",
+      "description": "Get distinct, hook-driven story premises that obey the genre, setting and constraints you set, with a twist on each.",
+      "body": "Generate {{count}} original story premises in the {{genre}} genre.\n\nSetting: {{setting}}\nProtagonist type: {{protagonist}}\nHard constraints every premise must obey: {{constraints}}\nTone: {{tone}}\n\nFor each premise give:\n1. Title\n2. Logline: one sentence containing a character, a want, an obstacle and what is at stake\n3. The twist or complication that makes it fresh\n4. The first scene in two sentences\n5. Why it fits the constraints\n\nMake the premises clearly different from each other in structure and stakes, not variations of one idea. Avoid the most common tropes of the genre unless you subvert them. After the list, name the one premise you think has the most room to grow into a full story and say why in two sentences.",
+      "variables": [
+        {
+          "key": "count",
+          "label": "Number of premises",
+          "type": "number",
+          "default": "4",
+          "required": false
+        },
+        {
+          "key": "genre",
+          "label": "Genre",
+          "type": "select",
+          "options": [
+            "Science fiction",
+            "Fantasy",
+            "Mystery",
+            "Horror",
+            "Romance",
+            "Literary fiction",
+            "Thriller",
+            "Historical fiction"
+          ],
+          "default": "Science fiction",
+          "required": false
+        },
+        {
+          "key": "setting",
+          "label": "Setting",
+          "type": "text",
+          "default": "A floating market town in a flooded future city",
+          "required": false
+        },
+        {
+          "key": "protagonist",
+          "label": "Protagonist",
+          "type": "text",
+          "default": "A retired courier with a bad knee",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "long",
+          "default": "No chosen-one plot; the story takes place within three days; one key character never speaks",
+          "required": false,
+          "help": "Rules, word limits, forbidden tropes, required elements"
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "text",
+          "default": "Wry but tender",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. The Last Mile of Tide Street**\nLogline: A retired courier with a bad knee must carry one final parcel across a flooded market town in three days, or the neighbour who trusted her loses his stall and his home.\nTwist: The parcel is empty; the recipient only needs the town to see someone carrying it.\nFirst scene: Mara hears the old dispatch bell and knows she is being called back, which she swore would never happen. Her knee says no; her pride says yes.\nWhy it fits: Three-day clock, no chosen one, and the recipient, a boy who communicates only by tapping rooftops, never speaks.\n\n**2. Salt Ledger**\nLogline: A courier discovers the market's debts are kept in a script only she can still read, and someone wants the ledger drowned before sunrise on day three.\nTwist: The largest debt on the page is in her own name.\nFirst scene: A customs clerk hands her a wet receipt in her late mother's handwriting. The clerk, who never says a word, points at the total and then at her.\nWhy it fits: The whole plot runs inside three days, no prophecy is involved, and the silent clerk carries the story through gesture.\n\n**3. The Ferry That Wasn't Late**\nLogline: When the market's only ferry arrives on time for the first time in forty years, a skeptical courier suspects the schedule has been rigged, and the proof could sink her oldest friend.\nTwist: The ferry is on time because the tide has changed course, and no one wants to admit the city is sinking faster.\nFirst scene: Mara checks her watch twice on the pontoon and frowns. Behind her, the ferryman tips his hat and says nothing, as he always does.\nWhy it fits: Three days of rumour, a silent ferryman, and a heroine who is just a tired woman with a stubborn knee.\n\n**4. Lantern Season**\nLogline: During the three-day lantern festival, a courier agrees to smuggle a stranger's grandmother out of town, and must decide how much of the truth she owes the child who does the talking.\nTwist: The grandmother is not who the stranger claims, and she has been delivering messages herself for years.\nFirst scene: Mara loads a cushion into her skiff and a small woman sits on it without a word. Fireworks light the water pink.\nWhy it fits: One silent character, a festival that ends on day three, and no chosen-one destiny.\n\n**Strongest candidate:** Premise 1. Its ticking clock and quiet emotional reveal give it a clean three-act shape, and the empty parcel leaves room for comic set pieces on the water.",
+      "notes": "Specific constraints produce sharper ideas than a bare genre request, and asking for a twist and a first scene tests whether each premise can actually start. Re-run with the same constraints and a different tone to get a new batch.",
+      "useCase": "brainstorm",
+      "tags": [
+        "creative-writing",
+        "storytelling",
+        "brainstorming"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-character-builder",
+      "title": "Deep character builder with contradictions",
+      "description": "Build a believable fictional character with wants, fears, contradictions, a voice and a secret, ready to drop into your story.",
+      "body": "Help me build a fully realized character for a {{medium}}.\n\nBasics: {{basics}}\nStory role: {{role}}\nGenre and world: {{world}}\nDepth level: {{depth}}\n\nCreate a character profile with these sections:\n- Snapshot: name, age, occupation, and a vivid first impression in two sentences\n- What they want (external goal) and what they need (internal need), and how these clash\n- Core fear and the lie they believe about themselves\n- Three contradictions that make them feel human, each shown through a concrete behavior\n- Voice: how they talk, three sample lines of dialogue, and words or rhythms they would never use\n- A habit, object or ritual that reveals character without explanation\n- A secret and the moment it is most likely to surface\n- Key relationships: two people who see them differently\n- How they would change across the story, and what would stop them\n\nBe specific and unexpected. Prefer concrete detail over personality adjectives, and avoid backstory clichés such as a dead parent unless I asked for one. Finish with five questions I should answer to decide where this character goes next.",
+      "variables": [
+        {
+          "key": "medium",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "Novel",
+            "Short story",
+            "Screenplay",
+            "Tabletop RPG",
+            "Video game"
+          ],
+          "default": "Novel",
+          "required": false
+        },
+        {
+          "key": "basics",
+          "label": "What you already know",
+          "type": "long",
+          "default": "A ferry mechanic in her forties who is quietly proud and hates being thanked",
+          "required": false,
+          "help": "Name, age, job, any traits you have already decided"
+        },
+        {
+          "key": "role",
+          "label": "Role in the story",
+          "type": "text",
+          "default": "The reluctant mentor to the protagonist",
+          "required": false
+        },
+        {
+          "key": "world",
+          "label": "Genre and world",
+          "type": "text",
+          "default": "Contemporary literary fiction set on a northern island",
+          "required": false
+        },
+        {
+          "key": "depth",
+          "label": "Depth",
+          "type": "select",
+          "options": [
+            "Quick sketch",
+            "Detailed",
+            "Exhaustive"
+          ],
+          "default": "Detailed",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Snapshot:** Ines Valdar, 46, mechanic on the Karrow Island ferry. She smells faintly of diesel and peppermint, and she answers every compliment by pointing out what is still broken.\n\n**Want / need:** She wants the ferry to keep running without anyone noticing her work. She needs to be relied on openly, which would mean admitting she wants to be.\n\n**Fear and lie:** Fear of being the reason something fails. Lie: \"If I am invisible, I cannot be blamed.\"\n\n**Contradictions:**\n- Meticulous with engines, careless with her own unopened mail, which she stacks under the kettle.\n- Gruff to adults, endlessly patient with children who wander into the engine room.\n- Hates gossip yet knows everyone's secrets from what they leave in the ferry lost-and-found.\n\n**Voice:** Short, dry sentences. \"It runs. Don't thank it.\" / \"Ask me tomorrow.\" / \"That's not a problem, that's a Tuesday.\" She never says \"sorry\"; she says \"my fault.\" She would never use \"amazing\" or \"journey.\"\n\n**Ritual:** She taps the engine room door twice before entering, and wipes her hands on a rag she keeps even when they are clean.\n\n**Secret:** Years ago she signed off a repair she was unsure of. Nothing happened, and she has never forgiven herself. It is most likely to surface during a storm crossing, when the same part starts to rattle.\n\n**Relationships:**\n- Captain Roe, who sees her as the island's quiet backbone and tries to pay her more than she accepts.\n- The protagonist, a young deckhand, who sees her as a closed door that sometimes opens a crack.\n\n**Arc:** She moves from refusing thanks to accepting one in public. What stops her is the fear that being seen means being blamed, and the moment the engine fails, she has to choose between hiding and speaking.\n\n**Questions for you:**\n1. What failure does the story force her to face?\n2. Who thanks her first, sincerely, and how does she react?\n3. Does the protagonist learn the secret from her or from someone else?\n4. What does she do with her unopened mail when it finally matters?\n5. Does she stay on the island at the end, or leave?",
+      "notes": "The want-versus-need clash and the contradictions are what stop a profile from reading like a list of traits. Paste the result back later and ask the model to write a scene that tests the secret.",
+      "useCase": "generate",
+      "tags": [
+        "worldbuilding",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-dialogue-polish",
+      "title": "Dialogue polish with subtext and distinct voices",
+      "description": "Rewrite flat, on-the-nose dialogue so each character sounds different and the real conflict sits under the words.",
+      "body": "You are a fiction editor who specializes in dialogue. Revise the scene below.\n\nCharacters and their voices:\n{{characters}}\n\nWhat each character secretly wants in this scene: {{subtext}}\nGenre and tone: {{tone}}\nEditing intensity: {{intensity}}\n\nScene to revise:\n{{scene}}\n\nDo the following:\n1. Rewrite the scene. Remove lines where characters state their feelings directly, give each person a distinct rhythm, vocabulary and way of dodging, and let the subtext carry the conflict. Keep the plot events and the length within about 15 percent of the original.\n2. Keep beats, tags and action lines minimal and specific.\n3. After the rewrite, list the five most important changes with a one-line reason each.\n4. Flag any line you were unsure about and offer an alternative.\n\nDo not add new plot points or change what happens. Do not make everyone witty.",
+      "variables": [
+        {
+          "key": "characters",
+          "label": "Characters and voices",
+          "type": "long",
+          "default": "Dana: clipped, practical, avoids apologies. Theo: rambling, jokes when nervous.",
+          "required": false,
+          "help": "Who speaks and how"
+        },
+        {
+          "key": "subtext",
+          "label": "Hidden wants",
+          "type": "long",
+          "default": "Dana wants Theo to admit he sold the family boat. Theo wants to be forgiven without confessing.",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Genre and tone",
+          "type": "text",
+          "default": "Quiet family drama",
+          "required": false
+        },
+        {
+          "key": "intensity",
+          "label": "Intensity",
+          "type": "select",
+          "options": [
+            "Light polish",
+            "Moderate rewrite",
+            "Full rewrite"
+          ],
+          "default": "Moderate rewrite",
+          "required": false
+        },
+        {
+          "key": "scene",
+          "label": "Your scene",
+          "type": "long",
+          "required": true,
+          "help": "Paste the dialogue and any surrounding action"
+        }
+      ],
+      "exampleOutput": "**Revised scene**\n\nDana set the keys on the table, not in his hand.\n\"Harbour office called,\" she said.\n\"They call about everything.\" Theo laughed, too early. \"Did you know the gulls there have a union?\"\n\"They asked where the *Marguerite* is.\"\nHe picked up a sugar packet and began folding it. \"She's being looked at. Engine thing.\"\n\"By who?\"\n\"A guy. Dana, it's a long story, and the kettle's on.\"\n\"The kettle's not on.\"\nHe looked at it as though it might help him.\n\n**Five key changes**\n1. Cut Theo's line \"I feel terrible about the boat\" and replaced it with the sugar packet; the guilt now leaks through action.\n2. Gave Dana short, interrogative lines so she controls the pace.\n3. Added the gull joke as Theo's deflection, consistent with the nervous humour you described.\n4. Removed Dana's explanation of why she is angry; the reader infers it.\n5. Ended on an image instead of a resolution.\n\n**Flagged:** \"A guy\" may be too vague; alternative: \"Someone from Penrose.\"\n",
+      "notes": "Giving each character a hidden want is the single biggest lever for subtext. Ask for a second pass at a different intensity if the first draft feels over-written.",
+      "useCase": "rewrite",
+      "tags": [
+        "screenwriting",
+        "creative-writing",
+        "editing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-worldbuilding-interview",
+      "title": "Worldbuilding interview that deepens your setting",
+      "description": "Have the AI interrogate your world with sharp, specific questions, then turn your answers into a usable world bible.",
+      "body": "Act as a worldbuilding partner who asks sharp questions rather than inventing everything for me.\n\nMy world in a nutshell: {{premise}}\nWhat the world is for: {{purpose}}\nArea to explore first: {{focus}}\nNumber of questions per round: {{questions}}\n\nProcess:\n1. Ask exactly {{questions}} questions about the area I chose. Each should expose a consequence I may not have considered (economics, daily life, law, belief, technology, geography, conflict) and be answerable in a sentence or two. Number them. Do not suggest answers, but add a short \"why this matters\" note for each.\n2. Stop and wait for my replies.\n3. After I answer, summarize what is now established in a tight bullet list, flag any contradictions with earlier answers, then ask the next round, moving to a new area or deeper on the same one.\n4. When I type \"BIBLE\", compile everything into a world bible with sections: overview, geography, peoples and cultures, power and economy, belief and magic or technology, history, tensions and story hooks, open questions.\n\nAvoid generic questions such as \"What is the climate?\" unless the climate has a surprising implication for this setting.",
+      "variables": [
+        {
+          "key": "premise",
+          "label": "World premise",
+          "type": "long",
+          "default": "A desert civilization built inside the ribs of an enormous dead animal",
+          "required": false,
+          "help": "A few sentences about the world"
+        },
+        {
+          "key": "purpose",
+          "label": "What it is for",
+          "type": "select",
+          "options": [
+            "Novel",
+            "Tabletop RPG campaign",
+            "Video game",
+            "Short story collection",
+            "Just for fun"
+          ],
+          "default": "Novel",
+          "required": false
+        },
+        {
+          "key": "focus",
+          "label": "Start with",
+          "type": "select",
+          "options": [
+            "Geography and ecology",
+            "Economy and daily life",
+            "Politics and law",
+            "Religion and belief",
+            "History and myth",
+            "Technology or magic"
+          ],
+          "default": "Economy and daily life",
+          "required": false
+        },
+        {
+          "key": "questions",
+          "label": "Questions per round",
+          "type": "number",
+          "default": "5",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Round 1: Economy and daily life**\n\n1. If the animal is dead, what resource keeps the town running, and who controls access to it?\n   *Why this matters: it decides who has power and who has grievances.*\n2. Rib space is finite. How do people decide who gets a dwelling closest to shade and water?\n   *Why this matters: reveals class, tradition, or conflict.*\n3. What do people use as currency when water cannot be counted fairly?\n4. Which trade is respected but dangerous, and what does a family do when a member is lost doing it?\n5. What do outsiders bring in that residents cannot produce, and what do they ask for in return?\n\nReply when ready and I will summarize what is established, flag contradictions and ask Round 2.",
+      "notes": "The model asks and you decide, so the world stays yours and gains depth. Answer in rough notes; the BIBLE command at the end does the tidy-up.",
+      "useCase": "brainstorm",
+      "tags": [
+        "worldbuilding",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-poem-chosen-form",
+      "title": "Poem in a chosen form on your subject",
+      "description": "Write a polished poem in a specific form such as sonnet, haiku, villanelle or free verse, with fresh imagery and an explanation of choices.",
+      "body": "Write an original poem about {{subject}}.\n\nForm: {{form}}\nMood: {{mood}}\nPoint of view and voice: {{voice}}\nImage or detail I would like included: {{detail}}\n\nRequirements:\n- Follow the form's real rules (meter, rhyme scheme, syllable count, line count, refrains) as precisely as the form demands. If the form is free verse, give it deliberate line breaks and rhythm.\n- Use concrete, sensory images. Avoid cliches such as \"heart of gold\", \"tears like rain\" and generic abstractions. Do not explain the emotion; show the moment that creates it.\n- Choose words for sound as well as sense.\n- Give the poem a title.\n\nOutput:\n1. The poem\n2. A short note (3 to 4 sentences) on how it meets the form and one or two craft choices\n3. One alternative closing line or couplet that takes the poem in a different direction\n\nWrite only original work and do not quote or imitate any specific existing poem.",
+      "variables": [
+        {
+          "key": "subject",
+          "label": "Subject",
+          "type": "text",
+          "default": "The last morning in a childhood home",
+          "required": false
+        },
+        {
+          "key": "form",
+          "label": "Form",
+          "type": "select",
+          "options": [
+            "Sonnet (Shakespearean)",
+            "Sonnet (Petrarchan)",
+            "Villanelle",
+            "Haiku sequence",
+            "Free verse",
+            "Limerick",
+            "Ballad",
+            "Ghazal"
+          ],
+          "default": "Villanelle",
+          "required": false
+        },
+        {
+          "key": "mood",
+          "label": "Mood",
+          "type": "text",
+          "default": "Quiet, bittersweet",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "text",
+          "default": "First person, adult looking back",
+          "required": false
+        },
+        {
+          "key": "detail",
+          "label": "Detail to include",
+          "type": "text",
+          "default": "A pencil-marked height chart on a doorframe",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Doorframe**\n\nThe pencil lines climb up the kitchen wall,\neach year a small stair cut into the wood.\nTomorrow strangers hang their coats in the hall.\n\nI tape the last box shut. It looks so small.\nThe house keeps every thing it never could:\nthe pencil lines climb up the kitchen wall.\n\nMy brother's mark is crooked. He would stall,\nrising on his toes the way he stood.\nTomorrow strangers hang their coats in the hall.\n\nMother wrote our names in a hand I recall,\npressed hard, as though the numbers understood:\nthe pencil lines climb up the kitchen wall.\n\nThe paint will cover every year, every scrawl,\nand I will not argue. I never would.\nTomorrow strangers hang their coats in the hall.\n\nI measure nothing now. I only stall,\nand press my crown to the grain where once I stood.\nThe pencil lines climb up the kitchen wall.\nTomorrow strangers hang their coats in the hall.\n\n**Note:** Nineteen lines in five tercets and a closing quatrain, with the first refrain returning at the end of stanzas two, four and six and the second at the end of stanzas three, five and six, as a villanelle requires. The A rhyme (wall, hall, small, stall, recall, scrawl) alternates with the B rhyme (wood, could, stood, understood, would). The refrains shift from description to farewell as the speaker's context changes, and the height chart stays the one concrete object.\n\n**Alternative closing:** \"I measure nothing now. I just stay tall.\"",
+      "notes": "Naming the form and the mood together keeps the model from drifting into generic rhyme. If a form constraint is slipping, ask it to count syllables line by line and fix any misses.",
+      "useCase": "generate",
+      "tags": [
+        "poetry",
+        "creative-writing",
+        "writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-plot-hole-critique",
+      "title": "Plot hole and consistency critique of your story",
+      "description": "Paste your outline or draft and get a tough, organized critique of plot holes, motivation gaps, timeline errors and unpaid setups.",
+      "body": "You are a developmental editor reading my {{format}} for logic and causality, not for prose style.\n\nGenre: {{genre}}\nRules of the world I want respected (magic, technology, law, physics): {{rules}}\nSpecific worries: {{worries}}\n\nMaterial:\n{{material}}\n\nAnalyze it in this order:\n1. Plot holes: events that contradict earlier facts or world rules, or that only work because characters ignore obvious options.\n2. Motivation gaps: moments when a character's choice is unsupported by what we know.\n3. Timeline and logistics: who could be where, when, with what knowledge or resources.\n4. Setups without payoffs and payoffs without setups.\n5. Coincidences that solve problems for the hero versus those that create them.\n\nFor each issue give: the location (scene, chapter or quote), what is wrong, severity (critical, moderate, minor), and two possible fixes, one small and one structural.\n\nQuote the text briefly when pointing to a problem. Do not invent problems to look thorough; if a section is solid, say so. End with the three fixes that would improve the story most.",
+      "variables": [
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "Novel outline",
+            "Short story",
+            "Screenplay",
+            "Chapter draft",
+            "Series bible"
+          ],
+          "default": "Novel outline",
+          "required": false
+        },
+        {
+          "key": "genre",
+          "label": "Genre",
+          "type": "text",
+          "default": "Mystery",
+          "required": false
+        },
+        {
+          "key": "rules",
+          "label": "World rules",
+          "type": "long",
+          "default": "Contemporary realistic setting; no supernatural elements",
+          "required": false
+        },
+        {
+          "key": "worries",
+          "label": "Your worries",
+          "type": "long",
+          "default": "I am unsure whether the detective could have known about the safe before chapter 6",
+          "required": false
+        },
+        {
+          "key": "material",
+          "label": "Your story",
+          "type": "long",
+          "required": true,
+          "help": "Paste the outline or draft"
+        }
+      ],
+      "exampleOutput": "**1. Plot holes**\n- *Chapter 4, the alibi.* The cook says she saw Marsh in the garden at nine, but ch. 2 puts the garden gate locked from eight. Severity: critical. Small fix: mention the side door. Structural fix: make her testimony the lie that the detective later notices.\n\n**2. Motivation gaps**\n- *Chapter 7.* Elena burns the letter without having read it. Moderate. Fix: have her read the first line first.\n\n**3. Timeline**\n- The train arrives at 6:40 in ch. 3, yet Hale is at the inn by 6:30. Minor.\n\n**4. Setups and payoffs**\n- The torn glove in ch. 1 is never mentioned again. Pay it off in the confrontation scene.\n\n**5. Coincidences**\n- The detective overhears the confession by chance. Moderate; let him earn it by setting the trap.\n\n**Top three fixes:** the garden gate, the unread letter, the glove payoff.",
+      "notes": "Restricting the review to logic keeps the feedback useful and honest. Run it again after your revision and ask the model to check whether each earlier issue has been resolved.",
+      "useCase": "critique",
+      "tags": [
+        "creative-writing",
+        "editing",
+        "storytelling"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-interactive-fiction-game-master",
+      "title": "Interactive fiction game master",
+      "description": "Play a text adventure where the AI acts as narrator and game master, tracks inventory and consequences, and offers meaningful choices.",
+      "body": "Act as the narrator and game master of a text adventure. I am the player.\n\nSetting and genre: {{setting}}\nMy character: {{character}}\nTone and content rating: {{tone}} (keep the content PG-13)\nDifficulty: {{difficulty}}\nLength of each turn: {{length}}\n\nRules for how you run the game:\n- Open with a vivid scene in 120 words or fewer that establishes the situation, a goal and a first problem.\n- Each turn, describe what happens as a result of my action, then offer 3 numbered choices. I may also type my own action instead.\n- Keep a short status line at the end of every turn: location, inventory, health or condition, and any active goals.\n- Make choices matter. Actions have consequences that can return later. Let me fail sometimes, but never trap me without a path forward.\n- Do not decide my character's actions, thoughts or dialogue for me.\n- Keep the world consistent: remember names, items and promises.\n- If I type \"RECAP\" give a brief summary of the story so far. If I type \"OUT OF CHARACTER\" pause the game and answer plainly.\n\nBegin now.",
+      "variables": [
+        {
+          "key": "setting",
+          "label": "Setting and genre",
+          "type": "text",
+          "default": "A lighthouse on a storm-wracked coast, gothic mystery",
+          "required": false
+        },
+        {
+          "key": "character",
+          "label": "My character",
+          "type": "text",
+          "default": "Wren, a junior archivist with a fear of heights",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Atmospheric and tense",
+            "Lighthearted and funny",
+            "Epic and heroic",
+            "Dark and gritty",
+            "Cosy and gentle"
+          ],
+          "default": "Atmospheric and tense",
+          "required": false
+        },
+        {
+          "key": "difficulty",
+          "label": "Difficulty",
+          "type": "select",
+          "options": [
+            "Easy",
+            "Medium",
+            "Hard"
+          ],
+          "default": "Medium",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Turn length",
+          "type": "select",
+          "options": [
+            "Short (about 100 words)",
+            "Medium (about 200 words)",
+            "Long (about 350 words)"
+          ],
+          "default": "Short (about 100 words)",
+          "required": false
+        }
+      ],
+      "exampleOutput": "The ferry leaves without waiting. Rain needles your coat as you climb the stone stairs to Skerrow Lighthouse, a ledger tucked under your arm. The keeper has not answered a letter in three months; the lamp, however, still burns. At the door, someone has chalked a tally of eleven marks. The twelfth is half finished.\n\nWhat do you do?\n1. Knock and call out.\n2. Examine the chalk marks.\n3. Walk around the tower to look for another entrance.\n\n*Location: Lighthouse door | Inventory: ledger, flashlight, damp notebook | Condition: nervous | Goal: find out what happened to the keeper*",
+      "notes": "The command words and the status line keep long sessions consistent. Paste your last status line into a new chat to resume the game if the conversation gets too long.",
+      "useCase": "roleplay",
+      "tags": [
+        "roleplay",
+        "storytelling",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-bedtime-story-moral",
+      "title": "Children's bedtime story with a gentle moral",
+      "description": "Create a calming, age-appropriate bedtime story starring your child, with a soft lesson and a sleepy ending.",
+      "body": "Write an original bedtime story for a child aged {{age}}.\n\nMain character: {{hero}}\nSetting: {{setting}}\nMoral or lesson to weave in gently: {{moral}}\nThings the child loves (include one or two): {{interests}}\nLength: about {{length}} words\n\nGuidelines:\n- Open with a warm, simple first line. Use short sentences, vivid but soothing sensory details and a little repetition or a rhythmic refrain the child can join in with.\n- Give the story a small, kind problem, and let the main character solve it through gentleness, curiosity or courage, not by being scolded.\n- Show the lesson through what happens. Do not preach, and state it at most once in plain words.\n- Nothing frightening, violent or sad beyond a mild moment that resolves quickly.\n- Slow the pace in the final third and end with the character falling asleep or feeling safe and cosy, so the reader can lower their voice.\n- Use vocabulary appropriate for the age.\n\nGive the story a title. After the story, add one question the parent can ask the next morning about the lesson.",
+      "variables": [
+        {
+          "key": "age",
+          "label": "Child's age",
+          "type": "select",
+          "options": [
+            "2 to 3",
+            "4 to 6",
+            "7 to 9"
+          ],
+          "default": "4 to 6",
+          "required": false
+        },
+        {
+          "key": "hero",
+          "label": "Main character",
+          "type": "text",
+          "default": "A small fox named Pip",
+          "required": false
+        },
+        {
+          "key": "setting",
+          "label": "Setting",
+          "type": "text",
+          "default": "A snowy forest at dusk",
+          "required": false
+        },
+        {
+          "key": "moral",
+          "label": "Moral",
+          "type": "text",
+          "default": "It is okay to ask for help",
+          "required": false
+        },
+        {
+          "key": "interests",
+          "label": "Things they love",
+          "type": "text",
+          "default": "Trains and blueberries",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "number",
+          "default": "400",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Pip and the Snowy Hill**\n\nOnce upon a snowy evening, a small fox named Pip trotted through the quiet forest. Crunch, crunch, crunch went his paws.\n\nPip had a very important job. He was carrying a basket of blueberries to Grandmother Fox before bedtime. But the hill was steep, and the snow was deep, and the basket was heavy. Crunch, crunch... slip.\n\n\"I can do it myself,\" whispered Pip. He tried again. Crunch, crunch... slip.\n\nJust then a little train of wooden sleds came sliding down the path, pulled by three friendly hares. Chuff, chuff, chuff, they went, like a tiny train. \"Would you like a ride?\" asked the smallest hare.\n\nPip took a deep breath. \"Yes, please,\" he said. \"I need some help.\"\n\nThe hares tucked the basket onto the last sled, and Pip climbed on top. Up the hill they went, chuff, chuff, chuff, past the sleeping pines and the silver stars.\n\nAt the top, Grandmother Fox was waiting at her round green door. \"Blueberries!\" she said. \"Thank you, Pip. And thank you, hares, for helping.\"\n\nPip smiled. Asking had not been hard at all. It had been warm, like a mitten.\n\nGrandmother Fox gave him a cup of warm milk, and the hares waved goodnight. Pip walked home slowly, crunch, crunch, crunch, with the snow falling softly around him.\n\nThat night, Pip snuggled into his warm den. His eyes grew heavy. The snow fell softly. Crunch, crunch, hush.\n\n**Morning question:** When was a time someone helped you, and how did it feel?",
+      "notes": "Repetition and an explicit wind-down make the story easy to read aloud and genuinely sleepy. Add your child's own toy or pet as a sidekick to make it more personal.",
+      "useCase": "generate",
+      "tags": [
+        "parenting",
+        "storytelling",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-screenplay-scene",
+      "title": "Screenplay scene in proper format",
+      "description": "Write a tight, properly formatted screenplay scene with visual action, subtext-rich dialogue and a clear turn.",
+      "body": "Write a screenplay scene in standard format.\n\nLogline or context: {{context}}\nCharacters in the scene: {{characters}}\nLocation and time: {{location}}\nWhat must change by the end of the scene: {{turn}}\nTone and genre: {{tone}}\nApproximate length: {{pages}} pages\n\nFormat requirements:\n- Scene heading (INT./EXT., location, time of day), present-tense action lines, character names in capitals above dialogue, brief parentheticals only when essential.\n- Show, do not tell: communicate emotion through behavior, objects and visual choices. No camera directions unless one is essential. No narration or inner thoughts.\n- Each character wants something in the scene and pursues it through conflict. Keep dialogue short, indirect and character-specific.\n- Enter the scene late and leave early. Build to one clear turn, then end on an image or a line that carries forward.\n\nAfter the scene, add a 3 bullet \"Writer's notes\" section covering the central conflict, the visual motif and an alternative ending to consider.",
+      "variables": [
+        {
+          "key": "context",
+          "label": "Story context",
+          "type": "long",
+          "default": "A thriller about two estranged sisters who inherit a failing motel",
+          "required": false,
+          "help": "Who these people are and what came before"
+        },
+        {
+          "key": "characters",
+          "label": "Characters",
+          "type": "text",
+          "default": "Joan (40s, controlling) and Lily (30s, evasive)",
+          "required": false
+        },
+        {
+          "key": "location",
+          "label": "Location and time",
+          "type": "text",
+          "default": "INT. MOTEL OFFICE - NIGHT",
+          "required": false
+        },
+        {
+          "key": "turn",
+          "label": "What changes",
+          "type": "text",
+          "default": "Joan discovers Lily has already secretly agreed to sell",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone and genre",
+          "type": "text",
+          "default": "Tense, darkly comic",
+          "required": false
+        },
+        {
+          "key": "pages",
+          "label": "Pages",
+          "type": "number",
+          "default": "2",
+          "required": false
+        }
+      ],
+      "exampleOutput": "INT. MOTEL OFFICE - NIGHT\n\nA buzzing VACANCY sign paints the room red. JOAN (40s, pressed blazer) counts cash into a drawer. LILY (30s, hoodie) leans on the counter, peeling a label off a beer bottle.\n\nJOAN\nThree rooms rented. Four if you count the one that's technically a closet.\n\nLILY\nGreat. Love that for us.\n\nJoan closes the drawer. Notices a business card tucked in the register: HARLOW & KEENE, COMMERCIAL REALTY. Lily's handwriting on the back.\n\nJOAN\nWho's Harlow?\n\nLILY\nGuy who wants to... look at the place.\n\nJOAN\nLook at it.\n\nShe turns the card over. A signed date. Last Tuesday.\n\nLily stops peeling the label.\n\nThe VACANCY sign flickers and dies.\n\n**Writer's notes**\n- Conflict: control versus escape.\n- Motif: the dying sign.\n- Alternative ending: Joan tears up the card, and Lily hands her a second copy.",
+      "notes": "The turn and the 'enter late, leave early' rule give the scene shape instead of just talk. Paste the scene into a new chat and ask for a tighter version at one page.",
+      "useCase": "generate",
+      "tags": [
+        "screenwriting",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-song-structure-brainstorm",
+      "title": "Song structure and concept brainstorm (original lyrics)",
+      "description": "Brainstorm an original song concept with section-by-section structure, hooks, imagery and rhyme options, without copying existing songs.",
+      "body": "Help me plan an original song. Do not reproduce or imitate lines from existing songs.\n\nGenre and feel: {{genre}}\nTheme or story: {{theme}}\nPerspective: {{perspective}}\nTempo and energy: {{tempo}}\nSong length target: {{length}}\n\nPlease give me:\n1. Three possible song angles, each with a one-sentence concept and a different emotional approach.\n2. For the angle you recommend, a full structure map (intro, verse, pre-chorus, chorus, bridge, outro) with what each section does emotionally and lyrically.\n3. Three hook or chorus-line ideas written as original lines, with a note about melody rhythm (where the stress falls).\n4. A bank of fresh images and metaphors tied to the theme, and a list of words to avoid because they are overused in this genre.\n5. A rhyme and syllable plan for the first verse, with two draft options for verse 1 that follow it.\n6. Two ideas for a bridge that changes the perspective or key emotional idea.\n\nBe concrete and avoid cliches. Keep suggestions flexible; I will write the final lyrics.",
+      "variables": [
+        {
+          "key": "genre",
+          "label": "Genre",
+          "type": "text",
+          "default": "Indie folk",
+          "required": false
+        },
+        {
+          "key": "theme",
+          "label": "Theme or story",
+          "type": "long",
+          "default": "Leaving a small town and the people who stay behind",
+          "required": false
+        },
+        {
+          "key": "perspective",
+          "label": "Perspective",
+          "type": "select",
+          "options": [
+            "First person",
+            "Second person (to someone)",
+            "Third person storyteller"
+          ],
+          "default": "First person",
+          "required": false
+        },
+        {
+          "key": "tempo",
+          "label": "Tempo and energy",
+          "type": "select",
+          "options": [
+            "Slow and intimate",
+            "Mid-tempo, building",
+            "Upbeat and driving"
+          ],
+          "default": "Mid-tempo, building",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Target length",
+          "type": "text",
+          "default": "About 3.5 minutes",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Three angles**\n1. *The last bus*: a quiet goodbye told through a timetable. Gentle, regretful.\n2. *Postcards I did not send*: guilt and distance. Wistful.\n3. *Porch light*: the view from the one who stays. Warm, a little proud.\n\n**Recommended: Porch light**\n- Intro (8 bars): fingerpicked guitar and a distant train sound.\n- Verse 1: the porch light left on every night; concrete detail, low register.\n- Pre-chorus: a lift in rhythm as the speaker admits she is not angry.\n- Chorus: \"The light stays on\" as the central promise; singable and simple.\n- Verse 2: the changed town; small losses like the shuttered bakery.\n- Bridge: switch to the traveler's voice for two lines.\n- Final chorus: the line \"the light stays on for you\" becomes \"for me\".\n- Outro: guitar alone, train sound fading.\n\n**Hook ideas**\n- \"Leave the porch light burning low\" (stress on \"porch\", \"burn\", \"low\")\n- \"I kept your window warm\" (steady four-beat line)\n- \"Somebody has to stay awake\" (rising stress, longer final syllable)\n\n**Images:** moths at the bulb, a screen door's spring, gravel on the drive, a kettle going cold, a mailbox flag left up.\n\n**Avoid:** \"chasing dreams,\" \"broken wings,\" \"empty streets,\" \"rearview mirror.\"\n\n**Verse 1 plan:** four lines, ABAB, 8 to 9 syllables each.\nOption A: \"The gravel still remembers how you ran, / I sweep it clear on Sundays out of habit...\"\nOption B: \"I hung the bulb you swore you'd never fix, / and every night I flick it on at nine.\"\n\n**Bridge ideas**\n1. The traveler calls home from a payphone and hears only the screen door.\n2. The speaker finally imagines the traveler's porch light, far away.",
+      "notes": "Asking for three different angles first stops the model locking onto the most obvious idea. Once you pick a structure, ask for rhyming options for one section at a time.",
+      "useCase": "brainstorm",
+      "tags": [
+        "poetry",
+        "creative-writing",
+        "brainstorming"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-name-generator",
+      "title": "Character, place and brand name generator",
+      "description": "Generate original, pronounceable names for characters, places or fantasy cultures, each with a meaning and the feel behind it.",
+      "body": "Generate {{count}} original names for {{nametype}}.\n\nSetting, culture or inspiration: {{culture}}\nFeel I want: {{feel}}\nConstraints: {{constraints}}\n\nFor every name provide:\n- The name and a simple pronunciation guide\n- Meaning, origin or the idea behind it (invent a plausible one if the language is fictional; be accurate if drawing on a real language)\n- A one-line note on what it suggests about the person, place or thing\n\nGuidelines:\n- Aim for variety in length, sound and style across the list, not near-copies with one letter changed.\n- Avoid names that are famous characters, trademarks or obvious clones of well-known fiction.\n- If using real-world cultures, be respectful and accurate.\n- Group the names into three sets: safest picks, bolder picks, and unusual wildcards.\n\nAt the end, tell me which three work best together as a set and why, and ask whether I want variations on any of them.",
+      "variables": [
+        {
+          "key": "count",
+          "label": "How many",
+          "type": "number",
+          "default": "15",
+          "required": false
+        },
+        {
+          "key": "nametype",
+          "label": "Name type",
+          "type": "select",
+          "options": [
+            "Fantasy characters",
+            "Modern characters",
+            "Sci-fi characters",
+            "Villages and cities",
+            "Taverns and shops",
+            "Fictional countries",
+            "Spaceships"
+          ],
+          "default": "Fantasy characters",
+          "required": false
+        },
+        {
+          "key": "culture",
+          "label": "Setting or culture",
+          "type": "text",
+          "default": "A mountain people who value craft and quiet",
+          "required": false
+        },
+        {
+          "key": "feel",
+          "label": "Feel",
+          "type": "text",
+          "default": "Strong but soft, easy to say aloud",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Constraints",
+          "type": "text",
+          "default": "No apostrophes; none longer than three syllables",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Safest picks**\n- **Teva** (TEH-vah): \"she who mends.\" Suggests a careful potter or blacksmith.\n- **Orrin** (OR-in): from \"ore\" and \"keeper.\" A steady, dependable elder.\n- **Maelis** (MY-lis): \"the hush before snow.\" A thoughtful scholar.\n- **Brannoch** (BRAN-ock): \"narrow path.\" A patient guide who walks ahead.\n- **Sorrel** (SOR-el): \"the red moss on stone.\" A quiet weaver.\n\n**Bolder picks**\n- **Karrow** (KAR-oh): \"stone-bridge.\" A fierce traveling guide.\n- **Isaveth** (IZ-uh-veth): \"the one who holds the line.\" A commander who rarely speaks.\n- **Ludwin** (LUD-win): \"the hammer's friend.\" A cheerful stonemason.\n- **Thessaly** (THESS-uh-lee): \"she who listens to the hills.\" A seer.\n- **Corvane** (kor-VAYN): \"the high watcher.\" A lookout with a sharp eye.\n\n**Wildcards**\n- **Wick** (WIK): a nickname meaning \"small flame.\" A clever, undersized apprentice.\n- **Dunmarrow** (DUN-mar-oh): \"deep seam.\" A mining family name.\n- **Pell** (PEL): \"chip of slate.\" A stubborn child.\n- **Ostrem** (OS-trem): \"the last lamp.\" A lamplighter.\n- **Yarrin** (YAR-in): \"wind in the pass.\" A messenger.\n\n**Best set of three:** Teva, Karrow and Wick: three different ages and temperaments, easy to tell apart on the page, and each one suggests a different craft.\n\nWant variations on any of these?",
+      "notes": "Asking for a meaning and a safe/bold/wildcard grouping gives you names with a story and a sense of range. Reply with the ones you like and ask for more in that direction.",
+      "useCase": "brainstorm",
+      "tags": [
+        "brainstorming",
+        "creative-writing",
+        "worldbuilding"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-opening-line-workshop",
+      "title": "Novel opening page rewrite and workshop",
+      "description": "Strengthen your first page with an editor's diagnosis, three rewrites in different approaches and a tighter final version.",
+      "body": "You are an acquisitions editor who reads hundreds of first pages. Workshop my opening.\n\nGenre and audience: {{genre}}\nPremise: {{premise}}\nWhat I want readers to feel: {{feeling}}\n\nMy opening:\n{{opening}}\n\nDeliver:\n1. Diagnosis: in under 150 words, what works, what slows the page, and whether the reader has a reason to keep going by the end of paragraph 3. Cover voice, specificity, tension, clarity of who and where, and exposition.\n2. Three rewrites of the first paragraph, each with a different strategy: (a) begin in the middle of action, (b) begin with a distinctive voice or observation, (c) begin with a quiet, concrete image charged with unease. Keep my characters, facts and tense.\n3. Identify which of the three suits my genre and goal best, then write a polished version of the full opening (same length as mine, plus or minus 10 percent) that uses that strategy and keeps my best lines.\n4. List three things I should avoid on page one in this genre.\n\nBe honest, not flattering. Preserve my voice.",
+      "variables": [
+        {
+          "key": "genre",
+          "label": "Genre and audience",
+          "type": "text",
+          "default": "Adult speculative fiction",
+          "required": false
+        },
+        {
+          "key": "premise",
+          "label": "Premise",
+          "type": "long",
+          "default": "A woman inherits a house that rearranges itself overnight",
+          "required": false
+        },
+        {
+          "key": "feeling",
+          "label": "Intended feeling",
+          "type": "text",
+          "default": "Curious, slightly uneasy",
+          "required": false
+        },
+        {
+          "key": "opening",
+          "label": "Your opening",
+          "type": "long",
+          "required": true,
+          "help": "Paste the first 200 to 600 words"
+        }
+      ],
+      "exampleOutput": "**Diagnosis**\nYour opening has a strong image (the kitchen swapping places with the study) but spends two paragraphs on the drive and the solicitor. By paragraph 3 the reader knows the house is odd, but not what Nora wants. Voice is clear and wry; exposition is carrying the pacing.\n\n**Rewrite A (action):** The kitchen was in the wrong place again. Nora stood in the hallway with a kettle and a growing sense of being outmanoeuvred.\n\n**Rewrite B (voice):** Inheritance, I had been told, would involve paperwork. No one mentioned the house would also have opinions.\n\n**Rewrite C (quiet unease):** Every spoon was where I had left it, which was impossible, because I had left them in a different room.\n\n**Best fit:** B. It carries your wry voice and sets up the mystery without rushing.\n\n**Polished opening:** [full revised page]\n\n**Avoid:** waking-up openers, long weather descriptions, a mirror description of the narrator.",
+      "notes": "Comparing three strategies on your own text teaches you why one works. Ask for a version of your second page afterwards, to keep the momentum.",
+      "useCase": "critique",
+      "tags": [
+        "editing",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-flash-fiction-twist",
+      "title": "Flash fiction with a character-driven twist",
+      "description": "Get a complete, polished short story under a strict word count, built around a twist that feels earned instead of tricked.",
+      "body": "Write an original piece of flash fiction.\n\nWord count: {{words}} words (stay within 5 percent)\nGenre: {{genre}}\nPrompt or central image: {{prompt}}\nNarrator and tense: {{pov}}\nEnding type: {{ending}}\n\nCraft requirements:\n- One protagonist, one location, one turning point. No cast of thousands.\n- Start in motion with a specific detail, no throat-clearing.\n- Plant two or three small details early that make the ending feel inevitable on a second reading.\n- Make the ending land through character, not through a gimmick like \"it was all a dream\" or an unexplained reveal.\n- Use precise nouns and active verbs. Cut adverbs. Leave something unsaid.\n- Include a title that adds meaning after reading.\n\nAfter the story, add:\n1. A short list (three bullets) of the planted details and where they pay off.\n2. The final word count.\n\nDo not use famous names, existing characters or settings from known fiction.",
+      "variables": [
+        {
+          "key": "words",
+          "label": "Word count",
+          "type": "number",
+          "default": "500",
+          "required": false
+        },
+        {
+          "key": "genre",
+          "label": "Genre",
+          "type": "select",
+          "options": [
+            "Literary",
+            "Science fiction",
+            "Fantasy",
+            "Horror",
+            "Mystery",
+            "Romance",
+            "Magical realism"
+          ],
+          "default": "Literary",
+          "required": false
+        },
+        {
+          "key": "prompt",
+          "label": "Prompt or image",
+          "type": "text",
+          "default": "A lighthouse keeper who receives letters from the sea",
+          "required": false
+        },
+        {
+          "key": "pov",
+          "label": "Narrator and tense",
+          "type": "select",
+          "options": [
+            "First person, past tense",
+            "First person, present tense",
+            "Third person, past tense",
+            "Third person, present tense",
+            "Second person"
+          ],
+          "default": "Third person, past tense",
+          "required": false
+        },
+        {
+          "key": "ending",
+          "label": "Ending",
+          "type": "select",
+          "options": [
+            "Bittersweet",
+            "Hopeful",
+            "Chilling",
+            "Ironic",
+            "Open-ended"
+          ],
+          "default": "Bittersweet",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**The Weight of Salt**\n\nEach Thursday a bottle came in with the tide. Tobias kept them in a crate beneath the lamp, unread, because reading them would make the sea a person.\n\nThe first letters, when he finally opened them, were ordinary: gulls, weather, a request for \"any news from land.\" Then they changed. The handwriting got closer. The writer mentioned the chipped blue mug he had left on the shelf that morning, and the way he rinsed it twice because the first rinse never felt clean.\n\nTobias set the letter down. He did not rinse mugs twice. His wife had.\n\nHe tried to remember the last time he had said her name aloud. The harbour master had asked once, kindly, and Tobias had talked about the weather until the man gave up.\n\nHe lit the lamp early. The beam swept the water, and for the first time in years he watched where the light ended. Past the last rock, the water simply kept going.\n\nThat night he lay awake listening to the foghorn he had never needed to wind. Every few minutes the beam crossed the ceiling, and each time it passed he thought of the crate below, full of paper and salt, waiting like a held breath.\n\nThe next Thursday he opened every bottle in the crate and read them in order. They were all in Elena's hand, written before she left, folded small and floated out one by one from the stern of a boat, each addressed to a man who would not read them. The last one was short.\n\n*Tobias. If you are reading this, the lamp is still lit. Write back.*\n\nNothing in the cottage had changed since she left. The coats hung where she had hung them. He had told himself that was neglect, and now saw it for what it was, a kind of waiting.\n\nHe found a pencil. He tore a page from the logbook. He sat for a long time with the blue mug beside him, steam rising.\n\nThen he wrote: *I am here. I should have answered sooner.*\n\nHe corked the bottle and walked down to the water. The tide was going out, so he waited for it to turn.\n\n**Planted details**\n- The blue mug (paid off when the writer describes it, proving the letters know his routines).\n- The unread crate (he is avoiding the answer; the crate is opened at last).\n- \"Any news from land\" (the question he must reply to, and the reason he waits for the tide).\n\n**Word count:** 366",
+      "notes": "Planting details early is what makes a short twist feel earned. Re-run with the same prompt and a different ending type to compare the results.",
+      "useCase": "generate",
+      "tags": [
+        "creative-writing",
+        "storytelling"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-rewrite-in-style",
+      "title": "Rewrite a passage in a different style or voice",
+      "description": "Transform your draft into a new voice, genre or point of view while keeping the events, with notes on what changed.",
+      "body": "Rewrite the passage below in a different style without changing what happens.\n\nTarget style: {{style}}\nPoint of view and tense: {{pov}}\nKeep: {{keep}}\nLength: {{length}} the original\n\nPassage:\n{{passage}}\n\nInstructions:\n- Preserve all plot events, character names and key facts. Change diction, sentence rhythm, imagery, level of detail and attitude of the narrator to fit the target style.\n- Embody the style through craft choices (syntax, imagery, pacing). Do not name it in the text or imitate any specific author's actual sentences.\n- Avoid parody unless I asked for it.\n- Give me the rewrite first.\n- Then add a short \"What changed\" list of 4 bullets covering sentence length, word choice, imagery and perspective, so I can learn the technique.\n- Finish with one sentence on a line you think I should keep from the original and why.",
+      "variables": [
+        {
+          "key": "style",
+          "label": "Target style",
+          "type": "text",
+          "default": "Spare, hardboiled noir",
+          "required": false
+        },
+        {
+          "key": "pov",
+          "label": "POV and tense",
+          "type": "select",
+          "options": [
+            "Keep the original",
+            "First person, past",
+            "First person, present",
+            "Third person, past",
+            "Third person, present"
+          ],
+          "default": "Keep the original",
+          "required": false
+        },
+        {
+          "key": "keep",
+          "label": "Elements to keep",
+          "type": "text",
+          "default": "The dialogue and the ending image",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length compared with",
+          "type": "select",
+          "options": [
+            "Shorter than",
+            "About the same as",
+            "Longer than"
+          ],
+          "default": "About the same as",
+          "required": false
+        },
+        {
+          "key": "passage",
+          "label": "Your passage",
+          "type": "long",
+          "required": true,
+          "help": "Paste 100 to 800 words"
+        }
+      ],
+      "exampleOutput": "**Rewrite**\nThe rain had a grudge against Fenner Street. I stood under the awning with a cold coffee and a worse idea. Across the road, Mrs Alder's shop was lit. She was lying about something. People with nothing to hide don't turn the sign to CLOSED while customers are still inside.\n\n\"Evening,\" I said, and she jumped.\n\n**What changed**\n- Sentences shortened to 6-12 words, with the occasional long one for rhythm.\n- Neutral verbs replaced by weary, concrete ones.\n- Weather turned into a character.\n- Narrator now judges what he sees.\n\n**Keep from the original:** \"the bell that rang half a second late.\" It is odd, specific and worth preserving.",
+      "notes": "Describing the style by its effects rather than by author names gives a more original result. Ask for a second pass in a contrasting style to compare the two.",
+      "useCase": "rewrite",
+      "tags": [
+        "editing",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-villain-antagonist-designer",
+      "title": "Compelling villain and antagonist designer",
+      "description": "Design an antagonist with a believable worldview, a real argument and an arc that tests your protagonist in specific ways.",
+      "body": "Help me design an antagonist who is more than evil for its own sake.\n\nStory genre and setting: {{genre}}\nMy protagonist: {{protagonist}}\nType of antagonist: {{type}}\nLevel of menace: {{menace}}\n\nProduce:\n1. Core identity: name, role, how the world sees them versus how they see themselves.\n2. Their goal and the reasonable-sounding belief behind it. Write their argument in their own voice in about 120 words, so strong that the reader almost agrees.\n3. The wound or event that shaped their worldview, kept specific and not a cliche.\n4. Why they are a hard opponent for this particular protagonist: which flaw, fear or belief of the protagonist does the antagonist press?\n5. Their methods, resources and limits. What do they refuse to do, and what would make them cross that line?\n6. A mirror: three ways they resemble the protagonist.\n7. Three escalating confrontations, each forcing the protagonist to change.\n8. Possible endings for the antagonist: defeat, redemption, tragedy, and an unexpected one.\n\nKeep content PG-13. Avoid mustache-twirling, monologuing for its own sake and motives of simple greed unless used with purpose.",
+      "variables": [
+        {
+          "key": "genre",
+          "label": "Genre and setting",
+          "type": "text",
+          "default": "Epic fantasy with a political intrigue plot",
+          "required": false
+        },
+        {
+          "key": "protagonist",
+          "label": "Protagonist",
+          "type": "long",
+          "default": "A young archivist who believes truth should always be told, even when it destroys people",
+          "required": false
+        },
+        {
+          "key": "type",
+          "label": "Antagonist type",
+          "type": "select",
+          "options": [
+            "Ideological rival",
+            "Institution or system",
+            "Former friend or mentor",
+            "Force of nature or monster",
+            "Corrupt authority",
+            "Rival with a different goal"
+          ],
+          "default": "Ideological rival",
+          "required": false
+        },
+        {
+          "key": "menace",
+          "label": "Menace",
+          "type": "select",
+          "options": [
+            "Quietly formidable",
+            "Overtly dangerous",
+            "Charming and manipulative"
+          ],
+          "default": "Quietly formidable",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Core identity:** Chancellor Orsolya Venn, keeper of the realm's public memory. The court sees a careful administrator; she sees herself as the only person preventing a civil war.\n\n**Her argument (in her voice):** \"You think truth is a gift. It is a blade. Every record you unseal tells someone what they were owed and to whom. I have stopped three wars by letting a few facts sleep. Name the child who died because a ledger was quietly altered. You can't. Now name the thousand who would have died if I had left it alone.\"\n\n**Wound:** As a clerk she watched a leaked casualty list incite a lynching.\n\n**Pressure on the protagonist:** She attacks his absolute honesty by making him choose which truth to release first.\n\n**Mirror:** both guard archives, both believe they serve the people, both lie by omission.\n\n**Confrontations:** 1. A private debate in the archive. 2. A forced choice between two documents. 3. A public release.\n\n**Endings:** defeat; redemption through shared custody of the archive; tragedy; or she is proven right once.",
+      "notes": "Writing the antagonist's argument in their own voice forces the model to make it persuasive. Add your own plot constraints in the protagonist field for tighter tailoring.",
+      "useCase": "generate",
+      "tags": [
+        "worldbuilding",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "creative-fiction-magic-system-designer",
+      "title": "Magic or technology system with rules and costs",
+      "description": "Design a fantasy magic or sci-fi technology system with clear rules, real costs, limits and story-ready consequences.",
+      "body": "Help me design a {{systemtype}} for my story.\n\nGenre and world: {{world}}\nWho can use it: {{users}}\nThe central theme it should reflect: {{theme}}\nStory needs: {{needs}}\n\nProvide:\n1. The core principle in two sentences, and the one-sentence rule a reader could repeat.\n2. How it works: sources, methods, training or tools, and what it looks like in use (sensory details).\n3. Costs and limits: at least three firm limitations, and a cost that hurts the user personally or socially. Explain how the costs create drama instead of removing it.\n4. Society impact: how it shapes economy, law, class, warfare, religion and daily life. Include one surprising, mundane use.\n5. Failure modes and loopholes: how it can go wrong, be abused or be exploited cleverly by a determined character.\n6. Three scenes the system makes possible, and three plot shortcuts it must never allow.\n7. Five open questions I should resolve before writing.\n\nPrefer a small number of strong rules over a long list of exceptions. Avoid generic elemental schemes and power rankings unless the theme calls for them.",
+      "variables": [
+        {
+          "key": "systemtype",
+          "label": "System type",
+          "type": "select",
+          "options": [
+            "Magic system",
+            "Sci-fi technology",
+            "Psychic abilities",
+            "Religious miracle",
+            "Alchemy or crafting"
+          ],
+          "default": "Magic system",
+          "required": false
+        },
+        {
+          "key": "world",
+          "label": "Genre and world",
+          "type": "long",
+          "default": "A low-fantasy trading empire where seasons are unstable",
+          "required": false
+        },
+        {
+          "key": "users",
+          "label": "Who can use it",
+          "type": "text",
+          "default": "Anyone who can afford the training, but few can afford the cost",
+          "required": false
+        },
+        {
+          "key": "theme",
+          "label": "Central theme",
+          "type": "text",
+          "default": "Debt and what people owe each other",
+          "required": false
+        },
+        {
+          "key": "needs",
+          "label": "Story needs",
+          "type": "text",
+          "default": "Must create tension in negotiations, not just fights",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Core principle:** Magic is borrowed from the future. Whatever is done now must be repaid by the caster, in kind, later. Rule: \"Every working is a loan.\"\n\n**How it works:** Casters speak a promise aloud, naming what they will return, and the world bends. Light, warmth or a lifted load appears as a faint shimmer that smells of cold metal.\n\n**Costs and limits:**\n- The repayment is exact and arrives within one season.\n- Unpaid debts transfer to family.\n- Only what could plausibly be done by effort can be borrowed; no creating from nothing.\n- Cost: reputation. Banks of \"ledger-keepers\" track every caster's debt.\n\n**Society:** Merchants hire casters but require collateral; a heavily indebted caster is a social pariah. Mundane use: borrowing a warm winter for a single wedding.\n\n**Loopholes:** Naming a debtor who agrees to repay for you.\n\n**Scenes it enables:** a negotiation where both sides check each other's debt records; a caster forced to repay with years of sight; a heist built on an unpaid promise.\n\n**Never allow:** instant resurrection; unlimited free power; rescues without a price.\n\n**Open questions:** Who audits the ledger-keepers? Can a nation hold debt?",
+      "notes": "Requiring a theme and a personal cost keeps the system from becoming a power list. Ask the model to stress-test it by writing three ways a clever villain could break it.",
+      "useCase": "generate",
+      "tags": [
+        "worldbuilding",
+        "creative-writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

@@ -1,0 +1,1130 @@
+{
+  "category": "career",
+  "prompts": [
+    {
+      "key": "career-resume-bullet-metrics",
+      "title": "Rewrite resume bullets with measurable impact",
+      "description": "Turn vague duty-style resume bullets into sharp, results-focused lines, with questions that pull out the numbers you forgot.",
+      "body": "You are an experienced resume editor who helps {{seniority}} candidates in {{field}} show impact instead of listing duties.\n\nRewrite the resume bullets below.\n\nBullets to improve:\n{{bullets}}\n\nRules:\n- Start each bullet with a strong, specific past-tense verb (present tense for a current role). Do not repeat an opening verb.\n- Structure: what you did, how or with what, and the result. Put the result first when it is the strongest part.\n- Use only facts I gave you. Where a metric is likely but missing, write the bullet with a clearly marked placeholder such as [X%] or [$ amount] rather than inventing a number.\n- Keep each bullet to {{max_lines}} lines or fewer. Avoid filler such as \"responsible for\", \"helped with\" and \"worked on\".\n\nOutput format:\n1. A table with three columns: Original, Rewritten, What changed.\n2. Under the table, a list titled \"Numbers to dig up\" with one precise question per placeholder (for example, \"How many accounts did you manage at peak?\").\n3. One closing line naming the single bullet that is still weakest and why.",
+      "variables": [
+        {
+          "key": "seniority",
+          "label": "Career level",
+          "type": "select",
+          "options": [
+            "entry-level",
+            "mid-level",
+            "senior",
+            "executive"
+          ],
+          "default": "mid-level",
+          "required": false
+        },
+        {
+          "key": "field",
+          "label": "Field or role",
+          "type": "text",
+          "default": "marketing",
+          "required": false,
+          "help": "e.g. nursing, data analysis, sales"
+        },
+        {
+          "key": "bullets",
+          "label": "Your current bullets",
+          "type": "long",
+          "required": true,
+          "help": "Paste 3 to 10 bullets, one per line"
+        },
+        {
+          "key": "max_lines",
+          "label": "Max lines per bullet",
+          "type": "select",
+          "options": [
+            "1",
+            "2",
+            "3"
+          ],
+          "default": "2",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| Original | Rewritten | What changed |\n|---|---|---|\n| Responsible for running social media accounts | Grew Instagram following from 4,200 to [X] in [timeframe] by launching a weekly short-video series, lifting engagement rate [X%] | Led with the outcome, named the tactic, flagged the missing figures |\n| Helped with email newsletters | Rebuilt the monthly newsletter template and segmentation, raising open rate from [X%] to [Y%] across [N] subscribers | \"Helped\" replaced with the specific change you made |\n| Made reports for the leadership team | Built a weekly performance dashboard for 6 executives that cut report prep from 5 hours to [X] | Added audience and time saved |\n\nNumbers to dig up\n- What was your follower count at the end of the period, and how long did it take?\n- What were the newsletter open rates before and after the redesign?\n- How many hours did the old reporting process take each week?\n\nWeakest bullet: the newsletter line. It still lacks scale; adding list size or revenue influenced would help most.",
+      "notes": "The placeholders and follow-up questions stop the model from inventing statistics, which keeps the result honest and interview-safe. Run it once, fill in the real numbers, then paste the bullets back for a final polish.",
+      "useCase": "rewrite",
+      "tags": [
+        "resume",
+        "career",
+        "writing"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "career-tailor-resume-to-job",
+      "title": "Tailor your resume to a specific job posting",
+      "description": "Compare your resume with a job description, find the gaps and keyword matches, and get targeted edits that stay truthful.",
+      "body": "Act as a recruiter and resume strategist. Help me tailor my resume to one specific job without exaggerating anything.\n\nJob title: {{job_title}}\n\nJob description:\n{{job_description}}\n\nMy current resume:\n{{resume}}\n\nDo the following in order:\n1. Extract the 8 to 12 requirements that matter most (skills, tools, outcomes, seniority signals). Mark each as must-have or nice-to-have.\n2. Map each one to evidence in my resume. Label it Strong match, Partial or Missing.\n3. Propose edits as before/after pairs for the summary and the {{edit_count}} most important bullets. Mirror the posting's language only where it honestly describes my experience.\n4. List gaps I cannot close with wording, and suggest how to address them ({{gap_approach}}).\n5. Give a short ordered list of sections or bullets to move up or cut for this role.\n\nNever add experience, tools, titles or numbers that are not in my resume. If something might be true but is unstated, ask me instead of assuming. Keep the output scannable with headings for each step.",
+      "variables": [
+        {
+          "key": "job_title",
+          "label": "Job title",
+          "type": "text",
+          "required": true,
+          "help": "Exactly as written in the posting"
+        },
+        {
+          "key": "job_description",
+          "label": "Job description",
+          "type": "long",
+          "required": true,
+          "help": "Paste the full posting"
+        },
+        {
+          "key": "resume",
+          "label": "Your resume",
+          "type": "long",
+          "required": true,
+          "help": "Paste plain text"
+        },
+        {
+          "key": "edit_count",
+          "label": "Bullets to rewrite",
+          "type": "select",
+          "options": [
+            "4",
+            "6",
+            "8",
+            "10"
+          ],
+          "default": "6",
+          "required": false
+        },
+        {
+          "key": "gap_approach",
+          "label": "Gap strategy",
+          "type": "select",
+          "options": [
+            "cover letter, projects or courses",
+            "interview talking points",
+            "both"
+          ],
+          "default": "cover letter, projects or courses",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Key requirements**\n1. Own a paid search budget above $500k (must-have)\n2. GA4 and attribution modeling (must-have)\n3. Google Ads and Microsoft Ads hands-on management (must-have)\n4. B2B SaaS lead generation experience (must-have)\n5. Testing and experimentation habits (must-have)\n6. Stakeholder reporting to finance (nice-to-have)\n7. SQL or Looker Studio dashboards (nice-to-have)\n8. Mentoring junior marketers (nice-to-have)\n\n**2. Evidence map**\n- Paid search budget: Strong match. \"Managed $620k annual Google Ads spend.\"\n- GA4 and attribution: Partial. You list GA4 but no attribution work.\n- Google and Microsoft Ads: Partial. Google Ads is covered; Microsoft Ads is not mentioned.\n- B2B SaaS leads: Strong match. Two SaaS roles listed.\n- Testing: Strong match. \"Ran 14 landing page tests in 2023.\"\n- Finance reporting: Missing.\n- SQL or dashboards: Partial. You mention Looker Studio, not SQL.\n- Mentoring: Missing.\n\n**3. Edits**\nSummary\nBefore: Marketing professional with 6 years of experience.\nAfter: Performance marketer with 6 years managing seven-figure paid search programs and measurement for B2B SaaS.\n\nBullet 1\nBefore: Ran Google Ads campaigns.\nAfter: Managed $620k in annual Google Ads spend, cutting cost per qualified lead 22% through query-level restructuring.\n\nBullet 2\nBefore: Ran landing page tests.\nAfter: Ran 14 landing page tests in 2023, lifting demo-request conversion on paid traffic.\n\n**4. Gaps**\n- No finance reporting: talk through the monthly cost review you did with your director, or add a short cover letter line about it.\n- No Microsoft Ads: a small self-run test account or a short course would show initiative.\n- No mentoring: only add it if it is true; see my question below.\n\n**5. Reordering**\n1. Move the Google Ads role above the agency role.\n2. Move the Skills section directly under the summary.\n3. Cut the 2016 internship.\n\nQuestions for you: did you build the attribution model yourself, or inherit it? Have you ever trained or onboarded a teammate?",
+      "notes": "The strict no-invention rule and the evidence map make this safer than asking a model to simply rewrite your resume. Answer its clarifying questions honestly and you will get edits you can defend in an interview.",
+      "useCase": "rewrite",
+      "tags": [
+        "resume",
+        "job-search",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-cover-letter",
+      "title": "Write a cover letter that sounds like a person",
+      "description": "Draft a concise, specific cover letter from your background and the job posting, without clichés or generic openers.",
+      "body": "Write a cover letter for me. It should read like a thoughtful person wrote it, not a template.\n\nRole: {{job_title}} at {{company}}\nJob posting or key requirements:\n{{job_description}}\n\nAbout me and my relevant experience:\n{{background}}\n\nOne thing I genuinely like about this company or role: {{why_company}}\n\nTone: {{tone}}\nLength: {{length}} words, three or four short paragraphs.\n\nRequirements:\n- Open with a specific hook tied to the company or role, not \"I am writing to apply\".\n- Use two concrete examples from my background that answer the posting's top needs. Keep every fact I gave; invent nothing, including numbers.\n- Explain briefly why this move makes sense for me now, especially if my background differs from the role.\n- End with a plain, confident closing line and no begging.\n- Avoid: \"passionate\", \"team player\", \"hard worker\", \"excited to leverage\", \"proven track record\".\n\nOutput the letter, then a short list of 3 things I should double-check or personalize before sending.",
+      "variables": [
+        {
+          "key": "job_title",
+          "label": "Job title",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "job_description",
+          "label": "Posting or requirements",
+          "type": "long",
+          "required": true,
+          "help": "Paste the key parts of the posting"
+        },
+        {
+          "key": "background",
+          "label": "Your background",
+          "type": "long",
+          "required": true,
+          "help": "Roles, wins, skills. Rough notes are fine"
+        },
+        {
+          "key": "why_company",
+          "label": "Why this company",
+          "type": "text",
+          "default": "their focus on accessible design",
+          "required": false,
+          "help": "Be specific and honest"
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "warm and professional",
+            "formal",
+            "conversational",
+            "direct and concise"
+          ],
+          "default": "warm and professional",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "select",
+          "options": [
+            "200",
+            "250",
+            "350"
+          ],
+          "default": "250",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Dear Ms. Alvarez,\n\nWhen your team rebuilt the checkout flow to work with screen readers, it showed that accessibility at Brightpath is a product decision, not a compliance task. That is the kind of design work I want to spend my days on.\n\nFor the past four years at Northwind I have led design for a billing product used by about 30,000 small businesses. Last year I ran the redesign of our invoice flow, which meant interviewing 18 customers, prototyping three directions and shipping the one that cut support tickets about invoices by a third.\n\nI am moving from a B2B back-office tool to a consumer product because I want my work to reach people while they are making everyday decisions. Your posting stresses research-led design and close work with engineers, which is how I already work.\n\nI would welcome a conversation about how I could contribute to the Payments team.\n\nSincerely,\nJordan Lee\n\nDouble-check before sending\n1. Confirm the checkout detail is still accurate on their site.\n2. Verify the support-ticket figure with your records.\n3. Replace the greeting if you can find the hiring manager's name.",
+      "notes": "Banning stock phrases and requiring a specific hook forces the model to use your real material. The checklist at the end catches the facts most likely to be wrong.",
+      "useCase": "generate",
+      "tags": [
+        "resume",
+        "job-search",
+        "writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-linkedin-about-section",
+      "title": "Write your LinkedIn About section",
+      "description": "Create a clear, first-person LinkedIn About section that tells people what you do, what you are good at and how to work with you.",
+      "body": "Write a LinkedIn About section for me.\n\nCurrent role or goal: {{role}}\nIndustry: {{industry}}\nKey strengths and experience:\n{{experience}}\n\nWho I want to attract: {{audience}}\nVoice: {{voice}}\nInclude a call to action: {{cta}}\n\nGuidelines:\n- Write in first person. The first two sentences must work on their own, since only they show before \"see more\". Lead with value to the reader, not \"I am a\".\n- Use concrete proof (outcomes, scale, types of problems solved) taken only from what I provided. Do not invent numbers.\n- Keep paragraphs to 2 to 3 sentences. No bullet-heavy résumé dump, no emoji unless my voice calls for it.\n- Weave in 5 to 8 search keywords that people in {{industry}} would actually use, naturally and not as a list.\n- Length: 1,300 characters or fewer for the main version.\n\nGive me: (1) the About section, (2) a shorter 300-character version for the headline area, (3) three suggested LinkedIn headline options under 120 characters.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Current role or target",
+          "type": "text",
+          "default": "product manager moving into fintech",
+          "required": false
+        },
+        {
+          "key": "industry",
+          "label": "Industry",
+          "type": "text",
+          "default": "financial technology",
+          "required": false
+        },
+        {
+          "key": "experience",
+          "label": "Strengths and experience",
+          "type": "long",
+          "required": true,
+          "help": "Roles, wins, skills, anything notable"
+        },
+        {
+          "key": "audience",
+          "label": "Who should read it",
+          "type": "text",
+          "default": "recruiters and startup founders",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "select",
+          "options": [
+            "confident but approachable",
+            "formal",
+            "friendly and informal",
+            "understated"
+          ],
+          "default": "confident but approachable",
+          "required": false
+        },
+        {
+          "key": "cta",
+          "label": "Call to action",
+          "type": "select",
+          "options": [
+            "yes, invite people to message me",
+            "yes, invite collaboration",
+            "no"
+          ],
+          "default": "yes, invite people to message me",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**About**\nI help payments teams turn messy customer problems into products people actually finish using. Over eight years in product, I have shipped onboarding, billing and fraud-review tools that reduced drop-off and manual work.\n\nMost recently I led a team of nine to rebuild account verification at a lending startup, cutting average approval time from two days to under four hours. Before that, I spent three years in operations, which is why I design with the people who run the process, not just the people who click the button.\n\nI care about clear problem statements, honest metrics and shipping in small steps. If you are building in fintech, lending or compliance technology, I would like to hear what you are working on. Send me a message.\n\n**Short version (292 characters)**\nProduct manager shipping onboarding, billing and verification tools in fintech. I turn operational pain into products people finish using. Open to conversations about lending and compliance tech.\n\n**Headline options**\n1. Product Manager | Fintech onboarding and verification\n2. I build payment products that cut manual work | Product\n3. Product leader, lending and compliance technology",
+      "notes": "Optimizing the first two sentences matters because that is all most visitors see. Provide real outcomes in your notes and the result will read as specific rather than generic.",
+      "useCase": "generate",
+      "tags": [
+        "linkedin",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-mock-behavioral-interview",
+      "title": "Mock behavioral interview with feedback",
+      "description": "Practice a realistic behavioral interview one question at a time, then get scored feedback and a stronger sample answer.",
+      "body": "Run a mock behavioral interview with me. You are a skilled, fair interviewer hiring for {{role}} at a {{company_type}}.\n\nInterview style: {{style}}\nNumber of questions: {{num_questions}}\nCompetencies to probe: {{competencies}}\n\nProcess:\n1. Ask exactly one question at a time, then stop and wait for my answer. Do not give hints beforehand.\n2. After each answer, give feedback before moving on: a score from 1 to 5, what worked, what was missing (situation clarity, my specific actions, measurable result, reflection), and one probing follow-up a real interviewer might ask. Then ask whether I want to retry or continue.\n3. Be honest and specific. Do not flatter. Point out rambling, vague \"we\" language and missing results.\n4. After the last question, give a summary: scores table, top two strengths, top two habits to fix, and a rewritten version of my weakest answer using only details I provided.\n\nStart by saying hello in one sentence and asking the first question. If my background matters for the questions, here it is: {{background}}",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Role you are interviewing for",
+          "type": "text",
+          "default": "customer success manager",
+          "required": false
+        },
+        {
+          "key": "company_type",
+          "label": "Company type",
+          "type": "text",
+          "default": "mid-sized software company",
+          "required": false
+        },
+        {
+          "key": "style",
+          "label": "Interviewer style",
+          "type": "select",
+          "options": [
+            "friendly but probing",
+            "tough and skeptical",
+            "neutral and structured"
+          ],
+          "default": "friendly but probing",
+          "required": false
+        },
+        {
+          "key": "num_questions",
+          "label": "Number of questions",
+          "type": "select",
+          "options": [
+            "3",
+            "5",
+            "7"
+          ],
+          "default": "5",
+          "required": false
+        },
+        {
+          "key": "competencies",
+          "label": "Competencies",
+          "type": "text",
+          "default": "conflict, ownership, handling failure, influencing without authority",
+          "required": false
+        },
+        {
+          "key": "background",
+          "label": "Your background",
+          "type": "long",
+          "default": "Four years in account management; no formal management experience yet.",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Hi, thanks for coming in today. Let's get started.\n\nQuestion 1: Tell me about a time a customer was seriously unhappy with something you or your team had done. What happened, and what did you do about it?\n\n(You answer. Then the model replies with feedback like the following.)\n\nScore: 3 / 5\nWhat worked: Clear situation, and you acknowledged the customer's frustration early.\nWhat was missing: Your own actions blurred into \"we\". The outcome had no measurable result. No reflection on what you would change.\nLikely follow-up: \"What did you personally decide in that moment, and what did it cost you?\"\n\nRetry this answer, or move on to question 2?",
+      "notes": "One question at a time with a pause is what makes this feel like a real interview. Retrying weak answers is where the most improvement happens.",
+      "useCase": "roleplay",
+      "tags": [
+        "interview-prep",
+        "career",
+        "feedback"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-mock-technical-interview",
+      "title": "Mock technical interview with live feedback",
+      "description": "Practice a technical interview with escalating questions, hints on request and a final skills assessment.",
+      "body": "Act as a technical interviewer for a {{level}} {{role}} position. Topic area: {{topics}}.\n\nFormat: {{format}}. Run about {{num_questions}} questions that start moderate and get harder depending on how I do.\n\nRules:\n- Ask one question at a time and wait. Do not reveal the answer or solution approach unless I ask for a hint.\n- If I ask for a hint, give the smallest useful nudge and note that I used one.\n- After I answer, respond like an interviewer would: ask about edge cases, complexity or tradeoffs, and point out any mistakes directly. Then give a short critique covering correctness, clarity of reasoning, and communication.\n- If I am stuck for more than a couple of turns, walk me through the idea and then ask a related question to test understanding.\n- Be accurate. If you are not sure a detail is correct, say so.\n\nAt the end, produce a scorecard: a rating from 1 to 5 for problem solving, technical depth, communication and handling hints; a list of concepts to study next with one specific practice exercise each; and a recommendation (no hire, lean no, lean yes, hire) with a one-paragraph justification.\n\nMy experience: {{experience}}\n\nBegin with a one-line greeting and your first question.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Role",
+          "type": "text",
+          "default": "backend engineer",
+          "required": false
+        },
+        {
+          "key": "level",
+          "label": "Level",
+          "type": "select",
+          "options": [
+            "junior",
+            "mid-level",
+            "senior",
+            "staff"
+          ],
+          "default": "mid-level",
+          "required": false
+        },
+        {
+          "key": "topics",
+          "label": "Topics",
+          "type": "text",
+          "default": "APIs, databases, caching and system design",
+          "required": false
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "verbal discussion",
+            "coding questions",
+            "system design",
+            "mixed"
+          ],
+          "default": "verbal discussion",
+          "required": false
+        },
+        {
+          "key": "num_questions",
+          "label": "Questions",
+          "type": "select",
+          "options": [
+            "3",
+            "5",
+            "8"
+          ],
+          "default": "5",
+          "required": false
+        },
+        {
+          "key": "experience",
+          "label": "Your experience",
+          "type": "long",
+          "default": "Three years building REST services with Node.js and PostgreSQL.",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Hi, I'm your interviewer today. Let's start with something practical.\n\nQuestion 1: You have a REST endpoint that lists a user's orders, and it has slowed down as the table grew past 20 million rows. Walk me through how you would diagnose it and what you would change.\n\n(You respond. The interviewer then follows up.)\n\nFollow-up: You mentioned adding an index on user_id. What would happen to write throughput, and would you consider a composite index on (user_id, created_at)? Why?\n\nCritique: Correctness 4/5. You identified the missing index quickly but did not mention checking the query plan first. Communication was clear.\n\nQuestion 2 coming up after your reply, harder this time.",
+      "notes": "Asking for hints explicitly and tracking them makes the scorecard meaningful. Use the study list at the end as your plan for the next session.",
+      "useCase": "roleplay",
+      "tags": [
+        "interview-prep",
+        "code-generation",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-salary-negotiation-script",
+      "title": "Salary negotiation scripts and strategy",
+      "description": "Plan a raise or job-offer negotiation with a target range, word-for-word scripts and answers to likely pushback.",
+      "body": "Be my negotiation coach. I need a practical plan and exact wording, not general advice.\n\nSituation: {{situation}}\nRole and level: {{role}}\nLocation: {{location}}\nCurrent or offered compensation: {{current_offer}}\nMy market research or target: {{target}}\nMy leverage and strengths: {{leverage}}\nOther things I value besides base pay: {{other_priorities}}\nChannel: {{channel}}\n\nProduce:\n1. A brief assessment: how strong my position is, what could be missing and what to research before talking.\n2. A target range with three numbers: ideal ask, acceptable outcome, walk-away point. Explain the reasoning and how to anchor with a specific number rather than a range.\n3. A word-for-word opening script for the {{channel}}, then scripts for these moments: they say budget is fixed; they ask for my current salary or expectations; they need time to think; they offer less than my target.\n4. A non-salary list (equity, bonus, title, review timeline, flexibility, learning budget) ranked by my stated priorities, with phrasing for each ask.\n5. A short list of mistakes to avoid.\n\nKeep the tone collaborative and confident. Do not suggest bluffing or false claims about other offers. If key information is missing, ask up to three questions first.",
+      "variables": [
+        {
+          "key": "situation",
+          "label": "Situation",
+          "type": "select",
+          "options": [
+            "I received a job offer",
+            "I want a raise at my current job",
+            "I am being promoted"
+          ],
+          "default": "I received a job offer",
+          "required": false
+        },
+        {
+          "key": "role",
+          "label": "Role and level",
+          "type": "text",
+          "default": "senior data analyst",
+          "required": false
+        },
+        {
+          "key": "location",
+          "label": "Location",
+          "type": "text",
+          "default": "Chicago, IL",
+          "required": false
+        },
+        {
+          "key": "current_offer",
+          "label": "Current pay or offer",
+          "type": "text",
+          "default": "$112,000 base offered",
+          "required": false
+        },
+        {
+          "key": "target",
+          "label": "Target or market data",
+          "type": "text",
+          "default": "comparable roles are $120,000 to $135,000",
+          "required": false
+        },
+        {
+          "key": "leverage",
+          "label": "Your leverage",
+          "type": "long",
+          "default": "Led a project that saved $400k; two years with SQL and Tableau; hired quickly after two interviews.",
+          "required": false
+        },
+        {
+          "key": "other_priorities",
+          "label": "Other priorities",
+          "type": "text",
+          "default": "remote days, a learning budget, review at six months",
+          "required": false
+        },
+        {
+          "key": "channel",
+          "label": "Channel",
+          "type": "select",
+          "options": [
+            "email and phone call",
+            "in-person meeting",
+            "email only"
+          ],
+          "default": "email and phone call",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Assessment**\nYour position is solid: the offer is about 7% under the low end of the market you found. Before the call, confirm the numbers with two more sources, since employer data can lag.\n\n**2. Range**\nIdeal ask: $130,000. Acceptable: $122,000 plus a six-month review. Walk-away: below $116,000 with no review.\nAnchor with one number: \"Based on the scope and what I've seen for comparable roles, I'm looking for $130,000.\"\n\n**3. Scripts**\nOpening: \"Thank you, I'm excited about the team. I'd like to talk about compensation. Based on the scope and my experience, I was expecting something closer to $130,000. Is there flexibility?\"\nBudget is fixed: \"I understand. If base can't move, could we look at a signing bonus or a six-month salary review?\"\nThey ask for expectations: \"I'd rather focus on what the role is worth in the market. For this scope, I see $125,000 to $135,000.\"\n\n**4. Non-salary asks (in order)**\nReview at six months, two remote days, $1,500 learning budget.\n\n**5. Avoid**\nAccepting on the call, apologizing for asking, quoting a range with a low bottom.",
+      "notes": "The walk-away number and rehearsed pushback answers are what keep people from caving in the moment. Practice the scripts aloud before the real conversation.",
+      "useCase": "plan",
+      "tags": [
+        "negotiation",
+        "career"
+      ],
+      "models": [],
+      "featured": true,
+      "license": "cc0"
+    },
+    {
+      "key": "career-career-change-plan",
+      "title": "Career change roadmap",
+      "description": "Build a realistic plan for moving into a new field, with transferable skills, gaps, a timeline and low-risk ways to test it first.",
+      "body": "You are a career coach who is honest about tradeoffs. Build a practical roadmap for my career change.\n\nCurrent field and role: {{current_role}}\nTarget field or role: {{target_role}}\nMy skills and accomplishments:\n{{skills}}\n\nConstraints: timeline {{timeline}}; time per week {{hours_per_week}}; financial situation {{finances}}; other constraints {{constraints}}.\n\nDeliver:\n1. Reality check: how common this transition is, typical entry points, and any real barriers (credentials, pay drop, age bias, location). Be direct, not discouraging.\n2. Transferable skills table: my skill, how it applies to the target role, how to phrase it for that field.\n3. Gap analysis: what I still need (skills, proof, network), ranked by importance.\n4. A month-by-month plan for {{timeline}} with specific actions, each tied to a measurable output (a portfolio piece, 10 conversations, a certification only if employers truly require it).\n5. Three cheap experiments to test fit within 30 days before I commit (informational interviews, a small project, shadowing).\n6. Likely job titles to search, a bridge role option if direct entry is hard, and the main risk with a plan to reduce it.\n\nAvoid generic advice such as \"follow your passion\". Name concrete resources only if you are confident they exist; otherwise describe the type of resource.",
+      "variables": [
+        {
+          "key": "current_role",
+          "label": "Current role",
+          "type": "text",
+          "default": "high school teacher",
+          "required": false
+        },
+        {
+          "key": "target_role",
+          "label": "Target role",
+          "type": "text",
+          "default": "instructional designer",
+          "required": false
+        },
+        {
+          "key": "skills",
+          "label": "Skills and accomplishments",
+          "type": "long",
+          "default": "Eight years of curriculum design, assessment writing, mentoring new teachers, and using Google Workspace and a learning management system.",
+          "required": false
+        },
+        {
+          "key": "timeline",
+          "label": "Timeline",
+          "type": "select",
+          "options": [
+            "3 months",
+            "6 months",
+            "9 months",
+            "12 months",
+            "18 months"
+          ],
+          "default": "9 months",
+          "required": false
+        },
+        {
+          "key": "hours_per_week",
+          "label": "Hours per week",
+          "type": "number",
+          "default": "6",
+          "required": false
+        },
+        {
+          "key": "finances",
+          "label": "Financial situation",
+          "type": "select",
+          "options": [
+            "need to keep same income",
+            "can accept a small pay cut",
+            "have savings runway"
+          ],
+          "default": "can accept a small pay cut",
+          "required": false
+        },
+        {
+          "key": "constraints",
+          "label": "Other constraints",
+          "type": "text",
+          "default": "cannot relocate",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Reality check**\nTeacher to instructional designer is a well-trodden path. Entry roles at corporate training teams often pay similar to teaching, and employers care more about a portfolio than a certificate. The main barrier is the lack of corporate vocabulary.\n\n**2. Transferable skills (excerpt)**\n| Skill | Applies as | Say it as |\n|---|---|---|\n| Curriculum design | Learning-path design | Designed 40-hour modules aligned to measurable outcomes |\n| Assessment writing | Evaluation design | Built formative assessments that guided instruction |\n\n**3. Gaps, ranked**\n1. Portfolio with 2 to 3 samples; 2. e-learning tool fluency; 3. network in corporate L&D.\n\n**4. Plan**\nMonths 1-2: learn one authoring tool, build a 10-minute module. Months 3-5: 2 more samples; 10 informational conversations. Months 6-9: apply to 25 roles; consider contract bridge work.\n\n**5. 30-day experiments**\nRedesign one of your lessons as an e-learning module; interview 3 designers.\n\n**Titles**: instructional designer, learning experience designer, training specialist.",
+      "notes": "Giving real constraints (hours, money, location) is what turns a generic plan into a believable one. The 30-day experiments let you test the move before taking on risk.",
+      "useCase": "plan",
+      "tags": [
+        "career",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-performance-review-self-assessment",
+      "title": "Performance review self-assessment writer",
+      "description": "Turn your rough notes about the year into a clear, evidence-backed self-review that does not undersell or oversell you.",
+      "body": "Help me write my self-assessment for a performance review. Be a thoughtful editor: keep my facts, sharpen the framing, and flag weak spots.\n\nRole: {{role}}\nReview period: {{period}}\nCompany values or review criteria: {{criteria}}\nMy accomplishments, rough notes:\n{{accomplishments}}\nChallenges or things that did not go well:\n{{challenges}}\nGoals for next period: {{goals}}\nTone: {{tone}}\n\nWrite:\n1. A 2-sentence overview of my year.\n2. One section per accomplishment theme (maximum 4). For each: the situation, what I did, and the result with business impact. Use numbers only from my notes; mark gaps with [add metric].\n3. A candid but constructive \"growth areas\" section, covering the challenges as lessons with what changed.\n4. Next-period goals expressed as outcomes, not activities.\n5. A short feedback-seeking line I can add for my manager.\n\nAvoid inflated language, humblebrags and passive voice that hides my contribution. At the end, list up to five questions whose answers would make the review stronger.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Role",
+          "type": "text",
+          "default": "operations analyst",
+          "required": false
+        },
+        {
+          "key": "period",
+          "label": "Review period",
+          "type": "text",
+          "default": "July to December",
+          "required": false
+        },
+        {
+          "key": "criteria",
+          "label": "Review criteria",
+          "type": "text",
+          "default": "impact, ownership, collaboration, communication",
+          "required": false
+        },
+        {
+          "key": "accomplishments",
+          "label": "Accomplishments",
+          "type": "long",
+          "required": true,
+          "help": "Rough notes are fine"
+        },
+        {
+          "key": "challenges",
+          "label": "Challenges",
+          "type": "long",
+          "default": "A vendor migration slipped two weeks because I underestimated testing time.",
+          "required": false
+        },
+        {
+          "key": "goals",
+          "label": "Goals",
+          "type": "text",
+          "default": "lead a cross-team process project",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "confident and factual",
+            "modest",
+            "enthusiastic"
+          ],
+          "default": "confident and factual",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Overview**\nThis period I owned the shipping-cost reporting overhaul and moved our vendor data to a single system. Both reduced manual work and gave leadership faster, more reliable numbers.\n\n**Impact: reporting overhaul**\nSituation: Weekly cost reports took two analysts a full day and often disagreed with finance.\nAction: I rebuilt the pipeline in SQL, agreed definitions with finance and automated the refresh.\nResult: Report time fell from about 8 hours to [add metric]; finance reconciled with no open differences for three months running.\n\n**Growth area**\nThe vendor migration slipped two weeks because I underestimated testing time. I now add a testing buffer of 25% to estimates and share plans with stakeholders earlier.\n\n**Next period goals**\nLead one cross-team process project from scoping to handoff, with a documented result.\n\n**Ask for my manager**\nWhere do you see me having the most room to widen my scope?\n\n**Questions to strengthen this**\n1. What did the saved time allow the team to do instead?",
+      "notes": "Treating challenges as lessons with a concrete behavior change reads as maturity rather than excuse. Answer the closing questions and rerun to firm up the weaker sections.",
+      "useCase": "generate",
+      "tags": [
+        "feedback",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-networking-outreach-message",
+      "title": "Networking and informational interview outreach",
+      "description": "Write short, personal messages to strangers that get replies, with follow-ups that are polite and not pushy.",
+      "body": "Write a cold outreach message to someone I would like to learn from.\n\nAbout me: {{about_me}}\nWho I'm contacting: {{recipient}}\nWhat connects us or why them: {{connection}}\nWhat I want: {{ask}}\nPlatform: {{platform}}\n\nCreate:\n1. The main message, under {{max_words}} words, matching the norms of {{platform}}. Open with the specific reason I chose them, make one small and easy-to-answer ask, and make declining effortless. No flattery, no \"pick your brain\", no attached pitch or resume unless relevant.\n2. Two alternate versions with different angles (for example one referencing their work, one referencing a shared background).\n3. A gentle follow-up to send after {{followup_days}} days if there is no reply, and a final short one.\n4. A thank-you note to send after the conversation, with room for one thing I learned.\n5. Three smart questions to ask on a 20-minute call that are not answerable by a web search.\n\nKeep the voice natural, humble and direct. Do not invent shared history; use only what I provided.",
+      "variables": [
+        {
+          "key": "about_me",
+          "label": "About you",
+          "type": "long",
+          "default": "Second-year MBA student with a background in logistics operations.",
+          "required": false
+        },
+        {
+          "key": "recipient",
+          "label": "Who you are contacting",
+          "type": "text",
+          "default": "a supply chain director at a consumer goods company",
+          "required": false
+        },
+        {
+          "key": "connection",
+          "label": "Connection or reason",
+          "type": "text",
+          "default": "we are both alumni of the same university; I read her talk on inventory forecasting",
+          "required": false
+        },
+        {
+          "key": "ask",
+          "label": "Your ask",
+          "type": "text",
+          "default": "a 20-minute call about moving from operations into strategy",
+          "required": false
+        },
+        {
+          "key": "platform",
+          "label": "Platform",
+          "type": "select",
+          "options": [
+            "LinkedIn message",
+            "email",
+            "Twitter/X DM"
+          ],
+          "default": "LinkedIn message",
+          "required": false
+        },
+        {
+          "key": "max_words",
+          "label": "Max words",
+          "type": "select",
+          "options": [
+            "60",
+            "90",
+            "120"
+          ],
+          "default": "90",
+          "required": false
+        },
+        {
+          "key": "followup_days",
+          "label": "Follow-up after (days)",
+          "type": "number",
+          "default": "7",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Main message**\nHi Priya, I'm a fellow Marquette alum, now an MBA student after five years in logistics operations. Your talk on inventory forecasting changed how I think about safety stock, especially the point about demand signals from retail partners. I'm exploring a move from operations into strategy and would value 20 minutes of your perspective on how you made that shift. Happy to work around your schedule, and no worries at all if it's not a good time. Thanks, Marcus\n\n**Follow-up (day 7)**\nHi Priya, a quick nudge on my note above. I know your calendar is full; even a couple of lines by message would be great.\n\n**Thank-you**\nThank you for your time. Your advice to [specific insight] gave me a clear next step: I'll [action]. I'll let you know how it goes.\n\n**Questions for the call**\n1. What did you wish you had known before leaving operations?\n2. Which skill mattered more than expected?\n3. How did you decide which strategy teams to join?",
+      "notes": "A single specific reason and an easy exit make people more likely to answer. Send the first version only; save the alternates for a different contact.",
+      "useCase": "generate",
+      "tags": [
+        "career",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-first-90-days-plan",
+      "title": "30-60-90 day plan for a new role",
+      "description": "Create a credible plan for your first three months that balances learning, relationships and early wins.",
+      "body": "Create a 30-60-90 day plan for me. It will be used either for an interview or for my first three months on the job: {{use}}.\n\nRole: {{role}} at a {{company}}\nMy manager or team context: {{team_context}}\nKnown priorities, problems or goals of the team: {{priorities}}\nMy relevant strengths: {{strengths}}\n\nStructure the plan as:\n- Days 1-30 (learn): people to meet, systems and data to understand, questions to ask, one small quick win.\n- Days 31-60 (contribute): first owned project, how I will earn trust, how I will measure progress.\n- Days 61-90 (lead): a larger initiative, process improvements, what I will report to my manager.\nFor each phase give goals, 4 to 6 concrete actions, and how success will be visible.\n\nAlso include:\n- A list of 8 questions I should ask in my first two weeks.\n- Risks in the first 90 days and how to handle them.\n- A one-paragraph version I can say aloud in an interview in under 60 seconds.\n\nBe realistic about what one person can do in 90 days. Do not promise results I cannot control. Where the plan depends on facts I did not provide, mark the assumption.",
+      "variables": [
+        {
+          "key": "use",
+          "label": "Purpose",
+          "type": "select",
+          "options": [
+            "interview preparation",
+            "starting the job"
+          ],
+          "default": "interview preparation",
+          "required": false
+        },
+        {
+          "key": "role",
+          "label": "Role",
+          "type": "text",
+          "default": "operations manager",
+          "required": false
+        },
+        {
+          "key": "company",
+          "label": "Company type",
+          "type": "text",
+          "default": "regional healthcare clinic network",
+          "required": false
+        },
+        {
+          "key": "team_context",
+          "label": "Team context",
+          "type": "text",
+          "default": "reports to the COO; team of 12",
+          "required": false
+        },
+        {
+          "key": "priorities",
+          "label": "Known priorities",
+          "type": "long",
+          "default": "Reduce patient wait times and standardize scheduling across five clinics.",
+          "required": false
+        },
+        {
+          "key": "strengths",
+          "label": "Your strengths",
+          "type": "text",
+          "default": "process mapping, vendor negotiation, staff coaching",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Days 1-30: Learn**\nGoals: understand current wait-time drivers; earn trust.\nActions: shadow front-desk teams at each of the five clinics; meet the COO weekly; pull three months of scheduling data; list the top five delays; fix one small thing, such as a confusing intake form.\nSuccess: a one-page summary of causes, validated by clinic leads.\n\n**Days 31-60: Contribute**\nGoals: pilot one scheduling change.\nActions: choose one clinic; map the booking workflow; test a standard slot length for two weeks; track average wait.\nSuccess: pilot wait time versus baseline.\n\n**Days 61-90: Lead**\nGoals: plan rollout to the other four clinics; present results to leadership.\n\n**Questions for weeks 1-2**\nWhat does a good outcome look like at six months? Which past changes failed, and why?\n\n**60-second version**\n\"In my first month I'd listen and map the waits; in month two I'd pilot a fix at one clinic; by month three I'd have evidence and a rollout plan.\"",
+      "notes": "Anchoring each phase to a visible success measure keeps the plan from being a wish list. The 60-second summary is meant for interviews, where hiring managers mainly want to see structure.",
+      "useCase": "plan",
+      "tags": [
+        "project-management",
+        "planning",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-star-story-bank",
+      "title": "Build a bank of interview stories from your experience",
+      "description": "Mine your work history for 6 to 8 strong STAR stories you can adapt to almost any behavioral question.",
+      "body": "Help me build a bank of interview stories. I will paste my work history and rough notes; you will help me find the strongest stories and shape them.\n\nTarget role: {{target_role}}\nWork history and notes:\n{{history}}\n\nStep 1: Identify 6 to 8 stories from my notes that cover these themes: {{themes}}. If my notes do not cover a theme, say so and ask one question to draw it out rather than inventing anything.\n\nStep 2: For each story, write it in STAR form (Situation, Task, Action, Result) in under {{word_limit}} words, spoken style, first person, with the action portion at least half the length. Mark missing numbers with [add metric].\n\nStep 3: Create a matrix: stories as rows, themes as columns, with a mark where a story can answer that kind of question. Highlight the two stories that are most versatile.\n\nStep 4: For each story, list the 2 or 3 interview questions it best answers and one tough follow-up I should be ready for.\n\nDo not embellish. Everything must be traceable to my notes.",
+      "variables": [
+        {
+          "key": "target_role",
+          "label": "Target role",
+          "type": "text",
+          "default": "project manager",
+          "required": false
+        },
+        {
+          "key": "history",
+          "label": "Work history and notes",
+          "type": "long",
+          "required": true,
+          "help": "Roles, projects, problems, mistakes, wins. Rough is fine"
+        },
+        {
+          "key": "themes",
+          "label": "Themes to cover",
+          "type": "text",
+          "default": "leadership, conflict, failure, tight deadline, influencing others, learning something new",
+          "required": false
+        },
+        {
+          "key": "word_limit",
+          "label": "Words per story",
+          "type": "select",
+          "options": [
+            "120",
+            "180",
+            "250"
+          ],
+          "default": "180",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Story 1: The delayed product launch (leadership, tight deadline)**\nSituation: Two weeks before launch, our supplier said they would be 10 days late.\nTask: I was responsible for keeping the launch date.\nAction: I called the supplier, learned the delay was only for one component, and found an alternate approved part. I rewrote the schedule, asked the QA lead to test early, and briefed stakeholders daily.\nResult: We launched on time; the alternate part cost [add metric] more.\n\n**Matrix (excerpt)**\n| Story | Leadership | Conflict | Failure | Deadline |\n|---|---|---|---|---|\n| Delayed launch | X | | | X |\n| Scope dispute with design | X | X | | |\n\nMost versatile: Delayed launch and Scope dispute.\n\n**Likely questions for Story 1**\nTell me about a time you handled a setback; describe a high-pressure deadline.\nTough follow-up: \"What would you do differently?\"\n\nTheme missing from your notes: failure. Question: was there a project where the outcome fell short?",
+      "notes": "Doing this once gives you reusable material for most behavioral questions. The gap questions help surface stories you may have forgotten.",
+      "useCase": "extract",
+      "tags": [
+        "interview-prep",
+        "storytelling",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-tell-me-about-yourself",
+      "title": "Craft your 'tell me about yourself' answer",
+      "description": "Build a focused 60-90 second self-introduction for interviews and networking, in a present-past-future structure.",
+      "body": "Help me craft my answer to \"Tell me about yourself\" for an interview.\n\nRole I am interviewing for: {{role}}\nCompany or type of company: {{company}}\nMy background:\n{{background}}\nStandout achievement to include: {{achievement}}\nWhat I want next and why this role: {{why_role}}\nSpoken length: {{duration}}\n\nWrite the answer using a present, past, future structure:\n- Present: what I do now and one strength, in a single sentence.\n- Past: two or three career moments that explain how I got here and build toward this role. Cut anything irrelevant.\n- Future: why this role and company are the logical next step.\n\nRules: spoken language, short sentences, no chronological recital of my whole resume, no personal details unless relevant. Use only facts I provided.\n\nGive me: (1) the full script, (2) a version at half the length for networking events, (3) three variations of the first sentence, (4) notes on where to pause and which words to emphasize, and (5) two follow-up questions an interviewer might ask next, with advice for each.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Role",
+          "type": "text",
+          "default": "UX researcher",
+          "required": false
+        },
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "text",
+          "default": "a healthcare software company",
+          "required": false
+        },
+        {
+          "key": "background",
+          "label": "Background",
+          "type": "long",
+          "default": "Psychology degree, four years as a market researcher, two years running usability tests at a fintech startup.",
+          "required": false
+        },
+        {
+          "key": "achievement",
+          "label": "Standout achievement",
+          "type": "text",
+          "default": "redesigned onboarding after interviews with 30 users, which raised completion by 18%",
+          "required": false
+        },
+        {
+          "key": "why_role",
+          "label": "Why this role",
+          "type": "text",
+          "default": "I want my research to affect patient-facing products",
+          "required": false
+        },
+        {
+          "key": "duration",
+          "label": "Length",
+          "type": "select",
+          "options": [
+            "45 seconds",
+            "75 seconds",
+            "90 seconds"
+          ],
+          "default": "75 seconds",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Full script (about 75 seconds)**\n\"I'm a UX researcher who helps product teams understand why people struggle and what to fix first. At my current startup I run usability studies on a banking app; last year I interviewed 30 users about onboarding, and the redesign that followed raised completion by 18%.\n\nI started in psychology and spent four years in market research, which taught me to ask neutral questions and handle messy data. Moving into UX let me see research turn into actual product changes.\n\nNow I want that work to matter in healthcare, where clear design affects whether someone completes a task that matters to their wellbeing. That's why this role excites me.\"\n\n**Networking version**\n\"I'm a UX researcher with a background in psychology and market research, now looking to bring that into healthcare software.\"\n\n**First-sentence variations**\n1. \"I help teams figure out why users get stuck.\"\n2. \"I'm a researcher who likes turning interviews into design decisions.\"\n\n**Delivery**: pause after the 18% result; emphasize \"affect\".",
+      "notes": "Giving a past that builds toward the target role stops the answer from becoming a résumé recital. Read it aloud and trim any sentence you stumble over.",
+      "useCase": "generate",
+      "tags": [
+        "interview-prep",
+        "linkedin",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-resume-critique",
+      "title": "Honest resume critique",
+      "description": "Get a blunt, structured review of your resume from a hiring manager's point of view, with the fixes ranked by importance.",
+      "body": "Review my resume as a hiring manager who screens {{volume}} resumes for {{role}} openings. Be direct and specific. I want useful criticism, not praise.\n\nTarget role: {{role}}\nIndustry and region: {{industry}}\nResume:\n{{resume}}\n\nGive me:\n1. A 6-second scan: what a screener would notice first, what impression it creates, and whether I would likely advance, with a one-sentence reason.\n2. Scorecard from 1 to 10 for: relevance to the target role, impact and evidence, clarity and layout, language quality, and ATS friendliness.\n3. The five biggest problems, ranked, each with a quoted example from my resume and a concrete fix.\n4. Line-level edits for the weakest {{edit_count}} bullets.\n5. What is missing that a strong candidate for this role would show.\n6. Anything that might raise red flags (gaps, short tenures, vague titles) and how to address it honestly.\n\nDo not rewrite the whole resume. Do not invent experience. If you cannot judge something, such as formatting that is lost in pasted text, say so.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Target role",
+          "type": "text",
+          "default": "financial analyst",
+          "required": false
+        },
+        {
+          "key": "industry",
+          "label": "Industry and region",
+          "type": "text",
+          "default": "banking, United States",
+          "required": false
+        },
+        {
+          "key": "resume",
+          "label": "Your resume",
+          "type": "long",
+          "required": true,
+          "help": "Paste as plain text"
+        },
+        {
+          "key": "volume",
+          "label": "Applicants per opening",
+          "type": "select",
+          "options": [
+            "50",
+            "200",
+            "500"
+          ],
+          "default": "200",
+          "required": false
+        },
+        {
+          "key": "edit_count",
+          "label": "Bullets to fix",
+          "type": "select",
+          "options": [
+            "3",
+            "5",
+            "8"
+          ],
+          "default": "5",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Six-second scan**\nEyes land on the company names and a long skills list; the achievements are buried. Verdict: maybe. Unclear what you accomplished beyond maintenance work.\n\n**2. Scorecard**\nRelevance 6, Impact 4, Clarity 7, Language 6, ATS 8.\n\n**3. Top problems**\n1. Duty-based bullets. Example: \"Prepared monthly reports.\" Fix: state what decisions the reports supported and the time or dollars involved.\n2. Skills section lists 22 tools. Cut to the 8 relevant to financial analysis.\n3. Summary is generic (\"hard-working professional\"). Replace with a two-line statement of scope and specialty.\n4. No numbers in the last role.\n5. Education above experience despite six years of work.\n\n**4. Line edits**\nBefore: Helped with budgeting. After: Built the annual budget model for a $14M division, reducing forecast variance to [X%].\n\n**5. Missing**\nForecasting or variance analysis; evidence of working with senior stakeholders.\n\n**6. Red flags**\nEight-month role in 2022: address with a short, neutral line in your cover letter.",
+      "notes": "Ranking the problems tells you what to fix first instead of drowning you in nitpicks. Fix the top three, then run it again with the revised version.",
+      "useCase": "critique",
+      "tags": [
+        "resume",
+        "feedback",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-promotion-case",
+      "title": "Build the case for your promotion",
+      "description": "Organize your evidence into a persuasive promotion document and a script for the conversation with your manager.",
+      "body": "Help me make a strong, honest case for a promotion.\n\nCurrent title and level: {{current_title}}\nTarget title or level: {{target_title}}\nTime in current role: {{tenure}}\nWhat the next level expects (from my company's career ladder or my best understanding): {{expectations}}\nMy evidence: projects, outcomes, scope, feedback:\n{{evidence}}\nConcerns my manager may raise: {{concerns}}\n\nProduce:\n1. A gap analysis: for each expectation of the next level, evidence I already have, and whether it is Strong, Partial or Weak. Be honest about weak spots.\n2. A one-page promotion document with: a two-sentence summary, three or four impact stories showing I already operate at the next level (scope, decisions made, results), and quotes or feedback to cite, all drawn from my evidence.\n3. A plan for any weak areas: what I can show in the next {{timeframe}}, so the conversation stays productive even if the answer is \"not yet\".\n4. A conversation script: how to open the meeting, how to ask for the promotion directly, and replies to the concerns listed above.\n5. What to ask if the answer is no: specific criteria, timeline, and how progress will be measured.\n\nUse only my evidence; mark gaps with [add detail].",
+      "variables": [
+        {
+          "key": "current_title",
+          "label": "Current title",
+          "type": "text",
+          "default": "software engineer II",
+          "required": false
+        },
+        {
+          "key": "target_title",
+          "label": "Target title",
+          "type": "text",
+          "default": "senior software engineer",
+          "required": false
+        },
+        {
+          "key": "tenure",
+          "label": "Time in role",
+          "type": "text",
+          "default": "2.5 years",
+          "required": false
+        },
+        {
+          "key": "expectations",
+          "label": "Next-level expectations",
+          "type": "long",
+          "default": "Leads projects across teams, mentors others, makes sound design decisions with minimal guidance.",
+          "required": false
+        },
+        {
+          "key": "evidence",
+          "label": "Your evidence",
+          "type": "long",
+          "required": true,
+          "help": "Projects, outcomes, scope, feedback"
+        },
+        {
+          "key": "concerns",
+          "label": "Likely concerns",
+          "type": "text",
+          "default": "limited experience leading other engineers",
+          "required": false
+        },
+        {
+          "key": "timeframe",
+          "label": "Timeframe for gaps",
+          "type": "select",
+          "options": [
+            "3 months",
+            "6 months",
+            "12 months"
+          ],
+          "default": "3 months",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**1. Gap analysis**\n| Expectation | Evidence | Rating |\n|---|---|---|\n| Leads cross-team projects | Led payments migration with 3 teams | Strong |\n| Mentors others | Onboarded two new hires | Partial |\n| Sound design decisions | Authored caching design doc adopted org-wide | Strong |\n\n**2. Promotion document (summary)**\nFor the past year I have worked at the senior level: I led the payments migration across three teams, wrote the caching design now used by five services, and onboarded two engineers. [add detail: measurable result of the migration]\n\n**3. Plan for the weak area**\nMentoring: formally mentor one junior engineer for the next 3 months and share their progress.\n\n**4. Script**\nOpen: \"I'd like to talk about my growth. I believe I'm operating at the senior level and want to understand what's needed to be promoted.\"\nIf they cite limited leadership: \"Here are the three projects where I coordinated others. What would you want to see beyond them?\"\n\n**5. If the answer is no**\nAsk for written criteria and a date to review progress.",
+      "notes": "Admitting your weak spots in advance makes the case more credible and gives your manager something concrete to act on. Bring the one-page document to the meeting.",
+      "useCase": "plan",
+      "tags": [
+        "career",
+        "planning"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "career-resignation-letter-handoff",
+      "title": "Resignation letter and graceful exit plan",
+      "description": "Write a short, professional resignation letter and a handoff plan that protects your reputation and references.",
+      "body": "Help me resign professionally.\n\nRole: {{role}}\nCompany: {{company}}\nLast day: {{last_day}} (notice period: {{notice}})\nReason, as much as I want to share: {{reason}}\nRelationship with manager: {{relationship}}\nOngoing projects and responsibilities:\n{{projects}}\n\nWrite:\n1. A resignation letter of 4 to 6 sentences: states the decision and last day, thanks them for something specific, offers help with transition. It must not explain, complain or negotiate. Match the relationship: {{relationship}}.\n2. A short script for telling my manager in person or by video, including a reply if they make a counteroffer, and a reply if they ask where I am going.\n3. A handoff plan: a table of each project or responsibility, status, suggested owner, documentation needed, and what to complete before leaving.\n4. A farewell message for my team (under 100 words) and one for key clients or contacts if relevant.\n5. A short list of things to do before leaving: references, personal files, benefits questions, contact details, and what not to do (taking confidential data, venting in writing).\n\nKeep the tone warm and professional. If something in my situation raises legal or contract questions, tell me what to check rather than guessing.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Your role",
+          "type": "text",
+          "default": "marketing manager",
+          "required": false
+        },
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "text",
+          "default": "Harbor Foods",
+          "required": false
+        },
+        {
+          "key": "last_day",
+          "label": "Last day",
+          "type": "text",
+          "default": "November 14",
+          "required": false
+        },
+        {
+          "key": "notice",
+          "label": "Notice period",
+          "type": "text",
+          "default": "two weeks",
+          "required": false
+        },
+        {
+          "key": "reason",
+          "label": "Reason to share",
+          "type": "text",
+          "default": "accepting a new opportunity; keep it brief",
+          "required": false
+        },
+        {
+          "key": "relationship",
+          "label": "Relationship with manager",
+          "type": "select",
+          "options": [
+            "good",
+            "neutral",
+            "strained"
+          ],
+          "default": "good",
+          "required": false
+        },
+        {
+          "key": "projects",
+          "label": "Current projects",
+          "type": "long",
+          "default": "Quarterly campaign calendar; agency relationship; monthly analytics report.",
+          "required": false
+        }
+      ],
+      "exampleOutput": "**Resignation letter**\nDear Daniel,\n\nPlease accept this letter as formal notice of my resignation from my role as Marketing Manager at Harbor Foods. My last day will be November 14.\n\nThank you for the trust you gave me to lead the spring campaign; I learned a great deal working with you and the team. I will do everything I can to make the transition smooth, including documenting my processes and training whoever takes over.\n\nSincerely,\nAna\n\n**Script for telling your manager**\n\"Daniel, I wanted to tell you in person that I've accepted another opportunity, and my last day will be November 14. I've valued working with you and want to leave things in good shape.\"\nIf counteroffer: \"I appreciate that. I've thought carefully and my decision is made.\"\n\n**Handoff table (excerpt)**\n| Item | Status | Owner | Needed |\n|---|---|---|---|\n| Campaign calendar | Q1 drafted | Priya | Shared doc, review meeting |\n| Agency relationship | Weekly calls | Daniel | Contacts, contract summary |\n\n**Before leaving**\nCollect personal files only, ask for a LinkedIn recommendation, confirm benefits end dates.",
+      "notes": "Keeping the letter brief and the reasons out of it protects you; the useful part is the handoff plan, which is what people remember. Check your contract for notice requirements first.",
+      "useCase": "generate",
+      "tags": [
+        "career",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}

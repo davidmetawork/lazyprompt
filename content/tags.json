@@ -1,0 +1,306 @@
+[
+  {
+    "slug": "email",
+    "name": "Email"
+  },
+  {
+    "slug": "editing",
+    "name": "Editing"
+  },
+  {
+    "slug": "copywriting",
+    "name": "Copywriting"
+  },
+  {
+    "slug": "summarization",
+    "name": "Summarization"
+  },
+  {
+    "slug": "writing",
+    "name": "Writing"
+  },
+  {
+    "slug": "communication",
+    "name": "Communication"
+  },
+  {
+    "slug": "documentation",
+    "name": "Documentation"
+  },
+  {
+    "slug": "translation",
+    "name": "Translation"
+  },
+  {
+    "slug": "seo",
+    "name": "SEO"
+  },
+  {
+    "slug": "content-marketing",
+    "name": "Content marketing"
+  },
+  {
+    "slug": "social-media",
+    "name": "Social media"
+  },
+  {
+    "slug": "email-marketing",
+    "name": "Email marketing"
+  },
+  {
+    "slug": "advertising",
+    "name": "Advertising"
+  },
+  {
+    "slug": "positioning",
+    "name": "Positioning"
+  },
+  {
+    "slug": "market-research",
+    "name": "Market research"
+  },
+  {
+    "slug": "ecommerce",
+    "name": "E-commerce"
+  },
+  {
+    "slug": "branding",
+    "name": "Branding"
+  },
+  {
+    "slug": "code-review",
+    "name": "Code review"
+  },
+  {
+    "slug": "debugging",
+    "name": "Debugging"
+  },
+  {
+    "slug": "testing",
+    "name": "Testing"
+  },
+  {
+    "slug": "refactoring",
+    "name": "Refactoring"
+  },
+  {
+    "slug": "code-generation",
+    "name": "Code generation"
+  },
+  {
+    "slug": "sql",
+    "name": "SQL"
+  },
+  {
+    "slug": "software-design",
+    "name": "Software design"
+  },
+  {
+    "slug": "devops",
+    "name": "DevOps"
+  },
+  {
+    "slug": "performance",
+    "name": "Performance"
+  },
+  {
+    "slug": "security",
+    "name": "Security"
+  },
+  {
+    "slug": "prompt-engineering",
+    "name": "Prompt engineering"
+  },
+  {
+    "slug": "data-analysis",
+    "name": "Data analysis"
+  },
+  {
+    "slug": "analytics",
+    "name": "Analytics"
+  },
+  {
+    "slug": "statistics",
+    "name": "Statistics"
+  },
+  {
+    "slug": "spreadsheets",
+    "name": "Spreadsheets"
+  },
+  {
+    "slug": "data-visualization",
+    "name": "Data visualization"
+  },
+  {
+    "slug": "data-cleaning",
+    "name": "Data cleaning"
+  },
+  {
+    "slug": "strategy",
+    "name": "Strategy"
+  },
+  {
+    "slug": "startups",
+    "name": "Startups"
+  },
+  {
+    "slug": "pricing",
+    "name": "Pricing"
+  },
+  {
+    "slug": "planning",
+    "name": "Planning"
+  },
+  {
+    "slug": "meetings",
+    "name": "Meetings"
+  },
+  {
+    "slug": "project-management",
+    "name": "Project management"
+  },
+  {
+    "slug": "decision-making",
+    "name": "Decision making"
+  },
+  {
+    "slug": "negotiation",
+    "name": "Negotiation"
+  },
+  {
+    "slug": "presentations",
+    "name": "Presentations"
+  },
+  {
+    "slug": "reporting",
+    "name": "Reporting"
+  },
+  {
+    "slug": "research",
+    "name": "Research"
+  },
+  {
+    "slug": "study",
+    "name": "Study"
+  },
+  {
+    "slug": "learning",
+    "name": "Learning"
+  },
+  {
+    "slug": "fact-checking",
+    "name": "Fact-checking"
+  },
+  {
+    "slug": "productivity",
+    "name": "Productivity"
+  },
+  {
+    "slug": "time-management",
+    "name": "Time management"
+  },
+  {
+    "slug": "habits",
+    "name": "Habits"
+  },
+  {
+    "slug": "note-taking",
+    "name": "Note-taking"
+  },
+  {
+    "slug": "templates",
+    "name": "Templates"
+  },
+  {
+    "slug": "brainstorming",
+    "name": "Brainstorming"
+  },
+  {
+    "slug": "career",
+    "name": "Career"
+  },
+  {
+    "slug": "job-search",
+    "name": "Job search"
+  },
+  {
+    "slug": "resume",
+    "name": "Resume"
+  },
+  {
+    "slug": "interview-prep",
+    "name": "Interview prep"
+  },
+  {
+    "slug": "linkedin",
+    "name": "LinkedIn"
+  },
+  {
+    "slug": "feedback",
+    "name": "Feedback"
+  },
+  {
+    "slug": "customer-support",
+    "name": "Customer support"
+  },
+  {
+    "slug": "creative-writing",
+    "name": "Creative writing"
+  },
+  {
+    "slug": "storytelling",
+    "name": "Storytelling"
+  },
+  {
+    "slug": "worldbuilding",
+    "name": "Worldbuilding"
+  },
+  {
+    "slug": "roleplay",
+    "name": "Roleplay"
+  },
+  {
+    "slug": "poetry",
+    "name": "Poetry"
+  },
+  {
+    "slug": "screenwriting",
+    "name": "Screenwriting"
+  },
+  {
+    "slug": "personal-finance",
+    "name": "Personal finance"
+  },
+  {
+    "slug": "health-fitness",
+    "name": "Health & fitness"
+  },
+  {
+    "slug": "cooking",
+    "name": "Cooking"
+  },
+  {
+    "slug": "travel",
+    "name": "Travel"
+  },
+  {
+    "slug": "parenting",
+    "name": "Parenting"
+  },
+  {
+    "slug": "home-organization",
+    "name": "Home & organization"
+  },
+  {
+    "slug": "relationships",
+    "name": "Relationships"
+  },
+  {
+    "slug": "image-generation",
+    "name": "Image generation"
+  },
+  {
+    "slug": "video-generation",
+    "name": "Video generation"
+  }
+]

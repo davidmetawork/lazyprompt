@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: lazyprompt_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres@localhost:5432/lazyprompt_test
+      TEST_DATABASE_URL: postgres://postgres@localhost:5432/lazyprompt_test
+      BETTER_AUTH_SECRET: ci-dummy-secret-0123456789abcdef0123456789
+      IP_HASH_SALT: ci-dummy-salt
+      CRON_SECRET: ci-dummy-cron
+      SEO_NOINDEX: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm seed:check
+      - name: Widget bundle is up to date
+        run: pnpm widget:build && git diff --exit-code src/mcp/widget-html.generated.ts
+      - run: pnpm test:unit
+      - run: pnpm test:integration
+      # Idempotent; guarantees the schema exists for prerendering (sitemap, robots, feed, llms.txt, OG image).
+      - run: pnpm db:migrate
+      - run: pnpm build
+
+  e2e:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CI: "true"
+      DATABASE_URL: postgres://postgres@localhost:5432/lazyprompt_e2e
+      TEST_DATABASE_URL: postgres://postgres@localhost:5432/lazyprompt_test
+      TEST_DATABASE_URL_E2E: postgres://postgres@localhost:5432/lazyprompt_e2e
+      BETTER_AUTH_SECRET: ci-dummy-secret-0123456789abcdef0123456789
+      IP_HASH_SALT: ci-dummy-salt
+      CRON_SECRET: ci-dummy-cron
+      SEO_NOINDEX: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

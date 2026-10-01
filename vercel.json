@@ -1,12 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "cd apps/marketplace && npm install && npx prisma generate && npm run build",
-  "outputDirectory": "apps/marketplace/.next",
-  "framework": "nextjs",
-  "installCommand": "npm install",
-  "functions": {
-    "apps/marketplace/src/app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
-} 
+  "buildCommand": "pnpm vercel-build",
+  "crons": [{ "path": "/api/cron/recompute", "schedule": "0 4 * * *" }]
+}

@@ -1,0 +1,1394 @@
+{
+  "category": "writing",
+  "prompts": [
+    {
+      "key": "writing-cold-outreach-email",
+      "title": "Cold outreach email that earns a reply",
+      "description": "Write a short, specific cold email with one clear ask, plus a subject line and a follow-up-ready variant.",
+      "body": "Write a cold outreach email from me to someone I have never spoken to.\n\nAbout me: {{sender_background}}\nRecipient: {{recipient}}\nWhy them specifically: {{personalization}}\nWhat I want: {{ask}}\nTone: {{tone}}\nMaximum length: {{max_words}} words for the email body.\n\nRules:\n- Open with the specific reason I am writing to this person, not with who I am or \"I hope this finds you well\".\n- Make exactly one ask, and make it small and easy to say yes to.\n- Include one concrete detail of value to them (what they get, learn or save), not a list of my credentials.\n- No flattery that could apply to anyone, no buzzwords, no fake urgency, no exclamation marks.\n- If any key fact above is missing or vague, ask me up to 3 short questions first. Otherwise write straight away.\n\nOutput format:\n1. Three subject lines (under 50 characters each), best first.\n2. The email body, ready to send, ending with my first name only.\n3. A one-sentence note on why the opening should work, so I can adjust it.",
+      "variables": [
+        {
+          "key": "sender_background",
+          "label": "About you",
+          "type": "long",
+          "default": "Freelance product designer with 8 years in fintech apps.",
+          "required": false,
+          "help": "Who you are, in a sentence or two"
+        },
+        {
+          "key": "recipient",
+          "label": "Recipient",
+          "type": "text",
+          "default": "Priya Shah, Head of Product at a payments startup",
+          "required": false
+        },
+        {
+          "key": "personalization",
+          "label": "Why them",
+          "type": "long",
+          "default": "She recently posted about redesigning their onboarding flow and the drop-off after ID verification.",
+          "required": false,
+          "help": "Something specific you noticed"
+        },
+        {
+          "key": "ask",
+          "label": "Your ask",
+          "type": "text",
+          "default": "A 15-minute call to share two onboarding ideas",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Warm and professional",
+          "required": false
+        },
+        {
+          "key": "max_words",
+          "label": "Max words",
+          "type": "number",
+          "default": "110",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Subject lines\n1. Your onboarding drop-off after ID check\n2. Two ideas for your verification step\n3. Quick thought on your onboarding post\n\nEmail\nHi Priya,\n\nYour post about losing users right after ID verification caught my eye. I spent the last few years fixing exactly that step in two fintech apps, and the fixes were smaller than people expect: showing progress before the camera opens, and explaining why each document is needed.\n\nI sketched two ideas based on your public flow. Would a 15-minute call next week be useful, so I can walk you through them? If not, no worries at all, and I am happy to send the sketches by email instead.\n\nBest,\nDaniel\n\nWhy the opening works: it proves you read her post and names the exact problem she described, so it does not read as a template.",
+      "notes": "Specificity in the 'why them' field is what separates this from a template. Paste a real sentence from their post or site for the best result.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "email-marketing"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "writing-follow-up-email",
+      "title": "Follow-up email when they have not replied",
+      "description": "Nudge someone who went quiet without sounding pushy, with a new reason to respond and an easy way out.",
+      "body": "Write a follow-up email to someone who has not replied to my earlier message.\n\nContext of my first message: {{original_context}}\nTime since I sent it: {{days_since}} days\nRecipient and our relationship: {{relationship}}\nWhat I still need from them: {{need}}\nFollow-up number: {{follow_up_number}}\nTone: {{tone}}\n\nRules:\n- Keep it under 80 words.\n- Do not apologise for \"bumping\" or \"checking in\" and do not guilt-trip.\n- Add something new: a useful detail, a deadline that matters, or a simpler version of the ask.\n- Make replying effortless, ideally answerable in one line, and offer a polite way to say no or redirect me.\n- Match the stated tone.\n\nOutput format: two versions, labelled \"Version A (light touch)\" and \"Version B (more direct)\", each with a subject line and body. Then one line saying which I should send given the follow-up number.",
+      "variables": [
+        {
+          "key": "original_context",
+          "label": "What you sent first",
+          "type": "long",
+          "default": "I proposed a guest article swap between our two newsletters and attached three topic ideas.",
+          "required": false
+        },
+        {
+          "key": "days_since",
+          "label": "Days since",
+          "type": "number",
+          "default": "6",
+          "required": false
+        },
+        {
+          "key": "relationship",
+          "label": "Who they are",
+          "type": "text",
+          "default": "An editor I have met once at a conference",
+          "required": false
+        },
+        {
+          "key": "need",
+          "label": "What you need",
+          "type": "text",
+          "default": "A yes or no on the article swap",
+          "required": false
+        },
+        {
+          "key": "follow_up_number",
+          "label": "Follow-up number",
+          "type": "select",
+          "options": [
+            "First",
+            "Second",
+            "Final"
+          ],
+          "default": "First",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Friendly and casual",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Version A (light touch)\nSubject: Re: Newsletter swap\n\nHi Maya,\n\nQuick one: if the swap works for you, which of the three topics would you pick? A one-word answer is enough. If the timing is off, just say so and I will leave it with you.\n\nThanks,\nSam\n\nVersion B (more direct)\nSubject: Newsletter swap, can we lock a date?\n\nHi Maya,\n\nI am planning my June issues this week and would like to hold a slot for you. Could you tell me yes or no by Friday? If it is a no, that is completely fine.\n\nThanks,\nSam\n\nRecommendation: send Version A for a first follow-up. It lowers the effort of replying and keeps the tone friendly.",
+      "notes": "Giving a deadline that is real (like a planning date) works far better than invented urgency. Pick Final to get a gracious close-the-loop message.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "email-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-difficult-conversation-email",
+      "title": "Email for a difficult conversation",
+      "description": "Deliver hard news or feedback clearly and kindly, without burying the point or sounding cold.",
+      "body": "Help me write a message about a difficult topic.\n\nSituation: {{situation}}\nWho I am writing to and my relationship with them: {{recipient}}\nWhat I need them to understand or do: {{outcome}}\nThings I must not say or promise: {{boundaries}}\nTone: {{tone}}\n\nWrite it so that:\n- The main point appears in the first two sentences. No long warm-up.\n- It states facts and the impact, not assumptions about their motives.\n- It acknowledges how the person may feel in one sincere sentence, with no corporate language.\n- It ends with a specific next step and, where useful, an invitation to talk.\n- It is no longer than 200 words.\n\nOutput format:\n1. The email, with subject line.\n2. \"Riskiest phrase\": the one line the recipient is most likely to react badly to, and a softer alternative.\n3. Whether this should be a call or in-person conversation instead, in one sentence.",
+      "variables": [
+        {
+          "key": "situation",
+          "label": "Situation",
+          "type": "long",
+          "default": "A colleague has missed the last three deadlines on shared reports, and it is delaying my team's work.",
+          "required": false
+        },
+        {
+          "key": "recipient",
+          "label": "Recipient",
+          "type": "text",
+          "default": "A peer I get along with, Chris, from the analytics team",
+          "required": false
+        },
+        {
+          "key": "outcome",
+          "label": "Desired outcome",
+          "type": "text",
+          "default": "Agree a realistic delivery schedule this week",
+          "required": false
+        },
+        {
+          "key": "boundaries",
+          "label": "Do not say",
+          "type": "text",
+          "default": "Do not mention performance reviews or escalate to his manager",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Empathetic",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Subject: Report timing and finding a schedule that works\n\nHi Chris,\n\nI want to raise something directly: the last three shared reports have arrived after the agreed dates, and that has pushed back my team's analysis each time.\n\nI know your plate is full, and I would rather solve this with you than around you. Could we agree on delivery dates that are realistic for you? I am flexible on format if that makes it easier.\n\nCan we spend 20 minutes on Thursday to work it out? Tell me what time suits you.\n\nThanks,\nAlex\n\nRiskiest phrase: \"have arrived after the agreed dates\". Softer: \"have landed later than we planned\".\n\nCall or email: A short call would likely land better; use this email only as a written follow-up to confirm the new dates.",
+      "notes": "The 'riskiest phrase' check catches wording that triggers defensiveness. Listing what you must not say keeps the draft clear of promises you cannot keep.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-tighten-draft",
+      "title": "Tighten a draft without changing its meaning",
+      "description": "Cut filler and repetition from your draft while keeping your voice, with a log of what changed.",
+      "body": "Edit the draft below to make it tighter and clearer without changing its meaning or voice.\n\nType of writing: {{doc_type}}\nReader: {{audience}}\nTarget length: {{target}}\n\nDraft:\n{{draft}}\n\nRules:\n- Remove filler, repeated points, hedging and throat-clearing. Prefer short words and active verbs.\n- Keep my facts, numbers, names and any quoted text exactly as written.\n- Keep my voice. Do not make it more formal, more upbeat or more generic than the original.\n- Do not add new claims or ideas.\n- If a sentence is ambiguous, keep it close to the original and flag it instead of guessing.\n\nOutput format:\n1. The edited draft.\n2. Word count before and after.\n3. A short list (maximum 5 bullets) of the most important changes and why.\n4. Any sentences you flagged as unclear.",
+      "variables": [
+        {
+          "key": "doc_type",
+          "label": "Type of writing",
+          "type": "text",
+          "default": "Internal project update email",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "Senior leaders who skim",
+          "required": false
+        },
+        {
+          "key": "target",
+          "label": "Target length",
+          "type": "text",
+          "default": "About 30% shorter",
+          "required": false
+        },
+        {
+          "key": "draft",
+          "label": "Your draft",
+          "type": "long",
+          "default": "I just wanted to take a moment to give everyone a quick update on where we are currently at with the migration project. As of right now, we have basically finished moving about 80 percent of the services over to the new platform, and we are really on track to be done by the end of June, although there are a couple of risks that we should keep an eye on.",
+          "required": false,
+          "help": "Paste the text to tighten"
+        }
+      ],
+      "exampleOutput": "Edited draft\nUpdate on the migration: 80% of services are now on the new platform, and we are on track to finish by the end of June. A couple of risks need watching.\n\nWord count: 62 before, 34 after.\n\nMain changes\n- Removed the opening phrase (\"I just wanted to take a moment\") because it delays the news.\n- Cut \"basically\", \"really\", \"currently\" and \"as of right now\"; they add no information.\n- Merged two sentences so the status and the date arrive together.\n- Shortened the risk sentence; the risks themselves can follow in a separate line.\n\nFlagged\n- \"A couple of risks\": the reader will want to know what they are. Consider listing them.",
+      "notes": "The flag step stops the model from quietly inventing details. Re-run with a stricter target, such as 'half the length', for a second pass.",
+      "useCase": "rewrite",
+      "tags": [
+        "editing",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-tone-shifter",
+      "title": "Rewrite any text in a different tone",
+      "description": "Shift a message's tone, from blunt to warm or casual to formal, while preserving every fact.",
+      "body": "Rewrite the text below so it sounds {{target_tone}}, for {{audience}}.\n\nOriginal text:\n{{text}}\n\nCurrent tone, in my own words: {{current_tone}}\n\nRules:\n- Keep all facts, numbers, dates, names and requests unchanged.\n- Change vocabulary, sentence length, openings and sign-offs to fit the new tone. Do not just swap in a few adjectives.\n- Avoid clichés and filler such as \"I hope this email finds you well\" or \"touch base\".\n- Keep the length within 15% of the original unless the tone needs more or less.\n- Do not add emojis unless the target tone is casual and the original already uses them.\n\nOutput format:\n1. The rewritten text.\n2. Two bullets on the main stylistic choices you made.\n3. One alternative opening sentence for people who want a different feel.",
+      "variables": [
+        {
+          "key": "target_tone",
+          "label": "Target tone",
+          "type": "select",
+          "options": [
+            "warm and respectful",
+            "formal and polished",
+            "friendly and casual",
+            "direct and confident",
+            "calm and reassuring",
+            "upbeat and energetic"
+          ],
+          "default": "warm and respectful",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "A long-term client",
+          "required": false
+        },
+        {
+          "key": "current_tone",
+          "label": "Current tone",
+          "type": "text",
+          "default": "Curt and a bit annoyed",
+          "required": false
+        },
+        {
+          "key": "text",
+          "label": "Text to rewrite",
+          "type": "long",
+          "default": "We need the signed contract by Friday. This is the third time I have asked. Without it we cannot start the work and the schedule will slip.",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Rewritten text\nHi, thank you again for your patience while we sort out the paperwork. To keep your project on schedule, we would be grateful to have the signed contract by Friday. Without it we are not able to begin, and I would hate for the timeline to slip. If anything about the contract is holding things up, tell me and I will happily help.\n\nStyle choices\n- Replaced the count of requests with an appreciation line to remove blame.\n- Gave the reason for the deadline as a shared goal (protecting their schedule) and offered help.\n\nAlternative opening\n\"I wanted to follow up on the contract so we can get your project started on time.\" ",
+      "notes": "Describing the current tone helps the model know what to undo. For brand voice, paste a sample paragraph of your own writing into the audience field.",
+      "useCase": "rewrite",
+      "tags": [
+        "editing",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-blog-post-from-notes",
+      "title": "Turn rough notes into a blog post",
+      "description": "Convert scattered notes into a structured, readable blog post in your voice, without padding or invented facts.",
+      "body": "Turn my rough notes into a blog post.\n\nTopic: {{topic}}\nReader and what they care about: {{audience}}\nGoal of the post: {{goal}}\nVoice: {{voice}}\nLength: about {{word_count}} words\nSearch phrase to include naturally, if any: {{keyword}}\n\nMy notes (messy, in any order):\n{{notes}}\n\nInstructions:\n- Use only the facts and opinions in my notes. If you need a statistic or example that is not in the notes, leave a bracketed placeholder like [add data: ...] instead of inventing one.\n- Start with a first paragraph that states the problem or the surprising point. No \"In today's fast-paced world\".\n- Use short paragraphs, descriptive subheadings and concrete examples. One idea per section.\n- End with a takeaway and one clear next step for the reader.\n- Avoid filler phrases, rhetorical question piles and forced enthusiasm.\n\nOutput format: a title, a one-line meta description under 155 characters, then the post in Markdown. Finish with a list of any placeholders I need to fill and any notes you could not place.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "default": "Why small teams should write down decisions",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "Startup founders and team leads with no formal process",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Convince readers to start a simple decision log this week",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "select",
+          "options": [
+            "Conversational and practical",
+            "Authoritative",
+            "Playful",
+            "Plainspoken and honest",
+            "Academic but readable"
+          ],
+          "default": "Conversational and practical",
+          "required": false
+        },
+        {
+          "key": "word_count",
+          "label": "Word count",
+          "type": "number",
+          "default": "700",
+          "required": false
+        },
+        {
+          "key": "keyword",
+          "label": "Search phrase",
+          "type": "text",
+          "default": "decision log",
+          "required": false
+        },
+        {
+          "key": "notes",
+          "label": "Your notes",
+          "type": "long",
+          "default": "- we kept re-arguing the same pricing choice every quarter\n- a one-page doc per decision: context, options, choice, date\n- took 10 minutes each, saved hours\n- new hires onboarded faster\n- don't aim for perfect, aim for findable",
+          "required": false,
+          "help": "Bullets, fragments, anything"
+        }
+      ],
+      "exampleOutput": "Title: Write Down Your Decisions (It Takes Ten Minutes)\nMeta: A simple decision log stops teams re-arguing old choices. Here is a one-page format you can start this week.\n\nEvery quarter, my team re-argued the same pricing decision. Nobody was wrong; nobody could remember why we had chosen what we chose.\n\n## The fix is one page\nFor each decision, write four things: the context, the options considered, what you chose, and the date. That is it.\n\n## Ten minutes, hours saved\nEach entry took about ten minutes. It saved far more by ending repeat debates before they began.\n\n## A bonus: faster onboarding\nNew hires read the log and understood our reasoning without a dozen meetings.\n\n## Aim for findable, not perfect\n[add data: how many decisions you logged in the first quarter]\n\nStart this week: pick the last decision you argued about twice and write it up.\n\nPlaceholders to fill: one data point in \"Aim for findable\".",
+      "notes": "The placeholder rule keeps the draft honest. Add your own anecdotes in the notes for a post that does not read like generic content.",
+      "useCase": "generate",
+      "tags": [
+        "content-marketing",
+        "seo"
+      ],
+      "featured": true,
+      "models": [],
+      "license": "cc0"
+    },
+    {
+      "key": "writing-headline-variants",
+      "title": "Headline and title variants by angle",
+      "description": "Generate sharp headlines grouped by angle, each under a length limit, with a pick for your goal.",
+      "body": "Write headline options for the piece below.\n\nWhat it is: {{content_type}}\nWhat it is about: {{summary}}\nReader: {{audience}}\nMain goal: {{goal}}\nMaximum characters per headline: {{max_chars}}\n\nCreate 12 headlines, three for each of these angles:\n1. Clear and literal (says exactly what the reader gets)\n2. Curiosity (a gap the reader wants to close, without hiding the topic)\n3. Benefit or outcome (a specific result, with a number if the summary supports one)\n4. Contrarian or surprising (challenges a common belief that is true to the content)\n\nRules:\n- Stay accurate. Do not promise anything the piece does not deliver.\n- No clickbait formulas such as \"You won't believe\" or \"This one trick\".\n- Vary structure and opening words.\n- Stay within the character limit and show the character count of each.\n\nOutput format: a table with columns Angle, Headline, Characters. Then name your top pick for the stated goal and explain it in one sentence.",
+      "variables": [
+        {
+          "key": "content_type",
+          "label": "Content type",
+          "type": "select",
+          "options": [
+            "Blog post",
+            "Newsletter issue",
+            "Landing page",
+            "Report or white paper",
+            "Video",
+            "Press release",
+            "Email subject line"
+          ],
+          "default": "Blog post",
+          "required": false
+        },
+        {
+          "key": "summary",
+          "label": "Summary",
+          "type": "long",
+          "default": "A practical guide to running 30-minute weekly one-on-ones that managers keep and employees value, with a simple agenda and three questions to ask.",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "New people managers",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "select",
+          "options": [
+            "Clicks from search",
+            "Email opens",
+            "Social shares",
+            "Sign-ups",
+            "Credibility"
+          ],
+          "default": "Clicks from search",
+          "required": false
+        },
+        {
+          "key": "max_chars",
+          "label": "Max characters",
+          "type": "number",
+          "default": "65",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| Angle | Headline | Characters |\n|---|---|---|\n| Clear | How to Run a 30-Minute One-on-One That Works | 44 |\n| Clear | A Simple Agenda for Weekly One-on-Ones | 38 |\n| Clear | One-on-One Meetings: A Guide for New Managers | 45 |\n| Curiosity | The Three Questions Great Managers Always Ask | 45 |\n| Curiosity | Why Your One-on-Ones Keep Getting Cancelled | 43 |\n| Curiosity | What Employees Actually Want From a One-on-One | 46 |\n| Benefit | Run One-on-Ones People Keep in 30 Minutes a Week | 48 |\n| Benefit | 3 Questions That Turn Check-Ins Into Real Talk | 46 |\n| Benefit | A One-on-One Agenda You Can Use Tomorrow | 40 |\n| Contrarian | Stop Using One-on-Ones for Status Updates | 41 |\n| Contrarian | Your One-on-One Is Not Your Meeting | 35 |\n| Contrarian | Shorter One-on-Ones Get Better Results | 38 |\n\nTop pick for search clicks: \"How to Run a 30-Minute One-on-One That Works\", because it matches how people search and states the payoff.",
+      "notes": "Choosing the goal changes which headlines rise to the top. Ask for a second round on the angle you like best.",
+      "useCase": "brainstorm",
+      "tags": [
+        "copywriting",
+        "content-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-executive-summary",
+      "title": "Executive summary for busy decision-makers",
+      "description": "Condense a long report or document into a one-page summary that leads with the decision needed.",
+      "body": "Write an executive summary of the document below for {{reader}}.\n\nWhat the document is: {{doc_type}}\nDecision or action the reader needs to take: {{decision}}\nLength limit: {{length}}\n\nDocument:\n{{document}}\n\nRules:\n- Lead with the conclusion or recommendation, then the reasons. Do not follow the document's order.\n- Keep the numbers that drive the decision and drop the rest. Do not round or alter figures.\n- State risks, costs and open questions plainly. Do not make the case sound stronger than the source does.\n- Do not add information that is not in the document. If something important is missing, say so under \"Gaps\".\n- Plain language; define any jargon the reader may not know.\n\nOutput format:\n**Bottom line** (2 sentences)\n**Why** (3-5 bullets)\n**Risks and unknowns** (2-4 bullets)\n**What I need from you** (1-2 lines)\n**Gaps in the source** (only if relevant)",
+      "variables": [
+        {
+          "key": "reader",
+          "label": "Reader",
+          "type": "text",
+          "default": "The COO, who has five minutes",
+          "required": false
+        },
+        {
+          "key": "doc_type",
+          "label": "Document type",
+          "type": "text",
+          "default": "Quarterly operations review",
+          "required": false
+        },
+        {
+          "key": "decision",
+          "label": "Decision needed",
+          "type": "text",
+          "default": "Approve extra budget for a second warehouse shift",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "text",
+          "default": "Under 200 words",
+          "required": false
+        },
+        {
+          "key": "document",
+          "label": "Document text",
+          "type": "long",
+          "default": "Q3 order volume rose 24% versus Q2. On-time shipping fell from 96% to 89%, mostly in the last two weeks of each month. Overtime cost rose to $118k from $64k. A second shift would cost about $210k per quarter, and would restore on-time shipping to 95% by modelling. Customer complaints about delays doubled. We have not yet confirmed hiring capacity.",
+          "required": false,
+          "help": "Paste the full text"
+        }
+      ],
+      "exampleOutput": "**Bottom line**\nAdd a second warehouse shift. Shipping reliability is slipping as volume grows, and overtime is already costing more than half of what a second shift would.\n\n**Why**\n- Orders grew 24% in Q3; on-time shipping fell from 96% to 89%.\n- Overtime rose from $64k to $118k.\n- Modelling shows a second shift (about $210k per quarter) restores on-time rates to 95%.\n- Complaints about delays doubled.\n\n**Risks and unknowns**\n- Hiring capacity is not yet confirmed.\n- The 95% figure is modelled, not observed.\n\n**What I need from you**\nApprove the budget in principle, conditional on a hiring plan.\n\n**Gaps in the source**\nNo customer churn data linked to the delays.",
+      "notes": "Stating the decision up front shapes the whole summary around what the reader must do. The Gaps section makes missing evidence visible instead of papered over.",
+      "useCase": "summarize",
+      "tags": [
+        "summarization",
+        "strategy",
+        "reporting"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-plain-language-rewrite",
+      "title": "Plain-language rewrite for any reader",
+      "description": "Rewrite dense, technical or legal text so a general reader understands it, without losing accuracy.",
+      "body": "Rewrite the text below in plain language for {{audience}}.\n\nReading level target: {{reading_level}}\nPurpose of the text: {{purpose}}\n\nText:\n{{text}}\n\nRules:\n- Keep the meaning exact. Do not drop conditions, exceptions, deadlines, amounts or obligations.\n- Use short sentences, everyday words and active voice. Put the most important thing first.\n- Replace jargon with plain words. If a technical term must stay, explain it once in brackets.\n- Address the reader as \"you\" where the text speaks to them.\n- Use a short list for steps or requirements.\n- If something is ambiguous in the source, do not resolve it by guessing. Mark it with [unclear in source: ...].\n\nOutput format:\n1. The plain-language version.\n2. A glossary of terms you replaced or explained (term: plain meaning).\n3. A short \"What changed in meaning?\" statement, which should say \"Nothing\" unless you had to make a judgment call.",
+      "variables": [
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "Customers with no legal background",
+          "required": false
+        },
+        {
+          "key": "reading_level",
+          "label": "Reading level",
+          "type": "select",
+          "options": [
+            "Grade 6",
+            "Grade 8",
+            "Grade 10",
+            "General adult"
+          ],
+          "default": "Grade 8",
+          "required": false
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "Explain a cancellation policy",
+          "required": false
+        },
+        {
+          "key": "text",
+          "label": "Text",
+          "type": "long",
+          "default": "Subscriber may terminate this Agreement upon thirty (30) days' prior written notice. Fees paid in respect of the then-current billing period shall be non-refundable, notwithstanding any termination hereunder, save where termination is occasioned by the Provider's uncured material breach.",
+          "required": false,
+          "help": "Paste the original text"
+        }
+      ],
+      "exampleOutput": "Plain-language version\nYou can cancel at any time. Tell us in writing at least 30 days before you want to stop.\n\nIf you cancel, we do not refund what you have already paid for the current billing period. There is one exception: if we seriously broke our agreement with you and did not fix the problem, you can get that money back.\n\nGlossary\n- Terminate: cancel\n- Prior written notice: telling us in writing ahead of time\n- Material breach: a serious failure to keep the agreement\n- Uncured: not fixed\n\nWhat changed in meaning?\nNothing. \"Uncured\" is shown as \"did not fix the problem\"; the source does not say how long we have to fix it.",
+      "notes": "The meaning-check step guards against oversimplification. For anything legally binding, have a professional review the plain version before you publish it.",
+      "useCase": "rewrite",
+      "tags": [
+        "editing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-article-outline",
+      "title": "Article outline with a clear argument",
+      "description": "Build a structured outline with a thesis, section goals and evidence to gather before you start drafting.",
+      "body": "Create a detailed outline for an article.\n\nTopic: {{topic}}\nFormat: {{format}}\nReader and what they already know: {{audience}}\nThe point I want to make: {{thesis}}\nTarget length: {{word_count}} words\nWhat I already have (research, stories, data): {{material}}\n\nBuild the outline so that:\n- It opens with a hook idea and states the thesis in a single sentence.\n- Each section has a heading, a one-line purpose (\"this section proves/explains...\"), 2-4 bullet points and a suggested word count.\n- The sections build logically: each one answers the question the previous one raises.\n- It includes the strongest counterargument and where to answer it.\n- It flags where I still need evidence, examples or an expert quote, using \"NEEDS:\" tags.\n- It finishes with a conclusion that does more than summarise.\n\nOutput format: thesis line, then the outline in numbered sections, then a list of all NEEDS items ordered by priority. Ask me up to 3 questions first only if the thesis is unclear.",
+      "variables": [
+        {
+          "key": "topic",
+          "label": "Topic",
+          "type": "text",
+          "default": "The hidden cost of constant meetings for remote teams",
+          "required": false
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "Long-form blog article",
+            "Opinion piece",
+            "How-to guide",
+            "Newsletter essay",
+            "Feature article",
+            "White paper"
+          ],
+          "default": "Long-form blog article",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "Remote team leads who already feel overloaded by calendar invites",
+          "required": false
+        },
+        {
+          "key": "thesis",
+          "label": "Your point",
+          "type": "text",
+          "default": "Most meeting overload is a documentation problem, not a scheduling problem",
+          "required": false
+        },
+        {
+          "key": "word_count",
+          "label": "Word count",
+          "type": "number",
+          "default": "1500",
+          "required": false
+        },
+        {
+          "key": "material",
+          "label": "Your material",
+          "type": "long",
+          "default": "One story about cutting my team's meetings by 40%; a survey stat I half-remember; nothing else yet.",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Thesis: Most meeting overload is a documentation problem, not a scheduling problem.\n\n1. The hook: the calendar that eats a week (150 words)\nPurpose: make the pain concrete.\n- Open with the 40% cut story, starting from the before state.\n- NEEDS: exact hours per week the team reclaimed.\n\n2. Why we blame scheduling (200 words)\nPurpose: explain the common fix and why it fails.\n- Focus time blocks, no-meeting days.\n- Why people still end up in meetings.\n\n3. What meetings are really doing (300 words)\nPurpose: prove the thesis.\n- Meetings as a substitute for missing written context.\n- Three kinds of meetings that disappear once something is documented.\n- NEEDS: survey stat with source.\n\n4. Counterargument: some talks must be live (200 words)\n- Answer: separate decisions from updates.\n\n5. How to start (400 words)\n6. Conclusion (150 words)\n\nNEEDS by priority: survey source; hours reclaimed; one outside expert quote.",
+      "notes": "The NEEDS tags turn the outline into a research to-do list. Paste the outline back after research and ask for a draft one section at a time.",
+      "useCase": "plan",
+      "tags": [
+        "writing",
+        "content-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-draft-critique",
+      "title": "Honest editor critique of your draft",
+      "description": "Get a prioritized, specific critique of structure, clarity and persuasion, with fixes you can apply.",
+      "body": "Act as a candid, constructive editor. Critique the draft below.\n\nType of writing: {{doc_type}}\nIntended reader: {{audience}}\nWhat the draft needs to achieve: {{goal}}\nWhat I am most worried about: {{worry}}\n\nDraft:\n{{draft}}\n\nAssess these in order: (1) whether the main point is clear within the first paragraph, (2) structure and flow, (3) evidence and specificity, (4) clarity and sentence-level problems, (5) tone fit for the reader, (6) whether it achieves the goal.\n\nRules:\n- Be specific. Quote the exact words you are criticising and explain the problem in a sentence.\n- Rank issues by impact: \"Fix first\", \"Fix next\", \"Polish\".\n- For every issue give a concrete fix, ideally a rewritten line. Do not rewrite the whole draft.\n- Name at least two things that work and should be kept.\n- Do not flatter. If a major section should be cut, say so.\n\nOutput format: a one-paragraph verdict, strengths, the ranked issues, then a score out of 10 for how well it meets the goal and the single change that would raise it most.",
+      "variables": [
+        {
+          "key": "doc_type",
+          "label": "Type",
+          "type": "text",
+          "default": "Opinion essay",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Reader",
+          "type": "text",
+          "default": "General readers of a business magazine",
+          "required": false
+        },
+        {
+          "key": "goal",
+          "label": "Goal",
+          "type": "text",
+          "default": "Persuade readers that four-day weeks are worth trying",
+          "required": false
+        },
+        {
+          "key": "worry",
+          "label": "Your worry",
+          "type": "text",
+          "default": "It feels preachy and a bit long",
+          "required": false
+        },
+        {
+          "key": "draft",
+          "label": "Draft",
+          "type": "long",
+          "default": "Everyone knows that work is broken. We are all tired, and companies need to do something about it. Four-day weeks are the answer. Many studies have shown that they work. Employees are happier and more productive. Companies should try them. In conclusion, the four-day week is the future of work.",
+          "required": false,
+          "help": "Paste your draft"
+        }
+      ],
+      "exampleOutput": "Verdict\nThe position is clear, but the draft asserts rather than shows. It leans on broad claims (\"everyone knows\", \"many studies\") with no evidence, which is why it reads as preachy.\n\nStrengths\n- A clear, committed thesis.\n- Short sentences that are easy to follow.\n\nFix first\n1. \"Many studies have shown that they work.\" Name one study, with a result. A single concrete figure beats this sentence.\n2. \"Everyone knows that work is broken.\" Replace with a specific scene, such as a Friday-afternoon inbox, to earn the reader's agreement.\n\nFix next\n3. Add the strongest objection (coverage, customer service) and answer it.\n\nPolish\n4. \"In conclusion\" is unnecessary; end on the trial you propose.\n\nScore: 5/10. The single change that raises it most: replace the generic claims with one real company's results.",
+      "notes": "Sharing your worry steers attention, but the fixed checklist keeps the critique balanced. Ask a follow-up like 'rewrite my first paragraph using your fixes'.",
+      "useCase": "critique",
+      "tags": [
+        "editing",
+        "feedback",
+        "writing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-meeting-recap",
+      "title": "Meeting notes to a clear recap email",
+      "description": "Turn messy meeting notes or a transcript into decisions, action items with owners, and a shareable recap.",
+      "body": "Turn the meeting notes below into a recap that attendees and absentees can act on.\n\nMeeting: {{meeting_name}}\nDate: {{date}}\nRecap goes to: {{recipients}}\nTone: {{tone}}\n\nNotes or transcript:\n{{notes}}\n\nRules:\n- Extract decisions, action items, open questions and key discussion points. Do not invent any.\n- Each action item needs an owner and a due date. If either is not stated in the notes, write \"owner TBC\" or \"due date TBC\" instead of guessing.\n- Separate what was decided from what was only discussed.\n- Keep the recap under 250 words and skimmable.\n- Do not include side conversations or personal comments.\n\nOutput format: an email with a subject line, then these sections: \"Decisions\", \"Action items\" (a table with Task, Owner, Due), \"Open questions\", \"Next meeting\". Omit any section with nothing in it.",
+      "variables": [
+        {
+          "key": "meeting_name",
+          "label": "Meeting",
+          "type": "text",
+          "default": "Website relaunch weekly sync",
+          "required": false
+        },
+        {
+          "key": "date",
+          "label": "Date",
+          "type": "text",
+          "default": "14 March",
+          "required": false
+        },
+        {
+          "key": "recipients",
+          "label": "Recipients",
+          "type": "text",
+          "default": "The project team and the marketing director",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Direct and concise",
+          "required": false
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "long",
+          "default": "launch date moved from 3 April to 17 April bc dev is behind on checkout. Jo to finish checkout by 5 April. we talked about homepage copy, not final. Sam will get legal to review the privacy page. budget fine for now. unclear if we need extra QA time, ask Lee. next sync same time next week.",
+          "required": false,
+          "help": "Paste rough notes or a transcript"
+        }
+      ],
+      "exampleOutput": "Subject: Website relaunch sync, 14 March: decisions and actions\n\nHi all,\n\nDecisions\n- Launch moves from 3 April to 17 April because checkout development is behind.\n- Budget is fine for now.\n\nAction items\n| Task | Owner | Due |\n|---|---|---|\n| Finish checkout build | Jo | 5 April |\n| Get legal review of the privacy page | Sam | due date TBC |\n| Confirm whether extra QA time is needed | Lee | due date TBC |\n\nOpen questions\n- Homepage copy was discussed but is not final.\n\nNext meeting\nSame time next week.\n\nThanks,\n[Your name]",
+      "notes": "The 'TBC' rule prevents invented owners and dates, which is the usual failure of recaps. Send it within an hour of the meeting for best results.",
+      "useCase": "summarize",
+      "tags": [
+        "meetings",
+        "summarization",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-polite-decline",
+      "title": "Politely decline a request",
+      "description": "Say no clearly and kindly to a request or invitation, protecting the relationship and your time.",
+      "body": "Write a message declining the request below.\n\nThe request: {{request}}\nWho asked and our relationship: {{requester}}\nWhy I am declining (share only what I want shared): {{reason}}\nWhat I can offer instead, if anything: {{alternative}}\nTone: {{tone}}\nChannel: {{channel}}\n\nRules:\n- Say no in the first or second sentence. Never leave the answer vague or open-ended.\n- Thank them once, specifically, without grovelling.\n- Give a brief reason only if it helps, and never invent a false excuse.\n- If I offered an alternative, make it concrete; if not, do not hint at one.\n- Do not over-apologise, and do not leave the door open for negotiation unless I said so.\n- Keep it under 90 words, formatted for the channel.\n\nOutput format: the message, then two shorter and firmer versions of the first sentence in case I want a stronger no.",
+      "variables": [
+        {
+          "key": "request",
+          "label": "The request",
+          "type": "text",
+          "default": "Join a panel at a conference in October",
+          "required": false
+        },
+        {
+          "key": "requester",
+          "label": "Who asked",
+          "type": "text",
+          "default": "An organiser I met last year, friendly but not close",
+          "required": false
+        },
+        {
+          "key": "reason",
+          "label": "Reason",
+          "type": "text",
+          "default": "My calendar is full through the autumn",
+          "required": false
+        },
+        {
+          "key": "alternative",
+          "label": "Alternative",
+          "type": "text",
+          "default": "Recommend a colleague who speaks on the same topic",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Warm and professional",
+          "required": false
+        },
+        {
+          "key": "channel",
+          "label": "Channel",
+          "type": "select",
+          "options": [
+            "Email",
+            "Slack or chat",
+            "LinkedIn message",
+            "Text message"
+          ],
+          "default": "Email",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Hi Elena,\n\nThank you for thinking of me for the October panel. I am not able to take it on, as my calendar is full through the autumn.\n\nIf it is helpful, I would suggest Marcus Webb, who speaks on the same topic and would be a great fit. I am happy to introduce you.\n\nI hope the event goes brilliantly.\n\nBest,\nJordan\n\nFirmer first sentences\n1. \"Thank you for the invitation, but I have to decline the October panel.\"\n2. \"I will not be able to join the October panel.\"\n\n",
+      "notes": "Leaving out the reason is fine; the prompt only shares what you allow. The firmer variants are useful when the person tends to push back.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-linkedin-post",
+      "title": "LinkedIn post that sounds like a person",
+      "description": "Turn an experience or lesson into an engaging LinkedIn post with a strong first line and no cringe.",
+      "body": "Write a LinkedIn post from the material below.\n\nWhat happened or what I learned: {{story}}\nThe lesson or point: {{takeaway}}\nMy role and audience: {{audience}}\nVoice: {{voice}}\nLength: {{length}}\n\nGuidelines:\n- The first line must stop the scroll with a specific fact, a number or a tension. It must make sense on its own, with no vague hook like \"Here is what I learned\".\n- Use short lines and white space. Keep each paragraph to 1-3 sentences.\n- Use only details I gave. Do not invent numbers, quotes or results.\n- Be modest and honest, with no humble-bragging and no motivational clichés.\n- Skip hashtags except for at most 3 relevant ones at the end. No emojis unless the voice calls for them.\n- End with a question or invitation that people can answer in one line.\n\nOutput format: the post, then two alternative first lines.",
+      "variables": [
+        {
+          "key": "story",
+          "label": "Your story",
+          "type": "long",
+          "default": "I rejected a promotion to stay as an individual contributor. My manager was surprised, and for a week I questioned myself.",
+          "required": false
+        },
+        {
+          "key": "takeaway",
+          "label": "Takeaway",
+          "type": "text",
+          "default": "Growth does not have to mean managing people",
+          "required": false
+        },
+        {
+          "key": "audience",
+          "label": "Role and audience",
+          "type": "text",
+          "default": "Senior engineer writing for other engineers",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Voice",
+          "type": "select",
+          "options": [
+            "Plainspoken and honest",
+            "Thoughtful",
+            "Playful",
+            "Confident",
+            "Vulnerable"
+          ],
+          "default": "Plainspoken and honest",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "select",
+          "options": [
+            "Short (under 100 words)",
+            "Medium (150-200 words)",
+            "Long (250-300 words)"
+          ],
+          "default": "Medium (150-200 words)",
+          "required": false
+        }
+      ],
+      "exampleOutput": "I turned down a promotion last month.\n\nMy manager was surprised. For a week, so was I.\n\nEveryone around me seemed to treat the management track as the only way up. But when I pictured the job, I saw fewer hours writing code and more hours in calendars. I like building things. I like mentoring one-on-one. I did not want to give that up for a title.\n\nWhat helped was asking a different question: not \"what is the next level?\" but \"what work do I want more of in two years?\"\n\nI am staying as a senior engineer, and I have asked to lead more technical design work instead.\n\nGrowth does not have to mean managing people.\n\nHas anyone else had to choose between the title and the work?\n\nAlternative first lines\n1. \"My manager was surprised when I said no to the promotion.\"\n2. \"I walked away from a bigger title last month.\"\n\n",
+      "notes": "The 'use only my details' rule stops made-up statistics. Real, specific stories outperform advice, so keep the story field concrete.",
+      "useCase": "generate",
+      "tags": [
+        "linkedin",
+        "social-media",
+        "content-marketing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-cover-letter",
+      "title": "Tailored cover letter from your real experience",
+      "description": "Write a specific, credible cover letter that links your experience to the role, without clichés.",
+      "body": "Write a cover letter for the role below.\n\nRole and company: {{role}}\nJob description highlights: {{job_description}}\nMy relevant experience and results: {{experience}}\nWhy this company: {{motivation}}\nTone: {{tone}}\nLength: about {{word_count}} words\n\nInstructions:\n- Open with a specific reason I am a strong match, not \"I am writing to apply for\".\n- Choose the 2-3 requirements in the job description that matter most and prove each with one real example from my experience, with numbers where I gave them.\n- Use only my facts. If a requirement is not covered by my experience, do not fake it; briefly acknowledge the gap or leave it out.\n- Show real interest in the company using the motivation I gave. No generic praise.\n- Avoid clichés (\"team player\", \"passionate\", \"fast-paced environment\") and long self-descriptions.\n- Close with a confident, specific next step.\n\nOutput format: the letter in plain paragraphs with a greeting and sign-off, followed by a short list of any gaps between the job description and my experience that I should address in the interview.",
+      "variables": [
+        {
+          "key": "role",
+          "label": "Role and company",
+          "type": "text",
+          "default": "Customer Success Manager at Lumen Analytics",
+          "required": false
+        },
+        {
+          "key": "job_description",
+          "label": "Job description highlights",
+          "type": "long",
+          "default": "Own onboarding for mid-market accounts; reduce churn; work with product on feedback; strong written communication.",
+          "required": false,
+          "help": "Paste the key requirements"
+        },
+        {
+          "key": "experience",
+          "label": "Your experience",
+          "type": "long",
+          "default": "4 years in customer support and then success at a SaaS company. Built an onboarding checklist that cut time-to-first-value from 21 to 12 days. Handled a 60-account portfolio with 94% renewal. Wrote the weekly product feedback digest.",
+          "required": false,
+          "help": "Roles, results, numbers"
+        },
+        {
+          "key": "motivation",
+          "label": "Why this company",
+          "type": "text",
+          "default": "I use Lumen's dashboards and like how they explain data to non-analysts",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Confident and persuasive",
+          "required": false
+        },
+        {
+          "key": "word_count",
+          "label": "Word count",
+          "type": "number",
+          "default": "300",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Dear Hiring Team,\n\nCutting the time customers need to see value from three weeks to under two is the kind of result I would like to bring to Lumen Analytics.\n\nIn my current role, I built an onboarding checklist that reduced time-to-first-value from 21 to 12 days. For mid-market onboarding, that experience matters: customers who succeed early are far more likely to stay. I manage a 60-account portfolio with a 94% renewal rate, which taught me to spot churn risk early and keep communication specific.\n\nYou also ask for work with product. Each week I write a product feedback digest that turns customer conversations into clear, prioritised requests for the product team.\n\nI use Lumen's dashboards, and I admire how they explain data to people who are not analysts. I would love to help your customers get the same clarity.\n\nI would welcome a conversation about how I can help your onboarding team.\n\nSincerely,\n[Name]\n\nGaps to prepare for: no mention of mid-market account size; be ready to discuss it.",
+      "notes": "Paste real numbers into your experience; the letter is only as persuasive as the evidence. The gap list is a free interview-prep checklist.",
+      "useCase": "generate",
+      "tags": [
+        "resume",
+        "career",
+        "job-search"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-proofread-keep-voice",
+      "title": "Proofread without flattening your voice",
+      "description": "Fix grammar, spelling and punctuation while leaving your style and word choices alone.",
+      "body": "Proofread the text below. Fix errors only; do not rewrite.\n\nLanguage and spelling convention: {{variety}}\nStyle rules to follow, if any: {{style_rules}}\n\nText:\n{{text}}\n\nRules:\n- Correct spelling, grammar, punctuation, capitalisation, typos and obvious word errors (such as \"their\" vs \"there\").\n- Do NOT change word choice, rhythm, tone, or sentence structure unless a sentence is genuinely ungrammatical.\n- Do not touch quotations, names, code or intentional stylistic choices such as fragments, unless they are clearly mistakes.\n- Make consistent decisions: hyphenation, numerals, serial commas and capitalisation should match throughout.\n- If something might be an error but could be intentional, leave it and list it as a query.\n\nOutput format:\n1. The corrected text.\n2. A change log table: Original, Corrected, Reason.\n3. Queries: items for me to decide.",
+      "variables": [
+        {
+          "key": "variety",
+          "label": "Spelling",
+          "type": "select",
+          "options": [
+            "US English",
+            "UK English",
+            "Canadian English",
+            "Australian English"
+          ],
+          "default": "US English",
+          "required": false
+        },
+        {
+          "key": "style_rules",
+          "label": "Style rules",
+          "type": "text",
+          "default": "Use the serial comma; spell out numbers under ten",
+          "required": false
+        },
+        {
+          "key": "text",
+          "label": "Text",
+          "type": "long",
+          "default": "Their are three things we learnt from the launch. First, customers dont read long emails, they skim. Second, the pricing page confused alot of people. Third: we should of tested the checkout earlier.",
+          "required": false,
+          "help": "Paste your text"
+        }
+      ],
+      "exampleOutput": "Corrected text\nThere are three things we learned from the launch. First, customers don't read long emails; they skim. Second, the pricing page confused a lot of people. Third, we should have tested the checkout earlier.\n\nChange log\n| Original | Corrected | Reason |\n|---|---|---|\n| Their are | There are | Wrong word |\n| learnt | learned | US spelling |\n| dont | don't | Missing apostrophe |\n| emails, they | emails; they | Comma splice |\n| alot | a lot | Spelling |\n| Third: | Third, | Matches \"First,\" and \"Second,\" |\n| should of | should have | Grammar |\n\nQueries\n- \"three things\" are spelled out, which matches your rule; confirm \"launch\" should be lower case.",
+      "notes": "Choosing the language variety prevents silent switches between UK and US spelling. Add your house style rules for consistency across documents.",
+      "useCase": "rewrite",
+      "tags": [
+        "editing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-email-reply-draft",
+      "title": "Draft a reply to an email you received",
+      "description": "Paste an incoming email and your intent, and get a reply that answers every point in the right tone.",
+      "body": "Draft a reply to the email below.\n\nTheir email:\n{{incoming_email}}\n\nWhat I want to say or decide (rough points are fine): {{my_points}}\nMy relationship to the sender: {{relationship}}\nTone: {{tone}}\nLength: {{length}}\n\nInstructions:\n- Answer every question and request in their email, in the order they asked. If you notice something they asked that my points do not cover, list it after the reply instead of making up an answer.\n- Do not agree to anything, give dates or quote numbers that I did not provide.\n- Mirror their level of formality, but follow my chosen tone where it differs.\n- Start with the answer, not with thanks or a restatement of their email.\n- Close with a clear next step and who owns it.\n\nOutput format: a subject line only if it should change, then the reply, then \"Unanswered items\" listing anything I need to decide.",
+      "variables": [
+        {
+          "key": "incoming_email",
+          "label": "Their email",
+          "type": "long",
+          "default": "Hi, we are interested in your team workshop. Can you do June 12 in Leeds? How many people can attend and what is the price? Also, do you provide materials in advance?",
+          "required": false,
+          "help": "Paste the email you received"
+        },
+        {
+          "key": "my_points",
+          "label": "Your points",
+          "type": "long",
+          "default": "Yes to June 12 in Leeds. Max 20 people. 2,400 pounds plus travel. Slides are shared a week before.",
+          "required": false
+        },
+        {
+          "key": "relationship",
+          "label": "Relationship",
+          "type": "text",
+          "default": "Potential new client, first contact",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Warm and professional",
+          "required": false
+        },
+        {
+          "key": "length",
+          "label": "Length",
+          "type": "select",
+          "options": [
+            "Very short",
+            "Short",
+            "Detailed"
+          ],
+          "default": "Short",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Hi,\n\nThanks for getting in touch. Here are the answers to your questions.\n\n- Date and location: June 12 in Leeds works for us.\n- Group size: the workshop is best with up to 20 attendees.\n- Price: 2,400 pounds, plus travel costs.\n- Materials: we share the slides one week before the session.\n\nIf this suits you, tell me the final number of attendees and I will send a booking confirmation this week.\n\nBest regards,\n[Your name]\n\nUnanswered items\n- No question was left unanswered. You may wish to confirm venue arrangements and who covers room hire.",
+      "notes": "Giving rough points rather than full sentences works best. The unanswered list prevents silent commitments.",
+      "useCase": "generate",
+      "tags": [
+        "email",
+        "communication",
+        "strategy"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-status-update",
+      "title": "Weekly status update for your manager",
+      "description": "Turn your week's work into a crisp status update covering progress, blockers and next steps.",
+      "body": "Write a status update from the raw notes below.\n\nReader: {{reader}}\nProject or team: {{project}}\nReporting period: {{period}}\nFormat: {{format}}\n\nMy raw notes:\n{{notes}}\n\nRules:\n- Lead with overall status as one of: On track, At risk, Off track, with a one-line reason.\n- Report results and outcomes, not activity. \"Shipped X\" beats \"worked on X\".\n- Quantify progress where my notes allow. Do not invent numbers or dates.\n- Make blockers specific: what is blocked, who can unblock it and by when.\n- List next-period priorities in order, three at most.\n- Keep it under 180 words and avoid filler like \"just wanted to update you\".\n\nOutput format: use the requested format, with sections Status, Done, Blockers and asks, Next. Omit empty sections.",
+      "variables": [
+        {
+          "key": "reader",
+          "label": "Reader",
+          "type": "text",
+          "default": "My director, who reads this on her phone",
+          "required": false
+        },
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "text",
+          "default": "Mobile app v2.0 rebuild",
+          "required": false
+        },
+        {
+          "key": "period",
+          "label": "Period",
+          "type": "text",
+          "default": "Week of 9 June",
+          "required": false
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            "Slack message",
+            "Email",
+            "Bulleted list",
+            "Short paragraph"
+          ],
+          "default": "Slack message",
+          "required": false
+        },
+        {
+          "key": "notes",
+          "label": "Raw notes",
+          "type": "long",
+          "default": "finished login screens, 12 of 15 screens done. payments API still not ready from vendor, waiting since Tuesday. QA found 4 crash bugs, 3 fixed. thinking release may slip if payments not here by 20 June. next: finish remaining screens, start load test.",
+          "required": false,
+          "help": "Anything you did, in any order"
+        }
+      ],
+      "exampleOutput": "**Status: At risk.** Release depends on the vendor's payments API, which has not arrived.\n\n**Done**\n- 12 of 15 screens complete, including login.\n- QA found 4 crash bugs; 3 are fixed.\n\n**Blockers and asks**\n- Payments API from the vendor, outstanding since Tuesday. Release slips if it is not delivered by 20 June. Could you escalate to the vendor contact?\n\n**Next**\n1. Finish the remaining 3 screens.\n2. Fix the last crash bug.\n3. Start load testing.",
+      "notes": "Marking an honest At risk with a named ask is what makes a status update useful. Include dates in your notes for sharper deadlines.",
+      "useCase": "generate",
+      "tags": [
+        "reporting",
+        "communication",
+        "email"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-customer-apology-reply",
+      "title": "Customer apology that fixes the problem",
+      "description": "Reply to an unhappy customer with a sincere, specific apology and a clear remedy, not canned phrases.",
+      "body": "Write a reply to an unhappy customer.\n\nCustomer's message:\n{{complaint}}\n\nWhat actually went wrong (internal facts): {{what_happened}}\nWhat we can offer: {{remedy}}\nWhat we cannot do: {{limits}}\nBrand voice: {{voice}}\nChannel: {{channel}}\n\nWrite the reply so that:\n- It opens by acknowledging the specific problem in plain words, with an apology for it. No \"we apologise for any inconvenience\".\n- It gives a short, honest explanation without excuses or blaming a third party.\n- It states exactly what we will do, by when, and who they can contact.\n- It does not promise anything beyond what is listed under \"What we can offer\".\n- It matches the customer's emotional level, calm if they are angry and brisk if they are rushed.\n- It is under 150 words.\n\nOutput format: the reply, then one line noting the single biggest risk in the wording and a safer alternative.",
+      "variables": [
+        {
+          "key": "complaint",
+          "label": "Customer message",
+          "type": "long",
+          "default": "I ordered a standing desk three weeks ago for a delivery date that you confirmed. It still hasn't arrived and nobody answers my emails. I am working from my kitchen table because of this.",
+          "required": false
+        },
+        {
+          "key": "what_happened",
+          "label": "What happened",
+          "type": "text",
+          "default": "Carrier lost the parcel; our support inbox backlog meant emails went unanswered for 5 days",
+          "required": false
+        },
+        {
+          "key": "remedy",
+          "label": "What we can offer",
+          "type": "text",
+          "default": "Free express replacement shipped tomorrow with tracking, plus a 15% refund",
+          "required": false
+        },
+        {
+          "key": "limits",
+          "label": "What we cannot do",
+          "type": "text",
+          "default": "Cannot guarantee a delivery date, only dispatch date",
+          "required": false
+        },
+        {
+          "key": "voice",
+          "label": "Brand voice",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Warm and professional",
+          "required": false
+        },
+        {
+          "key": "channel",
+          "label": "Channel",
+          "type": "select",
+          "options": [
+            "Email",
+            "Live chat",
+            "Social media reply",
+            "Review response"
+          ],
+          "default": "Email",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Hi Jordan,\n\nI am sorry. You were promised a delivery date, the desk never arrived, and your emails went unanswered for days. Both failures are ours.\n\nThe carrier lost your parcel, and our support inbox fell behind. That should not have left you working from the kitchen table.\n\nHere is what we are doing: a replacement desk ships by express tomorrow, with tracking sent to you the moment it dispatches. We are also refunding 15% of your order today. I cannot promise the exact delivery date, but I will personally watch the shipment and write to you as soon as it moves.\n\nYou can reach me directly at this address.\n\nSincerely,\nAlex, Customer Care\n\nBiggest risk: \"Both failures are ours\" admits fault in writing. If legal review is needed, use \"this should have been handled better\".",
+      "notes": "Supplying real internal facts allows an honest explanation rather than a canned one. Keep the 'cannot do' field filled so the reply never overpromises.",
+      "useCase": "generate",
+      "tags": [
+        "customer-support",
+        "email",
+        "communication"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-professional-bio",
+      "title": "Professional bio in three lengths",
+      "description": "Write a polished third-person bio in short, medium and long versions from your real background.",
+      "body": "Write a professional bio for me in three lengths.\n\nName: {{name}}\nCurrent role: {{role}}\nWhere it will appear: {{use}}\nBackground and achievements: {{background}}\nWhat I want to be known for: {{positioning}}\nPersonal detail to include, if any: {{personal}}\nTone: {{tone}}\nPerson: {{person}}\n\nRules:\n- Use only the facts I gave. Do not invent employers, awards, degrees or numbers.\n- Lead with what matters most to the reader at this use, not with chronological history.\n- Replace vague phrases (\"passionate\", \"results-driven\", \"dynamic\") with specific evidence.\n- The personal detail should be one light touch at the end, only if it fits the tone.\n- Make each version stand on its own rather than just truncating the longer one.\n\nOutput format:\n- Short: 1 sentence (about 25 words), for a byline or social profile.\n- Medium: about 80 words, for a speaker page or website.\n- Long: about 170 words, for a full profile or press kit.",
+      "variables": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "default": "Dana Okafor",
+          "required": false
+        },
+        {
+          "key": "role",
+          "label": "Current role",
+          "type": "text",
+          "default": "Head of Data at a logistics company",
+          "required": false
+        },
+        {
+          "key": "use",
+          "label": "Where it appears",
+          "type": "text",
+          "default": "Conference speaker page",
+          "required": false
+        },
+        {
+          "key": "background",
+          "label": "Background",
+          "type": "long",
+          "default": "12 years in data. Built the forecasting team that cut stockouts by 18% at a retailer. Previously a statistician at a health nonprofit. Teaches evening classes on data storytelling. MSc in Applied Statistics.",
+          "required": false,
+          "help": "Roles, results, credentials"
+        },
+        {
+          "key": "positioning",
+          "label": "Known for",
+          "type": "text",
+          "default": "Making data useful for people who are not analysts",
+          "required": false
+        },
+        {
+          "key": "personal",
+          "label": "Personal detail",
+          "type": "text",
+          "default": "Lives in Bristol and bakes sourdough",
+          "required": false
+        },
+        {
+          "key": "tone",
+          "label": "Tone",
+          "type": "select",
+          "options": [
+            "Warm and professional",
+            "Direct and concise",
+            "Friendly and casual",
+            "Formal",
+            "Confident and persuasive",
+            "Empathetic"
+          ],
+          "default": "Warm and professional",
+          "required": false
+        },
+        {
+          "key": "person",
+          "label": "Person",
+          "type": "select",
+          "options": [
+            "Third person",
+            "First person"
+          ],
+          "default": "Third person",
+          "required": false
+        }
+      ],
+      "exampleOutput": "Short\nDana Okafor is Head of Data at a logistics company, helping non-analysts turn data into decisions.\n\nMedium\nDana Okafor is Head of Data at a logistics company and has spent 12 years making analysis useful to people who are not analysts. She built the forecasting team that cut stockouts by 18% at a major retailer, and she teaches evening classes on data storytelling. Dana lives in Bristol, where she also bakes sourdough.\n\nLong\nDana Okafor leads data at a logistics company, where she helps teams make decisions with numbers they trust. Over 12 years she has moved from statistician at a health nonprofit to building a forecasting team at a retailer, where her work cut stockouts by 18%. Her approach is simple: analysis only matters when the people who act on it understand it, so she teaches evening classes on data storytelling and holds an MSc in Applied Statistics. She lives in Bristol, where she bakes sourdough on the weekends.",
+      "notes": "Naming the place the bio will appear changes what leads. Re-run with a different 'Known for' to create versions for different audiences.",
+      "useCase": "generate",
+      "tags": [
+        "writing",
+        "linkedin",
+        "career"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-argument-stress-test",
+      "title": "Stress-test an argument or persuasive piece",
+      "description": "Find the weak points in your reasoning: gaps, unsupported claims, counterarguments and how to repair each.",
+      "body": "Review the argument below like a sharp, fair critic who wants it to succeed.\n\nThe argument or piece:\n{{argument}}\n\nWho needs to be convinced: {{audience}}\nWhat they currently believe: {{audience_belief}}\nHow rigorous to be: {{rigor}}\n\nAssess and report on:\n1. The core claim, restated in one sentence, and whether it matches what I seem to intend.\n2. Each key premise, marked as supported, plausible but unsupported, or doubtful.\n3. Logical gaps or leaps, including any fallacies (name them, quote the line).\n4. The three strongest objections this audience would raise, ranked by how damaging they are.\n5. Evidence I should add, specifically what kind and where it would go.\n6. What the piece does well and should keep.\n\nRules:\n- Quote the lines you are critiquing. Be specific and concise.\n- Do not invent facts or studies. If you suggest evidence, describe the type, not fake citations.\n- Do not argue the opposite position for its own sake; focus on making this argument stronger.\n\nOutput format: use the six numbered headings, then a prioritized repair list of at most five steps.",
+      "variables": [
+        {
+          "key": "argument",
+          "label": "Your argument",
+          "type": "long",
+          "default": "Cities should ban cars from downtown centers. Cars cause pollution and noise. Cities like Oslo have done similar things and are better for it. Shops will do better because more people walk. The only people opposed are those who don't care about the environment.",
+          "required": false,
+          "help": "Paste the text"
+        },
+        {
+          "key": "audience",
+          "label": "Audience",
+          "type": "text",
+          "default": "City councillors and local business owners",
+          "required": false
+        },
+        {
+          "key": "audience_belief",
+          "label": "Their current view",
+          "type": "text",
+          "default": "Skeptical; worried about lost customers",
+          "required": false
+        },
+        {
+          "key": "rigor",
+          "label": "Rigor",
+          "type": "select",
+          "options": [
+            "Quick pass",
+            "Thorough",
+            "Ruthless"
+          ],
+          "default": "Thorough",
+          "required": false
+        }
+      ],
+      "exampleOutput": "1. Core claim\nCities should ban cars from downtown centers because it improves environment and commerce.\n\n2. Premises\n- Cars cause pollution and noise: supported (widely accepted).\n- Oslo's experience proves success: plausible but unsupported; no outcome data given.\n- Shops do better with more walkers: doubtful for this audience; unsupported.\n\n3. Gaps\n- \"The only people opposed are those who don't care about the environment\" is a straw man; it dismisses real concerns about deliveries and access.\n\n4. Likely objections\n1. Loss of customers who drive in.\n2. Delivery and disability access.\n3. Oslo's context differs from ours.\n\n5. Evidence to add\nRetail sales data from pedestrianised streets, with before/after comparisons.\n\n6. Keep\nA clear position and a concrete example.\n\nRepair list: replace the straw man, add sales evidence, address access.",
+      "notes": "Naming the audience's current belief matters: the best objections come from their point of view. Run it again after revising to see if issues are fixed.",
+      "useCase": "critique",
+      "tags": [
+        "feedback",
+        "copywriting",
+        "editing"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    },
+    {
+      "key": "writing-extract-claims",
+      "title": "Extract claims and facts to verify",
+      "description": "Pull every checkable claim, number and quote from a piece into a fact-check list with a priority and source type.",
+      "body": "Read the text below and build a fact-checking list.\n\nText:\n{{text}}\n\nWhat the text is for: {{purpose}}\nPublication standard: {{standard}}\n\nExtract every statement that can be checked: statistics, dates, named people and organisations, quotations, causal claims, superlatives (\"first\", \"largest\") and attributed opinions.\n\nFor each item provide:\n- The exact wording from the text, in quotes.\n- Claim type (statistic, quote, date, attribution, causal claim, superlative, other).\n- Risk if wrong: High, Medium or Low (High if it could mislead readers, damage someone's reputation, or has legal implications).\n- What kind of source would verify it (for example official statistics, original study, primary document, direct confirmation from the person).\n\nRules:\n- Do not state whether claims are true. You may note that a claim looks unusually precise or is missing a source.\n- Do not invent sources or links.\n- Order the list by risk, High first.\n\nOutput format: a table with columns #, Claim, Type, Risk, Verify with. Then a short list of claims in the text that have no source cited.",
+      "variables": [
+        {
+          "key": "text",
+          "label": "Text",
+          "type": "long",
+          "default": "A 2023 study found that remote workers are 13% more productive. Our survey of 2,000 employees showed that 87% want to keep working from home. CEO Sam Park said, \"Office work is dead.\" Remote work has caused a boom in small-town housing prices.",
+          "required": false,
+          "help": "Paste the article or draft"
+        },
+        {
+          "key": "purpose",
+          "label": "Purpose",
+          "type": "text",
+          "default": "Blog post for a general business audience",
+          "required": false
+        },
+        {
+          "key": "standard",
+          "label": "Standard",
+          "type": "select",
+          "options": [
+            "Light check",
+            "Standard editorial",
+            "Strict journalistic"
+          ],
+          "default": "Standard editorial",
+          "required": false
+        }
+      ],
+      "exampleOutput": "| # | Claim | Type | Risk | Verify with |\n|---|---|---|---|---|\n| 1 | \"Office work is dead\" (attributed to CEO Sam Park) | Quote | High | Direct confirmation or original transcript |\n| 2 | \"Remote work has caused a boom in small-town housing prices\" | Causal claim | High | Housing market data with analysis of cause |\n| 3 | \"A 2023 study found that remote workers are 13% more productive\" | Statistic | Medium | The original study, including sample and definition |\n| 4 | \"87% want to keep working from home\" | Statistic | Medium | Survey methodology and questionnaire |\n| 5 | \"survey of 2,000 employees\" | Statistic | Low | Internal survey records |\n\nClaims with no source cited\n- #1 (no date or venue for the quote)\n- #2 (no data, and causation asserted)\n- #3 (study not named)",
+      "notes": "This works as a pre-publication checklist for writers and editors. It deliberately does not judge truth, since a model cannot verify claims reliably on its own.",
+      "useCase": "extract",
+      "tags": [
+        "fact-checking",
+        "editing",
+        "research"
+      ],
+      "models": [],
+      "featured": false,
+      "license": "cc0"
+    }
+  ]
+}
