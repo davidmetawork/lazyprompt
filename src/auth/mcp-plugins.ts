@@ -8,8 +8,10 @@
 // - mcp(): OAuth provider bound to the MCP resource <base>/mcp. Dynamic client registration (DCR) is what ChatGPT uses;
 //   registration is rate-limited by Better Auth's rateLimit rules.
 // - cimd(): Client ID Metadata Documents (MCP 2026-07-28 profile) for clients such as Claude.
-// Sign-in continuation: loginPage is the stock /sign-in page. oauthProviderClient() (src/auth/client.ts) forwards the signed
-// OAuth query (`sig`, ...) with each sign-in call, so the authorize request resumes after login without a wrapper page.
+// Sign-in continuation: loginPage is the MCP-owned /oauth/sign-in wrapper. Better Auth resumes an authorize request after a
+// social sign-in by itself (oauthProviderClient() forwards the signed query), but NOT after a magic link, which completes in a
+// different request. The wrapper therefore passes the authorize URL as the magic link's callbackURL. The stock /sign-in page
+// is left untouched (its next= is capped at 512 chars, too short for an authorize query).
 import type { BetterAuthPlugin } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import { mcp } from "@better-auth/mcp";
@@ -23,7 +25,7 @@ export function mcpAuthPlugins(): BetterAuthPlugin[] {
   return [
     jwt(),
     mcp({
-      loginPage: "/sign-in",
+      loginPage: "/oauth/sign-in",
       consentPage: "/oauth/consent",
       resource: `${base}/mcp`,
       scopes: [...MCP_SCOPES],
