@@ -2,6 +2,7 @@
 
 A free community library of AI prompts. Browse, search, fill in the variables and copy (or open prefilled in ChatGPT, Claude, Grok or Perplexity) without an account. Sign in to submit, rate, comment, save and fork. LazyPrompt never runs an LLM itself.
 
+- **Status, deployment, rollback and next steps:** [`docs/HANDOFF.md`](docs/HANDOFF.md) (start here when picking the project up).
 - **Spec:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) is the source of truth (research in `docs/research/`).
 - **Stack:** Next.js 16.3 (App Router, Turbopack, `proxy.ts`, cacheComponents off), React 19.2, TypeScript strict, Tailwind 4 + shadcn/ui (**Radix base**, style `radix-nova`, see `components.json`), Drizzle ORM + Postgres 17, Better Auth 1.7 (magic link, Google, GitHub, admin, MCP OAuth plugins), Vitest 5, Playwright, pnpm 10.
 
